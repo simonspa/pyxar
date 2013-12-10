@@ -1,0 +1,13 @@
+[ROC]
+rows = 80
+cols = 52
+
+dac_dict = {1:'Vdig',2:'Vana',3:'Vsf',4:'Vcomp',7:'VwllPr',9:'VwllSh',10:'VhldDel',11:'Vtrim',12:'VthrComp',13:'VIBias_Bus',14:'Vbias_sf',15:'VoffsetOp',17:'VOffsetR0',18:'VIon',19:'VIbias_PH',20:'Ibias_DAC',21:'VIbias_roc',22:'VIColOr',25:'Vcal',26:'CalDel',253:'CtrlReg',254:'WBC'}
+dac_bits = {1:4,2:8,3:8,4:8,7:8,9:8,10:8,11:8,12:8,13:8,14:8,15:8,17:8,18:8,19:8,20:8,21:8,22:8,25:8,26:8,253:4,254:8}
+
+[TBM]
+channels = 2
+
+[Module]
+rocs = 16
+tbms = 1
