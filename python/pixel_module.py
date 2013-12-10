@@ -23,7 +23,10 @@ class Pixel(object):
     @trim.setter
     def trim(self,value):
         if isinstance(value, bool):
-            pass
+            if value == False:
+                self._trim = 15
+            else:
+                raise Exception("Trim Value must be integer in [0,15]")
         else:
             try:
                 trim_value = int(value)
@@ -251,6 +254,7 @@ if __name__=='__main__':
         roc.dac('Vana').value = 155
         print roc, roc.dac('Vana')
 
+    #set individual DAC, by name or number
     m.roc(1).dac('Vana').value = 0
     print m.roc(1).dac('Vana')
     m.roc(1).dac(2).value = 0
