@@ -1,31 +1,35 @@
 import sys
 import cmd
 import subprocess
+import logging
 from optparse import OptionParser
 from python import Testboard
 from python import Roc
-from python import Test
+from python import DacDac, Calibrate
 from python import Plotter
 from python import BetterConfigParser
+logging.basicConfig(level=logging.INFO)
 
 class Pxar(cmd.Cmd):
     """Simple command processor example."""
-    #def __init__(self):
-    #    super(Pxar, self).__init__()
     
     def do_init(self, line):
-        configs = ['data/general','data/roc']
+        configs = ['data/general','data/roc','data/tb']
         self.config = BetterConfigParser()
         self.config.read(configs)
         self.tb = Testboard(self.config)
         self.obj = Roc(self.config)
-        print "Initialzed TB and ROC"
+        self.logger = logging.getLogger(__name__)
+        self.logger.info('Initialzed testboard')
 
-        self.TESTS = ['mask_test','chip_efficiency','dac_dac']
+        self.TESTS = ['mask_test','chip_efficiency','DacDac']
     
+    def str_to_class(str):
+        return reduce(getattr, str.split("."), sys.modules[__name__])
+
     def do_test(self, line):
-        a_test = Test(self.tb, self.config, line)
-        a_test.run_roc(self.obj)
+        a_test = globals()[line](self.tb, self.obj, self.config)
+        a_test.run(self.config)
         plot = Plotter(self.config, a_test)
         plot.do_plot()
     
@@ -39,15 +43,12 @@ class Pxar(cmd.Cmd):
                             ]
         return completions
 
-    def do_dac_dac(self, line):
-        self.do_test('dac_dac')
+    def do_DacDac(self, line):
+        self.do_test('DacDac')
         
-    def do_chip_efficiency(self, line):
-        self.do_test('chip_efficiency')
+    def do_Calibrate(self, line):
+        self.do_test('Calibrate')
     
-    def do_mask_test(self, line):
-        self.do_test('mask_test')
-
     def do_EOF(self, line):
         return True
 

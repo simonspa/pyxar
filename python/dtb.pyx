@@ -142,7 +142,7 @@ cdef class PyDTB:
         free(data)
         return return_value
     
-    def chip_efficiency(self,n_triggers, trim, result):
+    def calibrate(self,n_triggers, trim, result):
         cdef double *data
         cdef int32_t *trim_bits
         n = len(result) 

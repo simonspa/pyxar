@@ -7,6 +7,7 @@ class DacDac(Test.Test):
         pass
 
     def run(self, config):
+        self.logger.info('Running DacDac test')
         dac1 = 12
         dac2 = 26  
         dac_range1 = 256 
