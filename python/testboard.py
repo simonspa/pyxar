@@ -3,8 +3,9 @@ import logging
 
 class Testboard(dtb.PyDTB):
     
-    def __init__(self, config):
+    def __init__(self, config, dut):
         super(Testboard, self).__init__()
+        self.dut = dut
         usb_id = config.get('Testboard','id')
         self.logger = logging.getLogger(__name__)
         self.logger.info('Using testboard id: %s' %usb_id)

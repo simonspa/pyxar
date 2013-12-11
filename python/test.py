@@ -2,9 +2,9 @@ import logging
 
 class Test(object):
 
-    def __init__(self, tb, dut, config = None):
+    def __init__(self, tb, config = None):
         self.tb = tb
-        self.dut = dut
+        self.dut = tb.dut
         self.config = config
         self.logger = logging.getLogger(__name__)
         self._results = None

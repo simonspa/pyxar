@@ -3,9 +3,6 @@ from helpers import list_to_grid
 
 class DacDac(Test.Test):
 
-    def prepare(self, config):
-        pass
-
     def run(self, config):
         self.logger.info('Running DacDac test')
         dac1 = 12
@@ -21,7 +18,4 @@ class DacDac(Test.Test):
         self.tb.init_roc()
         self._results = list_to_grid(dac_range1, dac_range2, result)
         return 
-    
-    def cleanup(self, config):
-        pass
     

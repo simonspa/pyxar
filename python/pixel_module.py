@@ -118,17 +118,17 @@ class Roc(object):
     @property
     def n_rows(self):
         """Get number of rows."""
-        return self._num_rows
+        return self._n_rows
 
     @property
     def n_cols(self):
         """Get number of columns."""
-        return self._num_cols
+        return self._n_cols
     
     @property
     def n_pixels(self):
         """Get number of pixels."""
-        return self._num_pixels
+        return self._n_pixels
 
     #get pixel object
     def pixel(self,col,row):

@@ -4,7 +4,7 @@ import subprocess
 import logging
 from optparse import OptionParser
 from python import Testboard
-from python import Roc
+from python import Module
 from python import DacDac, Calibrate
 from python import Plotter
 from python import BetterConfigParser
@@ -14,11 +14,11 @@ class Pxar(cmd.Cmd):
     """Simple command processor example."""
     
     def do_init(self, line):
-        configs = ['data/general','data/roc','data/tb']
+        configs = ['data/general','data/module','data/tb']
         self.config = BetterConfigParser()
         self.config.read(configs)
-        self.tb = Testboard(self.config)
-        self.obj = Roc(self.config)
+        self.dut = Module(self.config)
+        self.tb = Testboard(self.config, self.dut)
         self.logger = logging.getLogger(__name__)
         self.logger.info('Initialzed testboard')
 
@@ -28,7 +28,7 @@ class Pxar(cmd.Cmd):
         return reduce(getattr, str.split("."), sys.modules[__name__])
 
     def do_test(self, line):
-        a_test = globals()[line](self.tb, self.obj, self.config)
+        a_test = globals()[line](self.tb, self.config)
         a_test.run(self.config)
         plot = Plotter(self.config, a_test)
         plot.do_plot()
