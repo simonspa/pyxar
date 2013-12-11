@@ -14,7 +14,7 @@ class Pxar(cmd.Cmd):
     """Simple command processor example."""
     
     def do_init(self, line):
-        configs = ['data/general','data/module','data/tb']
+        configs = ['data/general','data/module','data/tb','data/test.cfg']
         self.config = BetterConfigParser()
         self.config.read(configs)
         self.dut = Module(self.config)
@@ -44,6 +44,8 @@ class Pxar(cmd.Cmd):
         return completions
 
     def do_DacDac(self, line):
+        #TODO Expose to gui/cui
+        self.dut.roc(0).pixel(5,5).active = True
         self.do_test('DacDac')
         
     def do_Calibrate(self, line):

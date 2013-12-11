@@ -7,6 +7,7 @@ class Pixel(object):
         self._row = row
         self.trim = trim
         self.mask = mask
+        self.active = False
 
     @property
     def col(self):
@@ -71,6 +72,10 @@ class DAC(object):
     @property
     def value(self):
         return self._value
+    
+    @property
+    def range(self):
+        return 2**self._bits
 
     @value.setter
     def value(self,value):
@@ -148,6 +153,16 @@ class Roc(object):
             row = 0
             while row < self._n_rows:
                 yield self._pixel_array[col][row]
+                row += 1
+            col += 1
+    
+    def active_pixels(self):
+        col = 0
+        while col < self._n_cols:
+            row = 0
+            while row < self._n_rows:
+                if self.pixel(col, row).active: 
+                    yield self.pixel(col, row)
                 row += 1
             col += 1
 
