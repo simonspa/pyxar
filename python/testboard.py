@@ -30,3 +30,9 @@ class Testboard(dtb.PyDTB):
         self.poff();
         self.cleanup();
 
+    def arm(self, pixel):
+        if not pixel.mask:
+            self.arm_pixel(pixel.col, pixel.row)
+    
+    def disarm(self, pixel):
+        self.disarm_pixel(pixel.col, pixel.row)

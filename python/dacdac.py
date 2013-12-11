@@ -6,7 +6,7 @@ class DacDac(Test.Test):
     def run(self, config):
         self.logger.info('Running DacDac test')
         dac1 = int(config.get('DacDac','dac1'))
-        dac2 = int(config.get('DacDac','dac1'))
+        dac2 = int(config.get('DacDac','dac2'))
         n_triggers = int(config.get('DacDac','n_triggers'))
         for roc in self.dut.rocs():
             dac_range1 = roc.dac(dac1).range
