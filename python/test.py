@@ -7,12 +7,13 @@ class Test(object):
         self.dut = tb.dut
         self.config = config
         self.logger = logging.getLogger(__name__)
+        #self.tb.init_roc()
         self._results = None
 
     def prepare(self, config):
         pass
 
-    def run(self, config):
+    def run(self, config): 
         pass
     
     def cleanup(self, config):

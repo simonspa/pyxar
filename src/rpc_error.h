@@ -4,9 +4,10 @@
 
 #include <stdio.h>
 #include <string>
+#include <stdexcept>
 
 
-class CRpcError
+class CRpcError: public std::runtime_error
 {
 public:
 	enum errorId
@@ -29,8 +30,8 @@ public:
 		UNDEF
 	} error;
 	int functionId;
-	CRpcError() : error(CRpcError::OK), functionId(-1) {}
-	CRpcError(errorId e) : error(e) {}
+	CRpcError() : std::runtime_error(CRpcError::GetMsg()) , error(CRpcError::OK), functionId(-1) {}
+	CRpcError(errorId e) : std::runtime_error(CRpcError::GetMsg()) , error(e) {}
 	void SetFunction(unsigned int cmdId) { functionId = cmdId; }
 	const char *GetMsg();
 	void What();

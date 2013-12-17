@@ -37,7 +37,6 @@
 #define ROC_NUMDCOLS 26  // # double columns (= columns/2)
 #define ROC_NUMDCOLS 26  // # double columns (= columns/2)
 
-#define WARN_MISSING_CTESTBOARD true
 
 #define PIXMASK  0x80
 
@@ -73,7 +72,6 @@
 #define	CtrlReg     0xFD
 
 
-#define print_missing() if(WARN_MISSING_CTESTBOARD) fprintf(stderr, "WARNING: Missing implementation of '%s' defined in %s:%d \n" , __PRETTY_FUNCTION__, __FILE__, __LINE__);
 
 
 class CTestboard
@@ -351,83 +349,20 @@ public:
 	RPC_EXPORT void Ethernet_Send(string &message);
 	RPC_EXPORT uint32_t Ethernet_RecvPackets();
 
-    //TODO: Everything below needs to be implemented
-    #define PROBE_ADC_GATE 12
-    #define TRIGGER_OFF       0
-    #define TRIGGER_FIXED     1
-    #define TRIGGER_ROC       2
-    #define TRIGGER_MODULE1   4
-    #define TRIGGER_MODULE2   8
-    #define RES  0x0800
-    #define CAL  0x0400
-    #define TRG  0x0200
-    #define TOK  0x0100
-    #define STRETCH_AFTER_CAL  2  
 
+    RPC_EXPORT int8_t CalibratePixel(int16_t nTriggers, int16_t col, int16_t row, int16_t &nReadouts, int32_t &PHsum);
+	RPC_EXPORT int8_t CalibrateDacScan(int16_t nTriggers, int16_t col, int16_t row, int16_t dacReg1, int16_t dacRange1, vectorR<int16_t> &nReadouts, vectorR<int32_t> &PHsum);
+    RPC_EXPORT int8_t CalibrateDacDacScan(int16_t nTriggers, int16_t col, int16_t row, int16_t dacReg1, int16_t dacRange1, int16_t dacReg2, int16_t dacRange2, vectorR<int16_t> &nReadouts, vectorR<int32_t> &PHsum);
+    RPC_EXPORT int8_t CalibrateMap(int16_t nTriggers, vectorR<int16_t> &nReadouts, vectorR<int32_t> &totalPH);
+    RPC_EXPORT int8_t TrimChip(vector<int8_t> &trim);
 
-    bool GetVersion(char *s, uint32_t n){ print_missing(); return false;}
-
-    void SetEmptyReadoutLength(int32_t emptyReadoutLength){ print_missing(); return; }
-
-    void Single(unsigned char mask){ print_missing(); return; }
-
-	bool SingleWait(unsigned char mask, uint16_t timeout){print_missing(); return false;}
-
-    // -- enables the internal event generator
-    //    mask: same as tb_Single
-    void Intern(unsigned char mask){ Single(mask); }
-
-    // -- enables the external event input
-    //    mask: same as tb_Single
-    void Extern(unsigned char mask){ Single(mask);}
-
-    // -- gets the readout counter
-    unsigned char GetRoCnt(){ print_missing(); return 1; }  
-
-    bool SendRoCnt(){ print_missing(); return false;}
-    unsigned char RecvRoCnt(){ print_missing(); return 1; }
-
-    uint16_t GetRoCntEx(){ print_missing(); return 1; }
-    bool SendRoCntEx(){ print_missing(); return false; }
-	uint16_t RecvRoCntEx(){ print_missing(); return 1; }
-
-	void SetTriggerMode(uint16_t mode){ print_missing(); return;}
-    void DataCtrl(char channel, bool clear, bool trigger, bool cont){ print_missing(); return;}
-    void DataEnable(bool on){print_missing(); return ;}
-	uint16_t DataState(){ print_missing(); return 1;}
-	void DataTriggerLevel(char channel, int16_t level){ print_missing(); return;}
-	void DataBlockSize(uint16_t size){print_missing(); return ;}
-	bool DataRead(char channel, int16_t buffer[], uint16_t buffersize,
-		uint16_t &wordsread){ print_missing(); return false;}
-	bool DataReadRaw(char channel, int16_t buffer[], uint16_t buffersize,
-		uint16_t &wordsread){ print_missing(); return false; }
-	uint16_t GetModRoCnt(uint16_t index){ print_missing(); return 1;}
-	void GetModRoCntAll(uint16_t *counts){ print_missing(); return; }
-
-	uint32_t Daq_Init(uint32_t size){ print_missing(); return 1; }
-    void Daq_Enable(){ print_missing(); return; }
-    void Daq_Disable(){ print_missing(); return; }
-    bool Daq_Ready(){ print_missing(); return true; }
-	uint16_t Daq_GetPointer(){ print_missing(); return 1; }
-    void Daq_Done(){ print_missing(); return; }
-
-    void ProbeSelect(unsigned char port, unsigned char signal){ print_missing(); return;}
-	void SetTriggerMask(unsigned char mask){ print_missing(); return;}
-
-    void TBMEmulatorOn(){ print_missing(); return; }
-    void TBMEmulatorOff(){ print_missing(); return; }
-	void TbmWrite(int32_t hubAddr, int32_t addr, int32_t value){ print_missing(); return; }
-	void Tbm1Write(int32_t hubAddr, int32_t addr, int32_t value){ print_missing(); return; }
-	void Tbm2Write(int32_t hubAddr, int32_t addr, int32_t value){ print_missing(); return; }
-    void SetClock(unsigned char MHz){ print_missing(); return; }
-    void SetDelay(unsigned char signal, uint16_t ns){ print_missing(); return; }
-    void AdjustDelay(uint16_t k) { SetDelay(255, k); }
 
     // === module test functions ======================================
     
     // --- implemented funtions: ---
     void InitDAC();
     void Init_Reset();
+    void Init_PG();
     void prep_dig_test();
     void SetMHz(int MHz);
     void I2cAddr(unsigned char id){ roc_I2cAddr(id); }
@@ -443,7 +378,6 @@ public:
     int32_t MaskTest(int16_t nTriggers, int16_t res[]);
 	int32_t ChipEfficiency(int16_t nTriggers, int32_t trim[], double res[]); 
 	void DacDac(int32_t dac1, int32_t dacRange1, int32_t dac2, int32_t dacRange2, int32_t nTrig, int32_t result[]);
-	void AddressLevels(int32_t position, int32_t result[]){ print_missing(); return;}
     RPC_EXPORT int32_t CountReadouts(int32_t nTriggers);
 	RPC_EXPORT int32_t CountReadouts(int32_t nTriggers, int32_t chipId);
 	RPC_EXPORT int32_t CountReadouts(int32_t nTriggers, int32_t dacReg, int32_t dacValue);
@@ -455,80 +389,10 @@ public:
 	int32_t SCurveColumn(int32_t column, int32_t nTrig, int32_t dacReg, int32_t thr[], int32_t trims[], int32_t chipId[], int32_t res[]);
     RPC_EXPORT int32_t PH(int32_t col, int32_t row, int32_t trim, int16_t nTriggers);
     RPC_EXPORT bool test_pixel_address(int32_t col, int32_t row);
+    RPC_EXPORT int32_t ChipEfficiency_dtb(int16_t nTriggers, vectorR<uint8_t> &res);
     void SetNRocs(int32_t value);
     void SetHubID(int32_t value);
     // ----------------------------
-
-
-	bool GetPixel(int32_t x){ print_missing(); return false; }
-	int32_t FindLevel(){ print_missing(); return 1; }
-    unsigned char test_PUC(unsigned char col, unsigned char row, unsigned char trim){ print_missing(); return 1; }
-	void testColPixel(int32_t col, int32_t trimbit, unsigned char *res){ print_missing(); return; }
-	bool GetLastDac(unsigned char count, int32_t &ldac){ print_missing(); return false; }
-    bool ScanDac(unsigned char dac, unsigned char count,
-	unsigned char min, unsigned char max, int16_t *ldac){ print_missing(); return false; }
-
-	int32_t AoutLevel(int16_t position, int16_t nTriggers){ print_missing(); return 1; }
-	int32_t AoutLevelChip(int16_t position, int16_t nTriggers, int32_t trims[],  int32_t res[]){ print_missing(); return 1; }
-	int32_t AoutLevelPartOfChip(int16_t position, int16_t nTriggers, int32_t trims[], int32_t res[], bool pxlFlags[]){ print_missing(); return 1; }
-	void DoubleColumnADCData(int32_t column, int16_t data[], int32_t readoutStop[]){ print_missing(); return; }
-	void ADCRead(int16_t buffer[], uint16_t &wordsread, int16_t nTrig){ print_missing(); return; }
-	void PHDac(int32_t dac, int32_t dacRange, int32_t nTrig, int32_t position, int16_t result[]){ print_missing(); return; }
-	void TBMAddressLevels(int32_t result[]){ print_missing(); return; }
-	void TrimAboveNoise(int16_t nTrigs, int16_t thr, int16_t mode, int16_t result[]){ print_missing(); return; }
-
-	void ReadData(int32_t position, int32_t size, int32_t result[]){ print_missing(); return; }
-	void ReadFPGAData(int32_t size, int32_t result[]){ print_missing(); return; }
-
-	void SetEmptyReadoutLengthADC(int32_t emptyReadoutLengthADC){ print_missing(); return; }
-	void SetTbmChannel(int32_t tbmChannel){ print_missing(); return; }
-    void SetEnableAll(int value){ print_missing(); return; }
-	void SetDTL(int32_t value){ print_missing(); return; }
-    void SetAoutChipPosition(int32_t value){ print_missing(); return; }
-    void MemRead(uint32_t addr, uint16_t size,
-                 unsigned char * s){ print_missing(); return; }
-
-     // == PSI46 testboard methods ===========================================
-
-    unsigned char isClockPresent(){ print_missing(); return 1; }
-    void SetClockStretch(unsigned char src,
-		uint16_t delay, uint16_t width){ print_missing(); return; }
-
-    void ForceSignal(unsigned char pattern){ print_missing(); return; }
-
-    bool ShowUSB() { print_missing(); return false; }; 
-
-    bool Open(char name[], bool init = true){ print_missing(); return true;}
-
-    // Compat. fix for test written for ATB:
-    unsigned short GetReg41(){return 1;}
-
-    // =======================================================================
-
-	int32_t demo(int16_t x){ print_missing(); return 1; }
-
-	void GetColPulseHeight(unsigned char col, unsigned char count,
-				int16_t data[]){ print_missing(); return; }
-
-	void Scan1D(unsigned char vx,
-			unsigned char xmin, unsigned char xmax,	char xstep,
-			unsigned char rep, uint32_t usDelay, unsigned char res[]){ print_missing(); return; }
-
-	void BumpTestColPixel(unsigned char col, unsigned char res[]);
-	void BumpTestColRef(unsigned char col, unsigned char res[]);
-	void DacDac(int16_t dac1, int16_t dacRange1, int16_t dac2, int16_t dacRange2,
-		int16_t nTrig, int16_t res[], int16_t rocpos);
-
-	// ===================================================================
-
-	void ScanAdac(uint16_t chip, unsigned char dac,
-      unsigned char min, unsigned char max, char step,
-      unsigned char rep, uint32_t usDelay, unsigned char res[]){ print_missing(); return; }
-	void CdVc(uint16_t chip, unsigned char wbcmin, unsigned char wbcmax, unsigned char vcalstep,
-          unsigned char cdinit, uint16_t &lres, uint16_t res[]){ print_missing(); return; }
-
-	// === xray test =====================================================
-	char CountAllReadouts(int32_t nTrig, int32_t counts[], int32_t amplitudes[]){ print_missing(); return 1; }
 
 
 

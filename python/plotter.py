@@ -12,6 +12,7 @@ class Plotter(object):
         n_rows = len(grid)
         n_cols = len(grid[0])
         th2 = ROOT.TH2F(name, name, n_cols, 0, n_cols , n_rows, 0, n_rows);
+        th2.SetDirectory(0)
         for col in range(n_cols):
             for row in range(n_rows):
                 th2.SetBinContent(col + 1, row + 1, grid[row][col])

@@ -1,45 +1,48 @@
 from libcpp cimport bool
-from libc.stdint cimport uint8_t, int16_t, int32_t
+from libcpp.vector cimport vector
+from libc.stdint cimport uint8_t, int8_t, int16_t, int32_t
 from libc.stdlib cimport malloc, free
-
-cdef extern from "string" namespace "std":
-    cdef cppclass string:
-        char* c_str()
+from libcpp.string cimport string
 
 
 cdef extern from "pixel_dtb.h":
     cdef cppclass CTestboard:
         CTestboard()
-        bool FindDTB(string &usbId)
-        bool Open(string &usbId)
-        void Close()
-        void Welcome()
-        void Flush()
-        void Init()
-        void Pon()
-        void Poff()
-        void HVon()
-        void HVoff()
-        void ResetOn()
-        void ResetOff()
-        void SetVA(double)
-        void SetVD(double)
-        void SetIA(double)
-        void SetID(double)
-        void Init_Reset()
-        void prep_dig_test()
-        void DisableAllPixels()
-        void SetChip(int)
-        void SetMHz(int)
-        void InitDAC()
-        void roc_I2cAddr(uint8_t)
-        void Daq_Select_Deser160(uint8_t shift)
-        void EnableColumn(int)
-        void ArmPixel(int, int)
-        void DisarmPixel(int, int)
-        int32_t MaskTest(int16_t, int16_t*)
-        int32_t ChipEfficiency(int16_t, int32_t*, double*)
+        bool FindDTB(string &usbId) except +
+        bool Open(string &usbId) except +
+        void Close() except +
+        void Welcome() except +
+        void Flush() except +
+        void Init() except +
+        void Pon() except +
+        void Poff() except +
+        void HVon() except +
+        void HVoff() except +
+        void ResetOn() except +
+        void ResetOff() except +
+        void SetVA(double) except +
+        void SetVD(double) except +
+        void SetIA(double) except +
+        void SetID(double) except +
+        void Init_Reset() except +
+        void prep_dig_test() except +
+        void DisableAllPixels() except +
+        void SetChip(int) except +
+        void SetMHz(int) except +
+        void Init_PG() except +
+        void roc_I2cAddr(uint8_t) except +
+        void roc_SetDAC(uint8_t, uint8_t) except +
+        void roc_Chip_Mask() except +
+        void Daq_Select_Deser160(uint8_t shift) except +
+        void EnableColumn(int) except +
+        void ArmPixel(int, int) except +
+        void DisarmPixel(int, int) except +
+        int8_t CalibrateDacDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
+        int8_t CalibrateMap(int16_t, vector[int16_t] &, vector[int32_t] &) 
+        int8_t TrimChip(vector[int8_t] &) 
+        int32_t MaskTest(int16_t, int16_t*) 
         void DacDac(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *)
+        int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
 
 
 cdef class PyDTB: 
@@ -51,12 +54,10 @@ cdef class PyDTB:
         del self.thisptr
     
     def find_dtb(self,usbId):
-        return self.thisptr.FindDTB(usbId)
+        return  self.thisptr.FindDTB(usbId)
         
     def open(self,usbId):
         self.thisptr.Open(usbId)
-        self.thisptr.Flush()
-        self.thisptr.Welcome()
         self.thisptr.Flush()
         self.thisptr.Init()
         self.thisptr.Flush()
@@ -71,18 +72,25 @@ cdef class PyDTB:
     def i2_c_addr(self,identity):
         self.thisptr.roc_I2cAddr(identity)
     
+    def roc_set_DAC(self, reg, value):
+        self.thisptr.roc_SetDAC(reg, value)
+    
+    def roc_chip_mask(self):
+        self.thisptr.roc_Chip_Mask()
+    
     def daq_select_deser160(self, shift):
         self.thisptr.Daq_Select_Deser160(shift)
     
     def prep_dig_test(self):
         self.thisptr.prep_dig_test()
-        self.thisptr.InitDAC()
 
-    def set_chip(self, value):
-        self.thisptr.SetChip(value)
-    
     def set_mhz(self, value):
         self.thisptr.SetMHz(value)
+        self.thisptr.Flush()
+    
+    def init_pg(self):
+        self.thisptr.Init_PG()
+        self.thisptr.Flush()
     
     def pon(self):
         self.thisptr.Pon()
@@ -132,33 +140,7 @@ cdef class PyDTB:
         self.thisptr.DisarmPixel(col, row)
         self.thisptr.Flush()
         
-    def mask_test(self,n_triggers, result):
-        cdef int16_t *data
-        n = len(result) 
-        data = <int16_t *>malloc(n*sizeof(int))
-        return_value = self.thisptr.MaskTest(n_triggers, data)
-        for i in range(n):
-            result[i] = data[i] 
-        free(data)
-        return return_value
-    
-    def calibrate(self,n_triggers, trim, result):
-        cdef double *data
-        cdef int32_t *trim_bits
-        n = len(result) 
-        n_trim = len(trim) 
-        data = <double *>malloc(n*sizeof(double))
-        trim_bits = <int32_t *>malloc(n_trim*sizeof(int))
-        for i in xrange(n_trim):
-            trim_bits[i] = trim[i]
-        return_value = self.thisptr.ChipEfficiency(n_triggers, trim_bits, data)
-        for i in xrange(n):
-            result[i] = data[i] 
-        free(data)
-        free(trim_bits)
-        return return_value
-    
-    def dac_dac(self, dac1, dacRange1, dac2, dacRange2, n_triggers, result):
+    def dac_dac_old(self, dac1, dacRange1, dac2, dacRange2, n_triggers, result):
         cdef int32_t *data
         n = len(result) 
         data = <int32_t *>malloc(n*sizeof(int))
@@ -166,3 +148,44 @@ cdef class PyDTB:
         for i in xrange(n):
             result[i] = data[i] 
         free(data)
+    
+    def chip_threshold(self, start, step, thr_level, n_triggers, dac_reg, xtalk, cals, trim, result):
+        cdef int32_t *data
+        cdef int32_t *trim_bits
+        n = len(result) 
+        n_trim = len(trim) 
+        data = <int32_t *>malloc(n*sizeof(int))
+        trim_bits = <int32_t *>malloc(n_trim*sizeof(int))
+        for i in xrange(n_trim):
+            trim_bits[i] = trim[i]
+        return_value = self.thisptr.ChipThreshold(start, step, thr_level, n_triggers, dac_reg, xtalk, cals, trim_bits, data)
+        for i in xrange(n):
+            result[i] = data[i] 
+        free(data)
+        free(trim_bits)
+        return return_value
+    
+    def trim(self, trim):
+        cdef vector[int8_t] trim_bits
+        for i in xrange(len(trim_bits)):
+            trim_bits[i] = trim[i]
+        return self.thisptr.TrimChip(trim_bits)
+
+    def calibrate(self,n_triggers, trim, result):
+        cdef vector[int16_t] n_hits
+        cdef vector[int32_t] ph_sum
+        self.trim(trim)
+        return_value = self.thisptr.CalibrateMap(n_triggers, n_hits, ph_sum)
+        for i in xrange(len(n_hits)):
+            result.append(ph_sum[i]) 
+        return return_value
+
+    def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, result):
+        cdef vector[int16_t] n_hits
+        cdef vector[int32_t] ph_sum
+        trim = [15] * 4160
+        self.trim(trim)
+        return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
+        for i in xrange(len(n_hits)):
+            result.append(ph_sum[i]) 
+        return return_value

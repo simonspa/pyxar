@@ -13,10 +13,13 @@ class DacDac(Test.Test):
             dac_range2 = roc.dac(dac2).range
             n_results = dac_range1*dac_range2
             for pixel in roc.active_pixels():
-                result = [0] * n_results
-                self.tb.arm(pixel)
-                self.tb.dac_dac(dac1, dac_range1, dac2, dac_range2, n_triggers, result)
-                self.tb.disarm(pixel)
+                result = []
+                self.tb.dac_dac(n_triggers, pixel.col, pixel.row, dac1, dac_range1, dac2, dac_range2, result)
+                #result = [0] * n_results
+                #self.tb.arm(pixel)
+                #self.tb.dac_dac_old(dac1, dac_range1, dac2, dac_range2, n_triggers, result)
+                #self.tb.disarm(pixel)
+                print result
                 self._results = list_to_grid(dac_range1, dac_range2, result)
         return 
     

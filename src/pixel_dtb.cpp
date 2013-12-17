@@ -430,6 +430,16 @@ void CTestboard::Init_Reset()
     Flush();
 }
 
+void CTestboard::Init_PG()
+{
+    Pg_SetCmd(0, PG_RESR + 25);
+    Pg_SetCmd(1, PG_CAL  + 101 + tct_wbc);
+    Pg_SetCmd(2, PG_TRG  + 16);
+    Pg_SetCmd(3, PG_TOK);
+    uDelay(100);
+    Flush();
+}
+
 int32_t CTestboard::ChipThreshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[])
 {
   int startValue;
