@@ -76,19 +76,16 @@ class Testboard(dtb.PyDTB):
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
         for roc in self.dut.rocs():
-            dac_range1 = roc.dac(dac1).range
-            dac_range2 = roc.dac(dac2).range
+            #TODO TB function has too long vector by one unit
+            dac_range1 = roc.dac(dac1).range-1
+            dac_range2 = roc.dac(dac2).range-1
             n_results = dac_range1*dac_range2
             for pixel in roc.active_pixels():
                 n_hits = []
                 ph_sum = []
                 self.logger.debug('DacDac pix(%s,%s), nTrig: %s, dac1: %s, 0, %s, dac2: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac1, dac_range1, dac2, dac_range2) )
-                #TODO TB function has too long vector
-                #self.dac_dac(n_triggers, pixel.col, pixel.row, dac1, dac_range1, dac2, dac_range2, n_hits, ph_sum)
-                n_hits = [0] * n_results
-                self.arm(pixel)
-                self.dac_dac_old(dac1, dac_range1, dac2, dac_range2, n_triggers, n_hits)
-                self.disarm(pixel)
+                #TODO TB function has too long vector by one unit
+                self.dac_dac(n_triggers, pixel.col, pixel.row, dac1, dac_range1, dac2, dac_range2, n_hits, ph_sum)
                 #TODO adapt DUT datastructure
                 self.init_roc(roc)
                 return list_to_grid(dac_range1, dac_range2, n_hits)
