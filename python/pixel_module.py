@@ -145,6 +145,10 @@ class Roc(object):
             return self._dac_dict[self._dac_name_to_number[dac_id]]
         elif isinstance(dac_id,int):
             return self._dac_dict[dac_id]
+    
+    #iterator over dacs
+    def dacs(self):
+        return self._dac_dict.values()
 
     #iterator over all pixels
     def pixels(self):
@@ -208,7 +212,7 @@ class TBM(object):
     def __str__(self):
         return "TBM %s"%self.number
 
-class Module(object):
+class DUT(object):
     def __init__(self, config):
         """Initialize Module"""
         self._n_rocs = int(config.get('Module','rocs'))
