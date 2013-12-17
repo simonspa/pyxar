@@ -147,6 +147,10 @@ class Roc(object):
             self.trimParameterFile.close()
 
     @property
+    def trim(self):
+        return [pix.trim for pix in self.pixels]
+
+    @property
     def n_rows(self):
         """Get number of rows."""
         return self._n_rows
