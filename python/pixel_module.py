@@ -1,4 +1,5 @@
 import copy
+import logging 
 
 class Pixel(object):
 
@@ -97,28 +98,53 @@ class DAC(object):
 class Roc(object):
 
     def __init__(self, config,number=0):
+        self.logger = logging.getLogger(__name__)
         """Initialize ROC (readout chip)."""
         self._n_rows = int(config.get('ROC','rows'))
         self._n_cols = int(config.get('ROC','cols'))
         self._n_pixels = self._n_rows*self._n_cols
         self.number = number
 
+        try:
+            self.dacParameterFile = open(config.get('Module','parameterFiles')+'/dacParameters_C%s.dat'%self.number)
+        except IOError:
+            self.dacParameterFile = None
+            self.logger.warning('could not open dacParameter file for ROC %i'%self.number)
+        try:
+            self.trimParameterFile = open(config.get('Module','parameterFiles')+'/trimParameters_C%s.dat'%self.number)
+        except IOError:
+            self.trimParameterFile = None
+            self.logger.warning('could not open trimParameter file for ROC %i'%self.number)
+
         #define pixel array
         self._pixel_array = []
-        # fill pixel array
+        # fill pixel array, including trim info
         for col in range(self._n_cols):
             self._pixel_array.append(copy.copy([]))
             for row in range(self._n_rows):
-                self._pixel_array[col].append(Pixel(col, row))
+                if self.trimParameterFile:
+                    trim, _ , Tcol, Trow = self.trimParameterFile.readline().split()
+                    assert int(Tcol) == col and int(Trow) == row
+                    self._pixel_array[col].append(Pixel(col, row, trim))
+                else:
+                    self._pixel_array[col].append(Pixel(col, row))
 
         #define dac list
-        self._dac_list = []
-        self._dac_number_to_name = eval(config.get('ROC','dac_dict'))
-        self._dac_name_to_number = {v:k for k, v in self._dac_number_to_name.items()}
         self._dac_dict = {}
-        dac_bits = eval(config.get('ROC','dac_bits'))
-        for dac_number in self._dac_number_to_name:
-            self._dac_dict[dac_number] = (DAC(dac_number,self._dac_number_to_name[dac_number],dac_bits[dac_number]))
+        self._dac_number_to_name = {}
+
+        for line in self.dacParameterFile.readlines():
+            num, dac_name, val = line.split()
+            dac_number = int(num)
+            self._dac_number_to_name[dac_number] = dac_name
+            self._dac_name_to_number = {v:k for k, v in self._dac_number_to_name.items()}
+            dac_bits = eval(config.get('ROC','dac_bits'))
+            self._dac_dict[dac_number] = (DAC(dac_number,dac_name,dac_bits[dac_number],int(val)))
+
+        if self.dacParameterFile:
+            self.dacParameterFile.close()
+        if self.trimParameterFile:
+            self.trimParameterFile.close()
 
     @property
     def n_rows(self):
@@ -259,29 +285,31 @@ if __name__=='__main__':
     from BetterConfigParser import BetterConfigParser
     config = BetterConfigParser()
     config.read('../data/module')
-    
+    logging.basicConfig(level=logging.INFO) 
     #make a module from config
-    m = Module(config)
+    m = DUT(config)
 
     #access a single pixel
-    print m.roc(5).pixel(12,13)
+    print m.roc(0).pixel(12,13)
     #or
-    print m.pixel(5,12,13)
+    print m.pixel(0,12,13)
+    print m.pixel(0,12,13).trim
 
+    print m.roc(0).dac('Vana')
     #iterate
     for roc in m.rocs():
         roc.dac('Vana').value = 155
         print roc, roc.dac('Vana')
 
     #set individual DAC, by name or number
-    m.roc(1).dac('Vana').value = 0
-    print m.roc(1).dac('Vana')
-    m.roc(1).dac(2).value = 0
-    print m.roc(1).dac('Vana')
+    m.roc(0).dac('Vana').value = 0
+    print m.roc(0).dac('Vana')
+    m.roc(0).dac(2).value = 0
+    print m.roc(0).dac('Vana')
 
     #mask a single pixel
-    m.pixel(2,45,6).mask = True
-    print m.roc(2).mask
+    m.pixel(0,45,6).mask = True
+    print m.roc(0).mask
     #unmask all pixels of roc 2
-    m.roc(2).mask = False
-    print m.roc(2).mask
+    m.roc(0).mask = False
+    print m.roc(0).mask
