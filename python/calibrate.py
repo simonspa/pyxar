@@ -1,13 +1,9 @@
 import Test
-from helpers import list_to_grid
 
 class Calibrate(Test.Test):
 
     def run(self, config):
-        for roc in self.dut.rocs():
-            result = []
-            trim = [15] * roc.n_pixels 
-            self.tb.calibrate(10,trim,result)
-            self._results = list_to_grid(roc.n_rows, roc.n_cols, result)
+        n_triggers = 10
+        self._results = self.tb.get_calibrate(n_triggers)
         return
     

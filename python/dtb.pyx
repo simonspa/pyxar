@@ -1,6 +1,6 @@
 from libcpp cimport bool
 from libcpp.vector cimport vector
-from libc.stdint cimport uint8_t, int8_t, int16_t, int32_t
+from libc.stdint cimport uint8_t, int8_t, uint16_t, int16_t, int32_t
 from libc.stdlib cimport malloc, free
 from libcpp.string cimport string
 
@@ -20,10 +20,15 @@ cdef extern from "pixel_dtb.h":
         void HVoff() except +
         void ResetOn() except +
         void ResetOff() except +
+        void mDelay(uint16_t) except +
         void SetVA(double) except +
         void SetVD(double) except +
         void SetIA(double) except +
         void SetID(double) except +
+        double GetVA() except +
+        double GetVD() except +
+        double GetIA() except +
+        double GetID() except +
         void Init_Reset() except +
         void prep_dig_test() except +
         void DisableAllPixels() except +
@@ -31,6 +36,7 @@ cdef extern from "pixel_dtb.h":
         void SetMHz(int) except +
         void Init_PG() except +
         void roc_I2cAddr(uint8_t) except +
+        void SetRocAddress(uint8_t) except +
         void roc_SetDAC(uint8_t, uint8_t) except +
         void roc_Chip_Mask() except +
         void Daq_Select_Deser160(uint8_t shift) except +
@@ -61,6 +67,8 @@ cdef class PyDTB:
         self.thisptr.Flush()
         self.thisptr.Init()
         self.thisptr.Flush()
+        self.thisptr.Welcome()
+        self.thisptr.Flush()
         return True
     
     def cleanup(self):
@@ -69,11 +77,18 @@ cdef class PyDTB:
     def flush(self):
         self.thisptr.Flush()
     
+    def m_delay(self, value):
+        self.thisptr.mDelay(value)
+    
     def i2_c_addr(self,identity):
         self.thisptr.roc_I2cAddr(identity)
     
+    def set_roc_addr(self, identity):
+        self.thisptr.SetRocAddress(identity)
+    
     def roc_set_DAC(self, reg, value):
         self.thisptr.roc_SetDAC(reg, value)
+        self.thisptr.Flush()
     
     def roc_chip_mask(self):
         self.thisptr.roc_Chip_Mask()
@@ -110,16 +125,32 @@ cdef class PyDTB:
     
     def set_id(self, value):
         self.thisptr.SetID(value)
+        self.thisptr.Flush()
 
     def set_vd(self, value):
         self.thisptr.SetVD(value)
+        self.thisptr.Flush()
     
     def set_ia(self, value):
         self.thisptr.SetIA(value)
+        self.thisptr.Flush()
 
     def set_va(self, value):
         self.thisptr.SetVA(value)
+        self.thisptr.Flush()
 
+    def get_ia(self):
+        return self.thisptr.GetIA()
+    
+    def get_id(self):
+        return self.thisptr.GetID()
+    
+    def get_va(self):
+        return self.thisptr.GetVA()
+    
+    def get_vd(self):
+        return self.thisptr.GetVD()
+    
     def reset_on(self):
         self.thisptr.ResetOn()
         self.thisptr.Flush()
@@ -171,21 +202,23 @@ cdef class PyDTB:
             trim_bits[i] = trim[i]
         return self.thisptr.TrimChip(trim_bits)
 
-    def calibrate(self,n_triggers, trim, result):
+    def calibrate(self,n_triggers, num_hits, ph):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
-        self.trim(trim)
+        #self.trim(trim)
         return_value = self.thisptr.CalibrateMap(n_triggers, n_hits, ph_sum)
         for i in xrange(len(n_hits)):
-            result.append(ph_sum[i]) 
+            num_hits.append(n_hits[i]) 
+            ph.append(ph_sum[i]) 
         return return_value
 
-    def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, result):
+    def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
-        trim = [15] * 4160
-        self.trim(trim)
+        #trim = [15] * 4160
+        #self.trim(trim)
         return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
         for i in xrange(len(n_hits)):
-            result.append(ph_sum[i]) 
+            num_hits.append(n_hits[i]) 
+            ph.append(ph_sum[i]) 
         return return_value
