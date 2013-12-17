@@ -214,17 +214,6 @@ class Roc(object):
             yield self._pixel_array[col][row]
             col += 1
 
-    #return true if any pixel is masked
-    @property
-    def mask(self):
-        return any([pix.mask for pix in self.pixels()])
-
-    #set all pixel masks of chip
-    @mask.setter
-    def mask(self,value):
-        for pix in self.pixels():
-            pix.mask = value
-
     def __repr__(self):
         return "ROC %s"%self.number
 
@@ -244,6 +233,7 @@ class TBM(object):
 
 class DUT(object):
     def __init__(self, config):
+        self.logger = logging.getLogger(__name__)
         """Initialize Module"""
         self._n_rocs = int(config.get('Module','rocs'))
         self._n_tbms = int(config.get('Module','tbms'))
@@ -256,6 +246,30 @@ class DUT(object):
             self._roc_list.append(Roc(config,roc))
         for tbm in range(self._n_tbms):
             self._tbm_list.append(TBM(config,tbm))
+
+        try:
+            self.MaskFile = open(config.get('Module','parameterFiles')+'/MaskFile.dat')
+            self.logger.info('useing pixel Mask File')
+        except IOError:
+            self.MaskFile = None
+
+        if self.MaskFile:
+            for line in self.MaskFile.readlines():
+                if not line.startswith('#'):
+                    line = line.split()
+                    if line[0] == 'pix':
+                        self.pixel(int(line[1]),int(line[2]),int(line[3])).mask = True
+                    if line[0] == 'col':
+                        for pix in self.roc(int(line[1])).col(int(line[2])):
+                            pix.mask = True
+                    if line[0] == 'row':
+                        for pix in self.roc(int(line[1])).row(int(line[2])):
+                            pix.mask = True
+                    if line[0] == 'roc':
+                        for pix in self.roc(int(line[1])).pixels():
+                            pix.mask = True
+
+            self.MaskFile.close()
 
     @property
     def n_rocs(self):
@@ -311,9 +325,11 @@ if __name__=='__main__':
     m.roc(0).dac(2).value = 0
     print m.roc(0).dac('Vana')
 
+    print m.pixel(0,2,1).mask
+
     #mask a single pixel
-    m.pixel(0,45,6).mask = True
-    print m.roc(0).mask
+    #m.pixel(0,45,6).mask = True
+    #print m.roc(0).mask
     #unmask all pixels of roc 2
-    m.roc(0).mask = False
-    print m.roc(0).mask
+    #m.roc(0).mask = False
+    #print m.roc(0).mask
