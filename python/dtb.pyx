@@ -29,15 +29,12 @@ cdef extern from "pixel_dtb.h":
         double GetVD() except +
         double GetIA() except +
         double GetID() except +
-        void Init_Reset() except +
-        void prep_dig_test() except +
-        void DisableAllPixels() except +
-        void SetChip(int) except +
         void SetMHz(int) except +
         void Init_PG() except +
         void roc_I2cAddr(uint8_t) except +
         void SetRocAddress(uint8_t) except +
         void roc_SetDAC(uint8_t, uint8_t) except +
+        void roc_ClrCal() except +
         void roc_Chip_Mask() except +
         void Daq_Select_Deser160(uint8_t shift) except +
         void EnableColumn(int) except +
@@ -47,7 +44,6 @@ cdef extern from "pixel_dtb.h":
         int8_t CalibrateMap(int16_t, vector[int16_t] &, vector[int32_t] &) 
         int8_t TrimChip(vector[int8_t] &) 
         int32_t MaskTest(int16_t, int16_t*) 
-        void DacDac(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *)
         int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
 
 
@@ -88,17 +84,19 @@ cdef class PyDTB:
     
     def roc_set_DAC(self, reg, value):
         self.thisptr.roc_SetDAC(reg, value)
+
+    def roc_clr_cal(self):
+        self.thisptr.roc_ClrCal()
         self.thisptr.Flush()
     
     def roc_chip_mask(self):
         self.thisptr.roc_Chip_Mask()
+        self.thisptr.Flush()
     
     def daq_select_deser160(self, shift):
         self.thisptr.Daq_Select_Deser160(shift)
+        self.thisptr.Flush()
     
-    def prep_dig_test(self):
-        self.thisptr.prep_dig_test()
-
     def set_mhz(self, value):
         self.thisptr.SetMHz(value)
         self.thisptr.Flush()
@@ -140,10 +138,10 @@ cdef class PyDTB:
         self.thisptr.Flush()
 
     def get_ia(self):
-        return self.thisptr.GetIA()
+        return self.thisptr.GetIA()*1000.
     
     def get_id(self):
-        return self.thisptr.GetID()
+        return self.thisptr.GetID()*1000.
     
     def get_va(self):
         return self.thisptr.GetVA()
@@ -159,9 +157,6 @@ cdef class PyDTB:
         self.thisptr.ResetOff()
         self.thisptr.Flush()
     
-    def init_roc(self):
-        self.thisptr.Init_Reset()
-    
     def arm_pixel(self, col, row):
         self.thisptr.EnableColumn(col)
         self.thisptr.ArmPixel(col, row)
@@ -171,15 +166,6 @@ cdef class PyDTB:
         self.thisptr.DisarmPixel(col, row)
         self.thisptr.Flush()
         
-    def dac_dac_old(self, dac1, dacRange1, dac2, dacRange2, n_triggers, result):
-        cdef int32_t *data
-        n = len(result) 
-        data = <int32_t *>malloc(n*sizeof(int))
-        self.thisptr.DacDac(dac1, dacRange1, dac2, dacRange2, n_triggers, data)
-        for i in xrange(n):
-            result[i] = data[i] 
-        free(data)
-    
     def chip_threshold(self, start, step, thr_level, n_triggers, dac_reg, xtalk, cals, trim, result):
         cdef int32_t *data
         cdef int32_t *trim_bits
@@ -196,7 +182,7 @@ cdef class PyDTB:
         free(trim_bits)
         return return_value
     
-    def trim(self, trim):
+    def trim_chip(self, trim):
         cdef vector[int8_t] trim_bits
         for i in xrange(len(trim_bits)):
             trim_bits[i] = trim[i]

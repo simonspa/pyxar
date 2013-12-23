@@ -2,8 +2,8 @@ import Test
 
 class Calibrate(Test.Test):
 
+    def prepare(self, config):
+        self.n_triggers = int(config.get('Calibrate','n_triggers'))
+
     def run(self, config):
-        n_triggers = 10
-        self._results = self.tb.get_calibrate(n_triggers)
-        return
-    
+        self.tb.get_calibrate(self.n_triggers)

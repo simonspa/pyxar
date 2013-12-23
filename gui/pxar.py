@@ -20,9 +20,10 @@ class PxarGui( ROOT.TGMainFrame ):
 
        self.AddFrame( self.ButtonsFrame, ROOT.TGLayoutHints() )
 
-       self.SetWindowName( 'pXar' )
+       self.SetWindowName( 'pyXar' )
        self.MapSubwindows()
        self.Resize( self.GetDefaultSize() )
+       #self.SetWMPosition(1000,1000)
        self.MapWindow()
        self.histos = [] 
        self.pos = 0
@@ -31,16 +32,20 @@ class PxarGui( ROOT.TGMainFrame ):
        self.Cleanup()
 
     def update_window(self):
+        '''Just draw what is in the self._histos[self.pos]'''
         if not self.histos:
             return
         histo_type = type(self.histos[self.pos]) 
         if histo_type == ROOT.TH2F:
             self.histos[self.pos].Draw('COLZ')
+        elif histo_type == ROOT.THStack:
+            self.histos[self.pos].Draw('NOSTACK')
         else:
             self.histos[self.pos].Draw()
         ROOT.gPad.Update()
     
     def draw_previous(self):
+        '''Foward one position'''
         self.pos -= 1
         if self.pos < 0:
             self.pos = 0
@@ -49,6 +54,7 @@ class PxarGui( ROOT.TGMainFrame ):
             self.update_window()
 
     def draw_next(self):
+        '''Foward one position'''
         self.pos += 1
         if self.pos >= len(self.histos):
             self.pos = len(self.histos)-1
@@ -57,8 +63,6 @@ class PxarGui( ROOT.TGMainFrame ):
             self.update_window()
     
     def update(self):
-        self.pos += 1
-        if self.pos >= len(self.histos):
-            self.pos = len(self.histos)-1
+        '''Always go to last position'''
+        self.pos = len(self.histos)-1
         self.update_window()
-    

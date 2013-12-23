@@ -1,5 +1,7 @@
 import copy
 import logging 
+import numpy
+from helpers import list_to_matrix
 
 class Pixel(object):
 
@@ -9,6 +11,7 @@ class Pixel(object):
         self.trim = trim
         self.mask = mask
         self.active = False
+        self._data = None
 
     @property
     def col(self):
@@ -20,7 +23,7 @@ class Pixel(object):
 
     @property
     def trim(self):
-        return self._trim
+        return copy.copy(self._trim)
 
     @trim.setter
     def trim(self,value):
@@ -37,6 +40,14 @@ class Pixel(object):
             assert trim_value < 16
             self._trim = trim_value
         return self._trim
+    
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, set_data):
+        self._data = set_data
 
     @property
     def mask(self):
@@ -104,6 +115,7 @@ class Roc(object):
         self._n_cols = int(config.get('ROC','cols'))
         self._n_pixels = self._n_rows*self._n_cols
         self.number = number
+        self._data = None
 
         try:
             self.dacParameterFile = open(config.get('Module','parameterFiles')+'/dacParameters_C%s.dat'%self.number)
@@ -147,9 +159,40 @@ class Roc(object):
             self.trimParameterFile.close()
 
     @property
+    def trim_for_tb(self):
+        '''Trim bits are just a flat list in interface'''
+        #TODO think of a better way in the lower level?
+        trim_bits_for_tb = [0] * (self.n_cols*self._n_rows)
+        for pix in self.pixels():
+            trim_bits_for_tb[pix.col * self.n_rows + pix.row] = pix.trim
+        return trim_bits_for_tb
+    
+    @property
     def trim(self):
-        return [pix.trim for pix in self.pixels]
+        trim_bits = numpy.empty([self.n_cols,self.n_rows],dtype=int)
+        trim_bits.fill(15)
+        for pix in self.pixels():
+            trim_bits[pix.col][pix.row] = copy.copy(pix.trim)
+        return trim_bits
+        
+    @trim.setter
+    def trim(self, trim_bits):
+        for pix in self.pixels():
+            pix.trim = trim_bits[pix.col][pix.row]
+            if (pix.col == 0 and pix.row == 2):
+                print '%s %s' %(pix, pix.trim)
 
+    def save_trim(self, file_name):
+        return numpy.savetxt(file_name, self.trim)
+    
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, set_data):
+        self._data = set_data
+    
     @property
     def n_rows(self):
         """Get number of rows."""
@@ -238,6 +281,7 @@ class DUT(object):
         self._n_rocs = int(config.get('Module','rocs'))
         self._n_tbms = int(config.get('Module','tbms'))
 
+        self.data = None
         #define collections
         self._roc_list = []
         self._tbm_list = []
@@ -249,7 +293,7 @@ class DUT(object):
 
         try:
             self.MaskFile = open(config.get('Module','parameterFiles')+'/MaskFile.dat')
-            self.logger.info('useing pixel Mask File')
+            self.logger.info('using pixel Mask File')
         except IOError:
             self.MaskFile = None
 
@@ -270,6 +314,26 @@ class DUT(object):
                             pix.mask = True
 
             self.MaskFile.close()
+    
+    @property
+    def roc_data(self):
+        return numpy.array([roc.data for roc in self.rocs()])
+
+    @property
+    def pixel_data(self):
+        pixel_data = numpy.array([])
+        for roc in self.rocs():
+            pixel_data.extend([pixel.data for pixel in roc.pixels()])
+        return pixel_data
+
+    @property
+    def trim(self):
+        return numpy.copy(numpy.array([roc.trim for roc in self.rocs()]))
+
+    @trim.setter
+    def trim(self, trim_bits):
+        for roc in self.rocs():
+            roc.trim = trim_bits[roc.number]
 
     @property
     def n_rocs(self):
