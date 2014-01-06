@@ -124,6 +124,18 @@ class Trim(Test.Test):
         if self.vtrim > 0:
             self.logger.info('Using min Vtrim %s from config' %self.vtrim)
             return
-        #TODO implement pixel threshold
-        dut_Vcal_map = self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse)
-        self.logger.info('Determined Vtrim %s' %self.vtrim)
+        else:
+
+            #TODO implement pixel threshold
+            #get Vcal Map
+            dut_Vcal_map = self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse)
+            self.logger.info('Determined Vtrim %s' %self.vtrim)
+            #determine limit 5 standard deviations away from mean or 254 
+            vcalMaxLimit = min(254,numpy.mean(dut_Vcal_map)+5*numpy.std(dut_Vcal_map))
+            #get maximum Vcal pixel
+            roc,col,row =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(dut_Vcal_map,vcalMaxLimit)),numpy.shape(dut_Vcal_map))
+            self.logger.info('Maximum Vcal of %s in Pixel %s, %s in ROC %s'%(dut_Vcal_map[roc,col,row],col,row,roc))
+            
+            #TODO determine necessary Vtrim for this pixel
+            self.vtrim =200
+
