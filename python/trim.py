@@ -135,7 +135,17 @@ class Trim(Test.Test):
             #get maximum Vcal pixel
             roc,col,row =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(dut_Vcal_map,vcalMaxLimit)),numpy.shape(dut_Vcal_map))
             self.logger.info('Maximum Vcal of %s in Pixel %s, %s in ROC %s'%(dut_Vcal_map[roc,col,row],col,row,roc))
-            
+            vtrim = 0
+            self.tb.arm_pixel(col,row)
+            while vtrim<255:
+                self.tb.set_dac('Vtrim', vtrim)
+                thr = self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0)
+                self.logger.debug('threshold = %s'%thr)
+                if  thr < self.vcal:
+                    break
+                vtrim+=1
+            self.tb.disarm_pixel(col,row)
             #TODO determine necessary Vtrim for this pixel
-            self.vtrim =200
+            self.logger.info('Found Vtrim %s'%vtrim)
+            self.vtrim = vtrim
 

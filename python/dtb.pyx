@@ -45,6 +45,7 @@ cdef extern from "pixel_dtb.h":
         int8_t TrimChip(vector[int8_t] &) 
         int32_t MaskTest(int16_t, int16_t*) 
         int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
+        int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
 
 
 cdef class PyDTB: 
@@ -205,3 +206,6 @@ cdef class PyDTB:
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
         return return_value
+
+    def pixel_threshold(self, n_triggers, col, row, start, step, thrLevel, dacReg, xtalk, cals, trim):
+        return self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)
