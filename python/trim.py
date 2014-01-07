@@ -41,19 +41,26 @@ class Trim(Test.Test):
             self.trim_step(step)
 
     def cleanup(self, config):
+        color_dict = [1,13,15,17,2]
         #TODO decide what is important to the user
         plot = Plotter(self.config, self)
         for roc in self.dut.rocs():
             min_axis = numpy.amin(self.vcal_dists)
             max_axis = numpy.amax(self.vcal_dists)
-            vcal_stack = ROOT.THStack("Trim %s" %roc.number,"Vcal dist for each trimming step")
-            trim_stack = ROOT.THStack("Vcal %s" %roc.number,"Trim bits for each trimming step")
+            vcal_stack = ROOT.THStack("Vcal %s" %roc.number,"Vcal dist for each trimming step; Vcal; # pixels")
+            trim_stack = ROOT.THStack("TrimBits %s" %roc.number,"Trim bits for each trimming step; TrimBit; # pixels")
             for step in range(self.n_steps+1):
+                self._histos.append(plot.matrix_to_th2(self.vcal_dists[step][roc.number],'Vcal_Map_%s_ROC_%s' %(step, roc.number),'col','row'))
                 h_vcal = Plotter.create_th1(self.vcal_dists[step][roc.number],'%s_ROC_%s' %(step, roc.number), self.dac, '# pixels', min_axis, max_axis) 
-                h_vcal.SetLineColor(step+1)
+                h_vcal.SetLineColor(color_dict[step])
                 vcal_stack.Add(h_vcal)
                 h_trim = Plotter.create_th1(self.trim_dists[step][roc.number],'%s_ROC_%s' %(step, roc.number), 'Trim bit', '# pixels', self._min_trim_bit, self._max_trim_bit) 
-                h_trim.SetLineColor(step+1)
+                h_trim.SetLineColor(color_dict[step])
+                if step == 4:
+                    h_trim.SetFillStyle(3002)
+                    h_trim.SetFillColor(color_dict[step])
+                    h_vcal.SetFillStyle(3002)
+                    h_vcal.SetFillColor(color_dict[step])
                 trim_stack.Add(h_trim)
             self._histos.append(trim_stack)
             self._histos.append(vcal_stack)
@@ -113,39 +120,58 @@ class Trim(Test.Test):
         #TODO check if cals=False makes sense
         dut_VthrComp_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, self.reverse)
         #TODO think of data structure for DUT
-        dut_vthr_min = numpy.amin(dut_VthrComp_map) 
-        self.vthr = dut_vthr_min
-        self.tb.set_dac('VthrComp', self.vthr)
+        for roc in self.dut.rocs():
+            dut_vthr_min = numpy.amin(dut_VthrComp_map[roc.number]) 
+            #todo self.vthr...?
+            self.vthr = dut_vthr_min
+            self.tb.set_dac_roc(roc,'VthrComp', self.vthr)
+            self.logger.info('Determined VthrComp %s for %s' %(self.vthr,roc))
         #TODO remove hardcoded values
         self.tb.set_dac('Vcal', 200)
-        self.logger.info('Determined VthrComp %s' %self.vthr)
 
     def get_vtrim(self):
         if self.vtrim > 0:
             self.logger.info('Using min Vtrim %s from config' %self.vtrim)
             return
         else:
-
             #TODO implement pixel threshold
             #get Vcal Map
             dut_Vcal_map = self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse)
-            self.logger.info('Determined Vtrim %s' %self.vtrim)
-            #determine limit 5 standard deviations away from mean or 254 
-            vcalMaxLimit = min(254,numpy.mean(dut_Vcal_map)+5*numpy.std(dut_Vcal_map))
-            #get maximum Vcal pixel
-            roc,col,row =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(dut_Vcal_map,vcalMaxLimit)),numpy.shape(dut_Vcal_map))
-            self.logger.info('Maximum Vcal of %s in Pixel %s, %s in ROC %s'%(dut_Vcal_map[roc,col,row],col,row,roc))
-            vtrim = 0
-            self.tb.arm_pixel(col,row)
-            while vtrim<255:
-                self.tb.set_dac('Vtrim', vtrim)
-                thr = self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0)
-                self.logger.debug('threshold = %s'%thr)
-                if  thr < self.vcal:
-                    break
-                vtrim+=1
-            self.tb.disarm_pixel(col,row)
-            #TODO determine necessary Vtrim for this pixel
-            self.logger.info('Found Vtrim %s'%vtrim)
-            self.vtrim = vtrim
+            for roc in self.dut.rocs():
+                #determine limit 5 standard deviations away from mean or 254 
+                vcalMaxLimit = min(254,numpy.mean(dut_Vcal_map[roc.number])+5*numpy.std(dut_Vcal_map[roc.number]))
+                #get maximum Vcal pixel
+                col,row =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(dut_Vcal_map[roc.number],vcalMaxLimit)),numpy.shape(dut_Vcal_map[roc.number]))
+                self.logger.info('Maximum Vcal of %s in Pixel %s, %s in %s'%(dut_Vcal_map[roc.number,col,row],col,row,roc))
+                vtrim = 0
+                self.tb.select_roc(roc)
+                self.tb.arm_pixel(col,row)
+                found = False
+                low =0
+                high=255
+                while low<high:
+                    vtrim = (high+low)//2
+                    self.tb.set_dac_roc(roc,'Vtrim', vtrim)
+                    thr = self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0)
+                    self.logger.debug('threshold = %s'%thr)
+                    if thr < self.vcal:
+                        high = vtrim-1
+                    elif thr > self.vcal:
+                        low = vtrim+1
+                    else:
+                        break
+
+                #while vtrim<255:
+                #    self.tb.set_dac_roc(roc,'Vtrim', vtrim)
+                #    thr = self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0)
+                #    self.logger.debug('threshold = %s'%thr)
+                #    if  thr < self.vcal:
+                #        break
+                #    vtrim+=1
+                self.tb.disarm_pixel(col,row)
+                #TODO determine necessary Vtrim for this pixel
+                self.logger.info('Found Vtrim %s'%vtrim)
+                #TODO self.vtrim
+                self.vtrim = vtrim
+                self.logger.info('Determined Vtrim %s' %self.vtrim)
 

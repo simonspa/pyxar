@@ -9,6 +9,7 @@ from python import DacDac, Calibrate, Threshold, Trim, BondMap
 from python import BetterConfigParser
 from gui import PxarGui
 from python import PyCmd
+from python import colorer
 logging.basicConfig(level=logging.DEBUG, format='%(name)s - %(levelname)s - %(message)s')
 __version__ = "PyXar: 0.1"
 
@@ -22,8 +23,8 @@ class Pxar(PyCmd):
         self.tb = Testboard(self.config, self.dut)
         self.logger = logging.getLogger(__name__)
         self.logger.info('Initialzed testboard')
-        self.logger.info(self.tb.ia())
-        self.logger.info(self.tb.id())
+        self.tb.ia()
+        self.tb.id()
 
     @staticmethod
     def str_to_class(str):

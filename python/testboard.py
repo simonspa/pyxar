@@ -46,6 +46,7 @@ class Testboard(dtb.PyDTB):
         self.logger.info('Initializing %s' %tbm)
         self.flush()
 
+    # set initial values
     def set_dacs(self, roc):
         self.flush()
         self.logger.debug('Setting DACs of %s' %roc)
@@ -57,10 +58,13 @@ class Testboard(dtb.PyDTB):
     def set_dac(self, reg, value):
         self.flush()
         for roc in self.dut.rocs():
-            self.select_roc(roc)
-            roc.dac(reg).value = value
-            self.logger.debug('Setting %s %s' %(roc, roc.dac(reg)))
-            self.roc_set_DAC(roc.dac(reg).number, roc.dac(reg).value)
+            self.set_dac_roc(roc,reg,value)
+
+    def set_dac_roc(self,roc,reg,value):
+        self.select_roc(roc)
+        roc.dac(reg).value = value
+        self.logger.debug('Setting %s %s' %(roc, roc.dac(reg)))
+        self.roc_set_DAC(roc.dac(reg).number, roc.dac(reg).value)
 
     def select_roc(self, roc):
         #TODO check if roc is already active

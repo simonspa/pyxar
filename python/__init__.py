@@ -8,4 +8,4 @@ from pixel_module import DUT
 from plotter import Plotter
 from BetterConfigParser import BetterConfigParser
 from commands import PyCmd
-import test as Test
+import colorer

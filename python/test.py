@@ -20,12 +20,18 @@ class Test(object):
     def go(self, config):
         '''Called for every test, does prepare, run and cleanup.'''
         start_time = datetime.datetime.fromtimestamp(time.time())
+        self.store(config)
         self.prepare(config)
         self.run(config)
         self.cleanup(config)
+        self.restore(config)
         stop_time = datetime.datetime.fromtimestamp(time.time())
         delta_t = dateutil.relativedelta.relativedelta(stop_time, start_time)
         self.logger.info('Test finished after %.3f seconds' %delta_t.seconds)
+
+    def store(self,config):
+        '''save dac parameters before test'''
+        self.dut.store_dacs()
 
     def prepare(self, config):
         '''Fetch everything from config.'''
@@ -45,6 +51,15 @@ class Test(object):
             th1 = Plotter.create_th1(roc.data,'ROC_%s' %(roc.number), 'Projection of test', '# pixels')
             self._histos.append(th1)
         self._histos.extend(plot.histos)
+
+    def restore(self,config):
+        '''restore saved dac parameters'''
+        for roc in self.dut.rocs():
+            for dac in roc.dacs():
+                if dac.changed:
+                    print dac.value, dac.stored_value
+                    self.tb.set_dac_roc(roc,dac.number,dac.stored_value)
+                    self.logger.info('restore %s'%dac)
 
     @property
     def results(self):
