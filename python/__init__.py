@@ -4,6 +4,7 @@ from calibrate import Calibrate
 from threshold import Threshold
 from bondmap import BondMap
 from trim import Trim
+from scurves import SCurves
 from pixel_module import DUT
 from plotter import Plotter
 from BetterConfigParser import BetterConfigParser
