@@ -72,6 +72,14 @@ class DAC(object):
         self._name = name
         self._bits = bits
         self.value = value
+        self.stored_value = value
+
+    def store(self):
+        self.stored_value = self.value
+
+    @property
+    def changed(self):
+        return self.stored_value != self.value
 
     @property
     def number(self):
@@ -257,6 +265,10 @@ class Roc(object):
             yield self._pixel_array[col][row]
             col += 1
 
+    def store_dacs(self):
+        for dac in self.dacs():
+            dac.store()
+
     def __repr__(self):
         return "ROC %s"%self.number
 
@@ -362,6 +374,9 @@ class DUT(object):
     def dac(self,roc,dac_id):
         return self.roc(roc).dac(dac_id)
 
+    def store_dacs(self):
+        for roc in self.rocs():
+            roc.store_dacs()
 
 if __name__=='__main__':
     from BetterConfigParser import BetterConfigParser
