@@ -99,8 +99,7 @@ class Testboard(dtb.PyDTB):
             n_hits = []
             ph_sum = []
             self.calibrate(n_triggers, n_hits, ph_sum)
-            #self.set_dacs(roc)
-            roc.data = list_to_matrix(roc.n_cols, roc.n_rows, ph_sum)
+            roc.data = list_to_matrix(roc.n_cols, roc.n_rows, n_hits)
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
         for roc in self.dut.rocs():

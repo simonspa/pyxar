@@ -5,7 +5,7 @@ import ROOT
 from optparse import OptionParser
 from python import Testboard
 from python import DUT
-from python import DacDac, Calibrate, Threshold, Trim, BondMap
+from python import DacDac, Calibrate, Threshold, Trim, BondMap, SCurves
 from python import BetterConfigParser
 from gui import PxarGui
 from python import PyCmd
