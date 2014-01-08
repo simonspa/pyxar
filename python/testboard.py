@@ -42,8 +42,24 @@ class Testboard(dtb.PyDTB):
         self.poff()
         self.cleanup()
 
-    def init_tbm(self, tbm):
+    def init_tbm(self, tbm, config):
         self.logger.info('Initializing %s' %tbm)
+        self.set_tbm_dacs(tbm, config)
+    
+    def set_tbm_dacs(self, tbm, config):
+        #TODO expose to config
+        self.tbm_set_DAC(0xE4,0xF0)    #Init TBM, Reset ROC
+        self.tbm_set_DAC(0xF4,0xF0)    
+        self.tbm_set_DAC(0xE0,0x01)    #Disable PKAM Counter
+        self.tbm_set_DAC(0xF0,0x01)    
+        self.tbm_set_DAC(0xE2,0xC0)    # Mode = Calibration
+        self.tbm_set_DAC(0xF2,0xC0)    
+        self.tbm_set_DAC(0xE8,0x10)    # Set PKAM Counter
+        self.tbm_set_DAC(0xF8,0x10)    
+        self.tbm_set_DAC(0xEA,0x00)    # Delays
+        self.tbm_set_DAC(0xFA,0x00)    
+        self.tbm_set_DAC(0xEC,0x00)    # Temp measuerement control
+        self.tbm_set_DAC(0xFC,0x00)    
         self.flush()
 
     # set initial values
@@ -84,6 +100,14 @@ class Testboard(dtb.PyDTB):
         self.flush()
 
     def init_dut(self, config):
+        if self.dut.n_tbms > 0:
+            self.adjust_sig_level(15)
+            self.tbm_enable(True)
+            #TODO expose to config
+            self.set_mod_addr(31)
+            self.flush()
+        for tbm in self.dut.tbms():
+            self.init_tbm(tbm, config)
         for roc in self.dut.rocs():
             self.init_roc(roc)
     

@@ -37,6 +37,10 @@ cdef extern from "pixel_dtb.h":
         void roc_ClrCal() except +
         void roc_Chip_Mask() except +
         void Daq_Select_Deser160(uint8_t shift) except +
+        void Sig_SetLevel(uint8_t signal, uint8_t level) except +
+        void tbm_Enable(bool on) except +
+        void mod_Addr(uint8_t hub) except +
+        void tbm_Set(uint8_t reg, uint8_t value) except +
         void EnableColumn(int) except +
         void ArmPixel(int, int) except +
         void DisarmPixel(int, int) except +
@@ -46,6 +50,10 @@ cdef extern from "pixel_dtb.h":
         int32_t MaskTest(int16_t, int16_t*) 
         int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
         int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
+    cdef int SIG_SDA
+    cdef int SIG_CTR
+    cdef int SIG_CLK
+    cdef int SIG_TIN
 
 
 cdef class PyDTB: 
@@ -94,6 +102,25 @@ cdef class PyDTB:
         self.thisptr.roc_Chip_Mask()
         self.thisptr.Flush()
     
+    def set_mod_addr(self, identity):
+        self.thisptr.mod_Addr(identity)
+        self.thisptr.Flush()
+
+    def adjust_sig_level(self, level):
+        self.thisptr.Sig_SetLevel(SIG_SDA, level)
+        self.thisptr.Sig_SetLevel(SIG_CTR, level)
+        self.thisptr.Sig_SetLevel(SIG_CLK, level)
+        self.thisptr.Sig_SetLevel(SIG_TIN, level)
+        self.thisptr.Flush()
+    
+    def tbm_set_DAC(self, reg, value):
+        self.thisptr.tbm_Set(reg, value)
+        self.thisptr.Flush()
+
+    def tbm_enable(self, on):
+        self.thisptr.tbm_Enable(on)
+        self.thisptr.Flush()
+
     def daq_select_deser160(self, shift):
         self.thisptr.Daq_Select_Deser160(shift)
         self.thisptr.Flush()

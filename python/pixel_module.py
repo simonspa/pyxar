@@ -354,11 +354,23 @@ class DUT(object):
     @property
     def n_tbms(self):
         return self._n_tbms
+    
+    #get tbm object
+    def tbm(self,roc):
+        return self._tbm_list[roc]
+    
+
+    #iterator over tbms
+    def tbms(self):
+        tbm = 0
+        while tbm < self._n_tbms:
+            yield self.tbm(tbm)
+            tbm += 1
 
     #get roc object
     def roc(self,roc):
         return self._roc_list[roc]
-
+    
     #iterator over rocs
     def rocs(self):
         roc = 0
