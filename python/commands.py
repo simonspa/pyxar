@@ -1,7 +1,31 @@
 import cmd
+import os
 import readline
 
-class CmdTB(cmd.Cmd,object):
+class exit_cmd(cmd.Cmd, object):
+    def can_exit(self):
+        return True
+    def onecmd(self, line):
+        r = super (exit_cmd, self).onecmd(line)
+        if r and (self.can_exit() or
+           raw_input('exit anyway ? (yes/no):')=='yes'):
+             return True
+        return False
+    def do_exit(self, s):
+        return True
+    def help_exit(self):
+        print "Exit the interpreter."
+        print "You can also use the Ctrl-D shortcut."
+    do_EOF = do_exit
+    help_EOF= help_exit
+
+class shell_cmd(exit_cmd, object):
+    def do_shell(self, s):
+        os.system(s)
+    def help_shell(self):
+        print "execute shell commands"
+
+class CmdTB(shell_cmd, object):
     def __init__(self):
         super(CmdTB, self).__init__()
         self.TB = ['ia','id','init_dut','set_dac']
@@ -31,6 +55,7 @@ class PyCmd(CmdTB, object):
     """Simple command processor example."""
     def __init__(self):
         super(PyCmd, self).__init__()
+        self.prompt = 'PyXar > '
 
     def help_init(self):
         print "Initialize DUT and TB as specified in module and tb config."
@@ -75,21 +100,3 @@ class PyCmd(CmdTB, object):
     
     def do_PHCalibration(self, line):
         self.run_test('PHCalibration')
-    
-    def do_EOF(self, line):
-        return True
-    
-    def help_EOF(self):
-        print "Exit"
-    
-    def do_exit(self, line):
-        return True
-    
-    def help_exit(self):
-        print "Exit"
-
-    def do_shell(self, s):
-        os.system(s)
-    
-    def help_shell(self):
-        print "execute shell commands"
