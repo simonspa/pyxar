@@ -1,6 +1,6 @@
-import Test
+import test
 
-class Calibrate(Test.Test):
+class Calibrate(test.Test):
 
     def prepare(self, config):
         self.n_triggers = int(config.get('Calibrate','n_triggers'))

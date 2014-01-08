@@ -1,9 +1,9 @@
-import Test
+import test
 import numpy
 import ROOT
 from plotter import Plotter
 
-class Trim(Test.Test):
+class Trim(test.Test):
 
     def prepare(self, config):
         self.vcal = int(config.get('Trim','Vcal'))

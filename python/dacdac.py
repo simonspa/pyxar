@@ -1,7 +1,7 @@
-import Test
+import test
 from plotter import Plotter
 
-class DacDac(Test.Test):
+class DacDac(test.Test):
 
     def prepare(self, config):
         self.dac1 = config.get('DacDac','dac1')

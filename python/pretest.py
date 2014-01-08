@@ -1,7 +1,7 @@
 import numpy
-import Test
+import test
 
-class Pretest(Test.Test):
+class Pretest(test.Test):
     
     def prepare(self, config):
         self.dac1 = 'VthrComp'
@@ -21,6 +21,9 @@ class Pretest(Test.Test):
         self.adjust_PH_range()
 
     def cleanup(self, config):
+        pass
+
+    def restore(self, config):
         pass
 
     def rocs_programmable(self):

@@ -1,5 +1,5 @@
 from testboard import Testboard
-from Test import Test
+from test import Test
 from dacdac import DacDac
 from calibrate import Calibrate
 from threshold import Threshold
