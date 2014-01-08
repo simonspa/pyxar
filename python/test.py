@@ -1,7 +1,5 @@
 import logging
 import time
-import datetime
-import dateutil.relativedelta
 from plotter import Plotter
 
 class Test(object):
@@ -27,7 +25,7 @@ class Test(object):
         self.restore(config)
         stop_time = time.time()
         delta_t = stop_time - start_time 
-        self.logger.info('Test finished after %.3f seconds' %delta_t)
+        self.logger.info('Test finished after %.1f seconds' %delta_t)
 
     def store(self,config):
         '''save dac parameters before test'''
