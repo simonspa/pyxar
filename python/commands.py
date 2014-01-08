@@ -67,6 +67,9 @@ class PyCmd(CmdTB, object):
     def help_Trim(self):
         print "Trim the DUT to values specified in test.cfg"
     
+    def do_Pretest(self, line):
+        self.run_test('Pretest')
+    
     def do_SCurves(self, line):
         self.run_test('SCurves')
     
