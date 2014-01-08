@@ -23,6 +23,9 @@ class Pretest(Test.Test):
     def cleanup(self, config):
         pass
 
+    def restore(self, config):
+        pass
+
     def rocs_programmable(self):
         '''Sets Vana to 0 and max DAC range and measures current, if difference is larger than 0.1 mA, ROC is programmable'''
         self.logger.info('Testing if ROCs are programmable')
