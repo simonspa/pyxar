@@ -57,7 +57,6 @@ class Test(object):
         for roc in self.dut.rocs():
             for dac in roc.dacs():
                 if dac.changed:
-                    print dac.value, dac.stored_value
                     self.tb.set_dac_roc(roc,dac.number,dac.stored_value)
                     self.logger.info('restore %s'%dac)
 

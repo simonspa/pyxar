@@ -101,6 +101,20 @@ class Testboard(dtb.PyDTB):
             self.calibrate(n_triggers, n_hits, ph_sum)
             roc.data = list_to_matrix(roc.n_cols, roc.n_rows, n_hits)
 
+    def get_ph(self, n_triggers):
+        for roc in self.dut.rocs():
+            self.select_roc(roc)
+            n_hits = []
+            ph_sum = []
+            self.calibrate(n_triggers, n_hits, ph_sum)
+            ph = []
+            for p,n in zip(ph_sum,n_hits):
+                if n > 0:
+                    ph.append(p/n)
+                else:
+                    ph.append(p)
+            roc.data = list_to_matrix(roc.n_cols, roc.n_rows, ph)
+
     def get_dac_dac(self, n_triggers, dac1, dac2):
         for roc in self.dut.rocs():
             self.select_roc(roc)

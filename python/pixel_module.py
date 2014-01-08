@@ -188,7 +188,7 @@ class Roc(object):
         for pix in self.pixels():
             pix.trim = trim_bits[pix.col][pix.row]
             if (pix.col == 0 and pix.row == 2):
-                print '%s %s' %(pix, pix.trim)
+                self.logger.debug('%s %s' %(pix, pix.trim))
 
     def save_trim(self, file_name):
         return numpy.savetxt(file_name, self.trim)

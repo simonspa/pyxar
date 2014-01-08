@@ -70,6 +70,9 @@ class PyCmd(CmdTB, object):
     def do_SCurves(self, line):
         self.run_test('SCurves')
     
+    def do_PHCalibration(self, line):
+        self.run_test('PHCalibration')
+    
     def do_EOF(self, line):
         return True
     
