@@ -19,15 +19,15 @@ class Test(object):
 
     def go(self, config):
         '''Called for every test, does prepare, run and cleanup.'''
-        start_time = datetime.datetime.fromtimestamp(time.time())
+        start_time = time.time()
         self.store(config)
         self.prepare(config)
         self.run(config)
         self.cleanup(config)
         self.restore(config)
-        stop_time = datetime.datetime.fromtimestamp(time.time())
-        delta_t = dateutil.relativedelta.relativedelta(stop_time, start_time)
-        self.logger.info('Test finished after %.3f seconds' %delta_t.seconds)
+        stop_time = time.time()
+        delta_t = stop_time - start_time 
+        self.logger.info('Test finished after %.3f seconds' %delta_t)
 
     def store(self,config):
         '''save dac parameters before test'''
