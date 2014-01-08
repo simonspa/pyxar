@@ -1,6 +1,6 @@
-import Test
+import test
 
-class Threshold(Test.Test):
+class Threshold(test.Test):
     
     def prepare(self, config): 
         self.cals = int(eval(config.get('Threshold','cals')))

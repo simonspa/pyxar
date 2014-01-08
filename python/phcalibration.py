@@ -1,7 +1,7 @@
 import numpy
-import Test
+import test
 
-class PHCalibration(Test.Test):
+class PHCalibration(test.Test):
 
     def prepare(self, config):
         self.n_triggers = int(config.get('SCurve','n_triggers'))

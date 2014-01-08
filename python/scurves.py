@@ -1,7 +1,7 @@
 import numpy
-import Test
+import test
 
-class SCurves(Test.Test):
+class SCurves(test.Test):
 
     def prepare(self, config):
         self.n_triggers = int(config.get('SCurve','n_triggers'))

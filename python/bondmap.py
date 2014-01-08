@@ -1,6 +1,6 @@
-import Test
+import test
 
-class BondMap(Test.Test):
+class BondMap(test.Test):
     
     def prepare(self, config): 
         self.cals = int(True)

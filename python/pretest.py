@@ -1,7 +1,7 @@
 import numpy
-import Test
+import test
 
-class Pretest(Test.Test):
+class Pretest(test.Test):
     
     def prepare(self, config):
         self.dac1 = 'VthrComp'
