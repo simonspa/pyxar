@@ -71,7 +71,6 @@ class Pretest(Test.Test):
 
     def find_VthrComp_CalDel(self):
         #TODO remove hardcoding of 5,5
-        return
         self.logger.info('Adjusting %s and %s' %(self.dac1, self.dac2))
         for roc in self.dut.rocs():
             roc.pixel(5,5).active = True
