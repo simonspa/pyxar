@@ -193,10 +193,12 @@ int8_t CTestboard::Daq_Disable2() {
 	return 1;
 }
 
-int8_t CTestboard::Daq_Read2(vector<uint16_t> data, uint16_t daq_read_size_2) {
+int8_t CTestboard::Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size_2, uint32_t &n) {
 	vector<uint16_t> data1;
-    Daq_Read(data, daq_read_size_2,0);
-    Daq_Read(data1, daq_read_size_2, 1);
+    Daq_Read(data, daq_read_size_2, n, 0);
+	mDelay(50);
+    Daq_Read(data1, daq_read_size_2, n, 1);
+	mDelay(50);
     data.insert( data.end(), data1.begin(), data1.end() );
 	return 1;
 }
@@ -292,17 +294,23 @@ int8_t CTestboard::Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vec
 
 int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum)
 {
-    /*uint16_t daq_read_size = 32768;
+    /*Daq_Select_Deser400();
+	mDelay(10);
+    Daq_Deser400_Reset(3);
+	mDelay(10);
+
+    uint16_t daq_read_size = 32768;
 	int16_t pos = 0;
 	int16_t ok = -1;
+    uint32_t avail_size = 0;
 	vector<uint16_t> n, ph, adr;
 
 	Daq_Enable2(daq_read_size);
 	vector<uint16_t> data;
 
-	for (uint8_t col = 0; col < ROC_NUMCOLS; col++) {
+	for (uint8_t col = 0; col < 1; col++) {
 		roc_Col_Enable(col, true);
-		for (uint8_t row = 0; row < ROC_NUMROWS; row++) {
+		for (uint8_t row = 0; row < 1; row++) {
 			//arm
 			roc_Pix_Cal(col, row, false);
 			uDelay(5);
@@ -317,10 +325,10 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 
 		//read data
 		data.clear();
-		Daq_Read2(data, daq_read_size);
+		Daq_Read2(data, daq_read_size, avail_size);
         DumpData(data, 200);
 		pos = 0;
-		for (uint8_t row = 0; row < ROC_NUMROWS; row++) {
+		for (uint8_t row = 0; row < 1; row++) {
 			//decode n readouts
 			for (int8_t trigger = 0; trigger < nTriggers; trigger++) {
 				ok = Decode(data, n, ph, adr);
@@ -334,12 +342,16 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 		roc_Col_Enable(col, false);
 	}
 
-	Daq_Disable2();*/
+	Daq_Disable2();
+    return 1;*/
+    //Working example
     int col = 5, row = 5;
     Daq_Select_Deser400();
 	mDelay(10);
     Daq_Deser400_Reset(3);
 	mDelay(10);
+    uint16_t daq_read_size = 32768;
+    Daq_Enable2(daq_read_size);
 
     for (int i=0;    i<16;      i++) {
     roc_I2cAddr(i);
@@ -350,11 +362,6 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 	mDelay(50);
     }
 
-    Daq_Open(1000,0);
-    Daq_Open(1000,1);
-	mDelay(50);
-    Daq_Start(0);
-    Daq_Start(1);
 
     PixelReadoutData pix;
     uint32_t n = 0;
@@ -370,33 +377,28 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 	mDelay(100);
     vector<uint16_t> data;
     vector<uint16_t> data1;
-    status = Daq_Read(data, 4096, n, 0);
-	mDelay(50);
-    status = Daq_Read(data1, 4096, n, 1);
-	mDelay(50);
+    //status = Daq_Read(data, daq_read_size, n, 0);
+	//mDelay(50);
+    //status = Daq_Read(data1, daq_read_size, n, 1);
+	//mDelay(50);
+    status = Daq_Read2(data, daq_read_size, n);
     //data.insert( data.end(), data1.begin(), data1.end() );
     int pos = 0;
     int pos1 = 0;
     int32_t nHits = 0;
     vector<uint16_t> nhits, ph, adr;
     DumpData(data, 200);
-    DumpData(data1, 200);
 	mDelay(50);
     try
     {
                 for (int16_t l=0; l < nTriggers; l++)
                 {
-                    DecodePixelW(data, pos, pix);
                     Decode(data, nhits, ph, adr);
-                    Decode(data1, nhits, ph, adr);
                     if (pix.n > 0) nHits++;
                 }
     } catch (int) {}
     cout << "hits:" << nHits++ << endl;
-    Daq_Stop(0);
-    Daq_Stop(1);
-    Daq_Close(0);
-    Daq_Close(1);
+    Daq_Disable2();
     return 1;
 }
 
