@@ -247,13 +247,16 @@ int8_t CTestboard::DecodePixel(unsigned int raw, int16_t &n, int16_t &ph, int16_
 	return 1;
 }
 
-int8_t CTestboard::Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vector<uint16_t> &ph, vector<uint16_t> &adr)
+int8_t CTestboard::Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vector<uint16_t> &ph, vector<uint32_t> &adr)
 { 
 
     uint32_t words_remaining = 0;
     uint16_t hdr, trl;
 	unsigned int raw;
     int16_t n_pix = 0, ph_pix = 0, col = 0, row = 0, evNr = 0, stkCnt = 0, dataId = 0, dataNr = 0;
+    int16_t roc_n =-1;
+    int16_t tbm_n =-1;
+    uint32_t address;
 	for (int i=0; i<data.size(); i++)
 	{
 		int d = data[i] & 0xf;
@@ -262,28 +265,36 @@ int8_t CTestboard::Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vec
 		{
 		case  0: printf("  0(%1X)", d); break;
 
-		case  1: printf("\n R1(%1X)", d); raw = d; break;
-		case  2: printf(" R2(%1X)", d);   raw = (raw<<4) + d; break;
-		case  3: printf(" R3(%1X)", d);   raw = (raw<<4) + d; break;
-		case  4: printf(" R4(%1X)", d);   raw = (raw<<4) + d; break;
-		case  5: printf(" R5(%1X)", d);   raw = (raw<<4) + d; break;
-		case  6: printf(" R6(%1X)", d);   raw = (raw<<4) + d;
+		case  1: raw = d; break;
+		case  2: raw = (raw<<4) + d; break;
+		case  3: raw = (raw<<4) + d; break;
+		case  4: raw = (raw<<4) + d; break;
+		case  5: raw = (raw<<4) + d; break;
+		case  6: raw = (raw<<4) + d;
 			     DecodePixel(raw, n_pix, ph_pix, col, row);
+                 n.push_back(n_pix);
+                 ph.push_back(ph_pix);
+                 address = tbm_n;
+                 address = (address << 8) + roc_n;
+                 address = (address << 8) + col;
+                 address = (address << 8) + row;
+                 adr.push_back(address);
 				 break;
 
-		case  7: printf("\nROC-HEADER(%1X): ", d); break;
+		case  7: roc_n++; break;
 
-		case  8: printf("\n\nTBM H1(%1X) ", d); hdr = d; break;
-		case  9: printf("H2(%1X) ", d);       hdr = (hdr<<4) + d; break;
-		case 10: printf("H3(%1X) ", d);       hdr = (hdr<<4) + d; break;
-		case 11: printf("H4(%1X) ", d);       hdr = (hdr<<4) + d; 
+		case  8: hdr = d; break;
+		case  9: hdr = (hdr<<4) + d; break;
+		case 10: hdr = (hdr<<4) + d; break;
+		case 11: hdr = (hdr<<4) + d; 
 			     DecodeTbmHeader(hdr, evNr, stkCnt);
+                 tbm_n++;
 			     break;
 
-		case 12: printf("\nTBM T1(%1X) ", d); trl = d; break;
-		case 13: printf("T2(%1X) ", d);       trl = (trl<<4) + d; break;
-		case 14: printf("T3(%1X) ", d);       trl = (trl<<4) + d; break;
-		case 15: printf("T4(%1X) ", d);       trl = (trl<<4) + d;
+		case 12: trl = d; break;
+		case 13: trl = (trl<<4) + d; break;
+		case 14: trl = (trl<<4) + d; break;
+		case 15: trl = (trl<<4) + d;
 			     DecodeTbmTrailer(trl, dataId, dataNr);
 			     break;
 		}
