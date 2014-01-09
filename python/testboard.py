@@ -14,10 +14,13 @@ class Testboard(dtb.PyDTB):
         self.open(usb_id)
         self._set_max_vals(config)
         #TODO expose timing to config
-        self.set_mhz(0)
+        self.adjust_sig_level(10)
+        self.set_mhz(4)
         self.init_pg()
         #END TODO
         self.pon()
+        self.reset_off()
+        self.daq_select_deser400()
         if eval(config.get('Testboard','hv_on')):
             self.hv_on()
         self.init_dut(config)
@@ -60,6 +63,7 @@ class Testboard(dtb.PyDTB):
         self.tbm_set_DAC(0xFA,0x00)    
         self.tbm_set_DAC(0xEC,0x00)    # Temp measuerement control
         self.tbm_set_DAC(0xFC,0x00)    
+        self.m_delay(200)
         self.flush()
 
     # set initial values
@@ -85,7 +89,8 @@ class Testboard(dtb.PyDTB):
     def select_roc(self, roc):
         #TODO check if roc is already active
         self.i2_c_addr(roc.number)
-        self.set_roc_addr(roc.number)
+        #TODO Just without TBM?
+        #self.set_roc_addr(roc.number)
         #TODO move delay to FW
         self.m_delay(200)
 
@@ -96,15 +101,17 @@ class Testboard(dtb.PyDTB):
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
+        self.roc_chip_mask()
         self.roc_clr_cal()
         self.flush()
 
     def init_dut(self, config):
         if self.dut.n_tbms > 0:
-            self.adjust_sig_level(15)
             self.tbm_enable(True)
+            self.m_delay(200)
             #TODO expose to config
             self.set_mod_addr(31)
+            self.m_delay(200)
             self.flush()
         for tbm in self.dut.tbms():
             self.init_tbm(tbm, config)
@@ -184,3 +191,10 @@ class Testboard(dtb.PyDTB):
     
     def id(self):
         self.logger.info('ID: %.2f mA' %self.get_id())
+    
+    def get_ping(self, n_triggers):
+        for roc in self.dut.rocs():
+            self.select_roc(roc)
+            n_hits = []
+            ph_sum = []
+            self.ping(n_triggers, n_hits, ph_sum)

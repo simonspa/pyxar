@@ -277,23 +277,28 @@ public:
 
 
 	// --- data aquisition --------------------------------------------------
-	RPC_EXPORT uint32_t Daq_Open(uint32_t buffersize = 10000000); // max # of samples
-	RPC_EXPORT void Daq_Close();
-	RPC_EXPORT void Daq_Start();
-	RPC_EXPORT void Daq_Stop();
-	RPC_EXPORT uint32_t Daq_GetSize();
+    RPC_EXPORT uint32_t Daq_Open(uint32_t buffersize = 10000000, uint8_t channel = 0);
+	RPC_EXPORT void Daq_Close(uint8_t channel = 0);
+	RPC_EXPORT void Daq_Start(uint8_t channel = 0);
+	RPC_EXPORT void Daq_Stop(uint8_t channel = 0);
+	RPC_EXPORT uint32_t Daq_GetSize(uint8_t channel = 0);
 
 	RPC_EXPORT uint8_t Daq_Read(vectorR<uint16_t> &data,
-			 uint16_t blocksize = 16384);
+			 uint16_t blocksize = 16384, uint8_t channel = 0);
 
 	RPC_EXPORT uint8_t Daq_Read(vectorR<uint16_t> &data,
-			uint16_t blocksize, uint32_t &availsize);
+			uint16_t blocksize, uint32_t &availsize, uint8_t channel = 0);
+
 
 	RPC_EXPORT void Daq_Select_ADC(uint16_t blocksize, uint8_t source,
 			uint8_t start, uint8_t stop = 0);
 
 	RPC_EXPORT void Daq_Select_Deser160(uint8_t shift);
 
+	RPC_EXPORT void Daq_Select_Deser400();
+	RPC_EXPORT void Daq_Deser400_Reset(uint8_t reset = 3);
+
+	RPC_EXPORT void Daq_DeselectAll();
 
 	// --- ROC/module Communication -----------------------------------------
 	// -- set the i2c address for the following commands
@@ -343,7 +348,7 @@ public:
 
 
 // --- Wafer test functions
-	RPC_EXPORT bool testColPixel(uint8_t col, uint8_t trimbit, vectorR<uint8_t> &res);
+	RPC_EXPORT bool TestColPixel(uint8_t col, uint8_t trimbit, vectorR<uint8_t> &res);
 
 	// Ethernet test functions
 	RPC_EXPORT void Ethernet_Send(string &message);
@@ -356,6 +361,9 @@ public:
     RPC_EXPORT int8_t CalibrateMap(int16_t nTriggers, vectorR<int16_t> &nReadouts, vectorR<int32_t> &totalPH);
     RPC_EXPORT int8_t TrimChip(vector<int8_t> &trim);
 
+    RPC_EXPORT bool GetPixelAddressInverted();
+
+    RPC_EXPORT void SetClockSource(uint8_t source);
 
     // === module test functions ======================================
     
@@ -375,23 +383,28 @@ public:
     void EnableColumn(int col);
     void EnableAllPixels(int32_t trim[]);
     void SetChip(int iChip);    
-    int32_t MaskTest(int16_t nTriggers, int16_t res[]);
-	int32_t ChipEfficiency(int16_t nTriggers, int32_t trim[], double res[]); 
-	void DacDac(int32_t dac1, int32_t dacRange1, int32_t dac2, int32_t dacRange2, int32_t nTrig, int32_t result[]);
+	void Ping(int32_t, int32_t, int32_t);
     RPC_EXPORT int32_t CountReadouts(int32_t nTriggers);
 	RPC_EXPORT int32_t CountReadouts(int32_t nTriggers, int32_t chipId);
 	RPC_EXPORT int32_t CountReadouts(int32_t nTriggers, int32_t dacReg, int32_t dacValue);
-	RPC_EXPORT int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim);
+	int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim){};
 	int32_t ChipThreshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[]);
 	void ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[]);
-	int32_t SCurve(int32_t nTrig, int32_t dacReg, int32_t threshold, int32_t res[]);
-    int32_t SCurve(int32_t nTrig, int32_t dacReg, int32_t thr[], int32_t chipId[], int32_t sCurve[]);
-	int32_t SCurveColumn(int32_t column, int32_t nTrig, int32_t dacReg, int32_t thr[], int32_t trims[], int32_t chipId[], int32_t res[]);
     RPC_EXPORT int32_t PH(int32_t col, int32_t row, int32_t trim, int16_t nTriggers);
     RPC_EXPORT bool test_pixel_address(int32_t col, int32_t row);
     RPC_EXPORT int32_t ChipEfficiency_dtb(int16_t nTriggers, vectorR<uint8_t> &res);
+    RPC_EXPORT int8_t ThresholdMap(int32_t nTriggers, int32_t dacReg, bool rising, bool xtalk, bool cals, vectorR<int16_t> &thrValue);
     void SetNRocs(int32_t value);
     void SetHubID(int32_t value);
+
+    int8_t Daq_Enable2(int32_t block);
+    int8_t Daq_Read2(vector<uint16_t> data, uint16_t daq_read_size);
+    int8_t Daq_Disable2();
+    int8_t DecodeTbmTrailer(unsigned int raw, int16_t &dataId, int16_t &data); 
+    int8_t DecodeTbmHeader(unsigned int raw, int16_t &evNr, int16_t &stkCnt);
+    int8_t DecodePixel(unsigned int raw, int16_t &n, int16_t &ph, int16_t &col, int16_t &row);
+    int8_t Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vector<uint16_t> &ph, vector<uint16_t> &adr);
+    int8_t CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum);
     // ----------------------------
 
 

@@ -100,3 +100,10 @@ class PyCmd(CmdTB, object):
     
     def do_PHCalibration(self, line):
         self.run_test('PHCalibration')
+    
+    def do_FullTest(self, line):
+        self.run_test('Calibrate')
+        self.run_test('BondMap')
+        self.run_test('SCurves')
+        self.run_test('PHCalibration')
+        self.run_test('Trim')

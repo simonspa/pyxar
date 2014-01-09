@@ -37,6 +37,7 @@ cdef extern from "pixel_dtb.h":
         void roc_ClrCal() except +
         void roc_Chip_Mask() except +
         void Daq_Select_Deser160(uint8_t shift) except +
+        void Daq_Select_Deser400() except +
         void Sig_SetLevel(uint8_t signal, uint8_t level) except +
         void tbm_Enable(bool on) except +
         void mod_Addr(uint8_t hub) except +
@@ -50,6 +51,8 @@ cdef extern from "pixel_dtb.h":
         int32_t MaskTest(int16_t, int16_t*) 
         int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
         int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
+        void Ping(int32_t col, int32_t row, int32_t nTrig) 
+        int8_t CalibrateMap_Sof(int16_t, vector[int16_t] &, vector[int32_t] &) 
     cdef int SIG_SDA
     cdef int SIG_CTR
     cdef int SIG_CLK
@@ -123,6 +126,10 @@ cdef class PyDTB:
 
     def daq_select_deser160(self, shift):
         self.thisptr.Daq_Select_Deser160(shift)
+        self.thisptr.Flush()
+    
+    def daq_select_deser400(self):
+        self.thisptr.Daq_Select_Deser400()
         self.thisptr.Flush()
     
     def set_mhz(self, value):
@@ -235,4 +242,14 @@ cdef class PyDTB:
         return return_value
 
     def pixel_threshold(self, n_triggers, col, row, start, step, thrLevel, dacReg, xtalk, cals, trim):
-        return self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)
+        return 0
+        #return self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)
+
+    def ping(self, n_triggers, num_hits, ph):
+        cdef vector[int16_t] n_hits
+        cdef vector[int32_t] ph_sum
+        return_value = self.thisptr.CalibrateMap_Sof(n_triggers, n_hits, ph_sum)
+        for i in xrange(len(n_hits)):
+            num_hits.append(n_hits[i]) 
+            ph.append(ph_sum[i]) 
+        return return_value

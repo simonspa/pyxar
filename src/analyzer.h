@@ -21,4 +21,10 @@ struct PixelReadoutData
 
 void DumpData(const vector<uint16_t> &x, unsigned int n);
 
-void DecodePixel(const std::vector<uint16_t> &x, int &pos, PixelReadoutData &pix);
+void DecodeTbmTrailer(unsigned int raw);
+
+void DecodeTbmHeader(unsigned int raw);
+
+void DecodePixelRaw(unsigned int raw);
+
+void DecodePixelW(const std::vector<uint16_t> &x, int &pos, PixelReadoutData &pix);

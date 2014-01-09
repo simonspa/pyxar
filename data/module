@@ -8,5 +8,5 @@ channels = 2
 
 [Module]
 rocs = 1
-tbms = 0
-parameterFiles = /Users/peller/pixel/sdvlp/ethpxar/data/
+tbms = 1
+parameterFiles = /Users/niklas/Pixel/ethpxar/data/

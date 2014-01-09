@@ -1,7 +1,8 @@
 [Testboard]
-id = DTB_WRQ4OZ
+#id = DTB_WRQ4OZ
+id = DTB_WRMU7H
 max_ia = 1199
 max_id = 1000
 max_va = 1699
 max_vd = 2500
-hv_on = True
+hv_on = False
