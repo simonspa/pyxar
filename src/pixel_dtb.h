@@ -398,12 +398,12 @@ public:
     void SetHubID(int32_t value);
 
     int8_t Daq_Enable2(int32_t block);
-    int8_t Daq_Read2(vector<uint16_t> data, uint16_t daq_read_size);
+    int8_t Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size, uint32_t &n);
     int8_t Daq_Disable2();
     int8_t DecodeTbmTrailer(unsigned int raw, int16_t &dataId, int16_t &data); 
     int8_t DecodeTbmHeader(unsigned int raw, int16_t &evNr, int16_t &stkCnt);
     int8_t DecodePixel(unsigned int raw, int16_t &n, int16_t &ph, int16_t &col, int16_t &row);
-    int8_t Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vector<uint16_t> &ph, vector<uint16_t> &adr);
+    int8_t Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vector<uint16_t> &ph, vector<uint32_t> &adr);
     int8_t CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum);
     // ----------------------------
 
