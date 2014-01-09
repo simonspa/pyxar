@@ -207,19 +207,19 @@ int8_t CTestboard::DecodeTbmHeader(unsigned int raw, int16_t &evNr, int16_t &stk
 {
 	evNr = raw >> 8;
 	stkCnt = raw & 6;
-    	printf("  EV(%3i) STF(%c) PKR(%c) STKCNT(%2i)",
+    /*	printf("  EV(%3i) STF(%c) PKR(%c) STKCNT(%2i)",
 		evNr,
 		(raw&0x0080)?'1':'0',
 		(raw&0x0040)?'1':'0',
 		stkCnt
-		); 
+		); */
 }
 
 int8_t CTestboard::DecodeTbmTrailer(unsigned int raw, int16_t &dataId, int16_t &data)
 {
 	dataId = (raw >> 6) & 0x3;
 	data   = raw & 0x3f;
-    	printf("  NTP(%c) RST(%c) RSR(%c) SYE(%c) SYT(%c) CTC(%c) CAL(%c) SF(%c) D%i(%2i)",
+    /*	printf("  NTP(%c) RST(%c) RSR(%c) SYE(%c) SYT(%c) CTC(%c) CAL(%c) SF(%c) D%i(%2i)",
 		(raw&0x8000)?'1':'0',
 		(raw&0x4000)?'1':'0',
 		(raw&0x2000)?'1':'0',
@@ -230,7 +230,7 @@ int8_t CTestboard::DecodeTbmTrailer(unsigned int raw, int16_t &dataId, int16_t &
 		(raw&0x0100)?'1':'0',
 		dataId,
 		data
-		);
+		);*/
 }
 
 int8_t CTestboard::DecodePixel(unsigned int raw, int16_t &n, int16_t &ph, int16_t &col, int16_t &row) 
@@ -245,7 +245,7 @@ int8_t CTestboard::DecodePixel(unsigned int raw, int16_t &n, int16_t &ph, int16_
 	r = r*6 + ( raw        & 7);
 	row = 80 - r/2;
 	col = 2*c + (r&1);
-	printf("   Pixel [%05o] %2i/%2i: %3u", raw, col, row, ph);
+	//printf("   Pixel [%05o] %2i/%2i: %3u", raw, col, row, ph);
 	return 1;
 }
 
@@ -397,7 +397,8 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
     int pos = 0;
     int pos1 = 0;
     int32_t nHits = 0;
-    vector<uint16_t> nhits, ph, adr;
+    vector<uint16_t> nhits, ph;
+    vector<uint32_t> adr;
     DumpData(data, 200);
 	mDelay(50);
     try
@@ -408,7 +409,9 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
                     if (pix.n > 0) nHits++;
                 }
     } catch (int) {}
-    cout << "hits:" << nHits++ << endl;
+    for (int l=0; l < adr.size(); l++){
+        printf("   Pixel [0x%08x] %1u %3u\n", adr[l], nhits[l], ph[l]);
+    }
     Daq_Disable2();
     return 1;
 }
