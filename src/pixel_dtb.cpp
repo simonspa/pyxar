@@ -256,9 +256,12 @@ int8_t CTestboard::Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vec
     uint16_t hdr, trl;
 	unsigned int raw;
     int16_t n_pix = 0, ph_pix = 0, col = 0, row = 0, evNr = 0, stkCnt = 0, dataId = 0, dataNr = 0;
-    int16_t roc_n =-1;
-    int16_t tbm_n =-1;
+    int16_t roc_n = -1;
+    int16_t tbm_n = -1;
     uint32_t address;
+    int pos = 0;
+    //Module readout
+    if (TBM_Present()){
 	for (int i=0; i<data.size(); i++)
 	{
 		int d = data[i] & 0xf;
@@ -302,6 +305,32 @@ int8_t CTestboard::Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vec
 			     break;
 		}
 	}
+  }
+    //Single ROC
+    else {
+	    while (!(pos >= int(data.size()))) {
+        // check header
+	    if ((data[pos] & 0x8ffc) != 0x87f8)
+		    return -2; // wrong header
+	    int hdr = data[pos++] & 0xfff;
+	    // read pixels while not data end or trailer
+	    while (!(pos >= int(data.size()) || (data[pos] & 0x8000))) {
+        // store 24 bits in raw
+		raw = (data[pos++] & 0xfff) << 12;
+		if (pos >= int(data.size()) || (data[pos] & 0x8000))
+			return -3; // incomplete data
+		raw += data[pos++] & 0xfff;
+		DecodePixel(raw, n_pix, ph_pix, col, row);
+        n.push_back(n_pix);
+        ph.push_back(ph_pix);
+        address = 0;
+        address = (address << 8) ;
+        address = (address << 8) + col;
+        address = (address << 8) + row;
+        adr.push_back(address);
+	    }
+        }
+    }
 }
 
 int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &adress)
@@ -319,6 +348,7 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 	for (uint8_t col = 0; col < ROC_NUMCOLS; col++) {
 		roc_Col_Enable(col, true);
 		for (uint8_t row = 0; row < ROC_NUMROWS; row++) {
+		//for (uint8_t row = 0; row < 20; row++) {
 			//arm
 			roc_Pix_Cal(col, row, false);
 			uDelay(5);
@@ -379,9 +409,9 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 	mDelay(50);
     ok = Decode(data, nhits, ph, adr);
     Daq_Disable2();*/
-    //for (int l=0; l < adress.size(); l++){
-    //    printf("   Pixel [0x%08x] %1u %3u\n", adress[l], nReadouts[l], PHsum[l]);
-    //}
+    /*for (int l=0; l < adress.size(); l++){
+        printf("   Pixel [0x%08x] %1u %3u\n", adress[l], nReadouts[l], PHsum[l]);
+    }*/
     return 1;
 }
 

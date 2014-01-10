@@ -18,10 +18,10 @@ class Testboard(dtb.PyDTB):
         self.adjust_sig_level(10)
         self.set_mhz(4)
         self.init_pg(config)
+        self.init_deser()
         #END TODO
         self.pon()
         self.reset_off()
-        self.daq_select_deser400()
         if eval(config.get('Testboard','hv_on')):
             self.hv_on()
         self.init_dut(config)
@@ -48,11 +48,11 @@ class Testboard(dtb.PyDTB):
 
 
     def init_pg(self, config):
-        #Module
         cal_delay = int(config.get('Testboard','pg_cal'))
         tct_wbc = int(config.get('Testboard','tct_wbc'))
         resr_delay = int(config.get('Testboard','pg_resr'))
         trg_delay = int(config.get('Testboard','pg_trg'))
+        #Module
         if self.dut.n_tbms > 0:
             self.pg_setcmd(0, self.PG_RESR + resr_delay)
             self.pg_setcmd(1, self.PG_CAL  + cal_delay + tct_wbc)
@@ -68,6 +68,15 @@ class Testboard(dtb.PyDTB):
             self.pg_setcmd(2, self.PG_TRG  + trg_delay)
             self.pg_setcmd(3, self.PG_TOK);
         self.m_delay(200)
+
+    def init_deser(self):
+        deser_phase = 4
+        if self.dut.n_tbms > 0:
+            self.logger.info('Selecting DESER400 for module readout')
+            self.daq_select_deser400()
+        else:
+            self.logger.info('Selecting DESER160 with phase %s for single ROC readout' %deser_phase)
+            self.daq_select_deser160(deser_phase)
 
     def init_tbm(self, tbm, config):
         self.logger.info('Initializing %s' %tbm)
