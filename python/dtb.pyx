@@ -38,6 +38,10 @@ cdef extern from "pixel_dtb.h":
         void roc_Chip_Mask() except +
         void Daq_Select_Deser160(uint8_t shift) except +
         void Daq_Select_Deser400() except +
+        uint32_t Daq_Open(uint32_t buffersize, uint8_t channel) except +
+        void Daq_Close(uint8_t channel) except +
+        void Daq_Start(uint8_t channel) except +
+        void Daq_Stop(uint8_t channel) except +
         void Sig_SetLevel(uint8_t signal, uint8_t level) except +
         void tbm_Enable(bool on) except +
         void mod_Addr(uint8_t hub) except +
@@ -140,6 +144,20 @@ cdef class PyDTB:
     
     def daq_select_deser400(self):
         self.thisptr.Daq_Select_Deser400()
+        self.thisptr.Flush()
+    
+    def daq_enable(self):
+        self.thisptr.Daq_Open(32470, 0)
+        self.thisptr.Daq_Open(32470, 1)
+        self.thisptr.Daq_Start(0)
+        self.thisptr.Daq_Start(1)
+        self.thisptr.Flush()
+    
+    def daq_disable(self):
+        self.thisptr.Daq_Stop(0)
+        self.thisptr.Daq_Stop(1)
+        self.thisptr.Daq_Close(0)
+        self.thisptr.Daq_Close(1)
         self.thisptr.Flush()
     
     def set_mhz(self, value):
