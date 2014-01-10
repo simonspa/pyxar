@@ -2,6 +2,7 @@ import dtb
 import logging
 import numpy
 from helpers import list_to_matrix
+from helpers import decode
 
 class Testboard(dtb.PyDTB):
     
@@ -101,7 +102,6 @@ class Testboard(dtb.PyDTB):
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
-        self.roc_chip_mask()
         self.roc_clr_cal()
         self.flush()
 
@@ -129,8 +129,10 @@ class Testboard(dtb.PyDTB):
             self.select_roc(roc)
             n_hits = []
             ph_sum = []
-            self.calibrate(n_triggers, n_hits, ph_sum)
-            roc.data = list_to_matrix(roc.n_cols, roc.n_rows, n_hits)
+            addres = []
+            self.calibrate(n_triggers, n_hits, ph_sum, addres)
+            roc.data = decode(roc.n_cols, roc.n_rows, addres, n_hits)
+            #roc.data = list_to_matrix(roc.n_cols, roc.n_rows, n_hits)
 
     def get_ph(self, n_triggers):
         for roc in self.dut.rocs():

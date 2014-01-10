@@ -1,6 +1,6 @@
 from libcpp cimport bool
 from libcpp.vector cimport vector
-from libc.stdint cimport uint8_t, int8_t, uint16_t, int16_t, int32_t
+from libc.stdint cimport uint8_t, int8_t, uint16_t, int16_t, int32_t, uint32_t
 from libc.stdlib cimport malloc, free
 from libcpp.string cimport string
 
@@ -52,7 +52,7 @@ cdef extern from "pixel_dtb.h":
         int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
         int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
         void Ping(int32_t col, int32_t row, int32_t nTrig) 
-        int8_t CalibrateMap_Sof(int16_t, vector[int16_t] &, vector[int32_t] &) 
+        int8_t CalibrateMap_Sof(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
     cdef int SIG_SDA
     cdef int SIG_CTR
     cdef int SIG_CLK
@@ -223,13 +223,15 @@ cdef class PyDTB:
             trim_bits[i] = trim[i]
         return self.thisptr.TrimChip(trim_bits)
 
-    def calibrate(self,n_triggers, num_hits, ph):
+    def calibrate(self,n_triggers, num_hits, ph, addr):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
-        return_value = self.thisptr.CalibrateMap(n_triggers, n_hits, ph_sum)
+        cdef vector[uint32_t] adr
+        return_value = self.thisptr.CalibrateMap_Sof(n_triggers, n_hits, ph_sum, adr)
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
+            addr.append(adr[i]) 
         return return_value
 
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
@@ -248,8 +250,9 @@ cdef class PyDTB:
     def ping(self, n_triggers, num_hits, ph):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
-        return_value = self.thisptr.CalibrateMap_Sof(n_triggers, n_hits, ph_sum)
-        for i in xrange(len(n_hits)):
+        cdef vector[uint32_t] adr
+        return_value = self.thisptr.CalibrateMap_Sof(n_triggers, n_hits, ph_sum, adr)
+        for i in xrange(len(adr)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
         return return_value

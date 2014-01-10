@@ -13,3 +13,12 @@ def list_to_grid(n_cols,n_rows,a_list):
 
 def list_to_matrix(n_cols,n_rows,a_list):
     return np.array(list_to_grid(n_cols,n_rows,a_list))
+
+def decode(n_cols, n_rows, address, a_list):
+    s = (n_cols,n_rows)
+    roc_data = np.zeros(s)
+    for i, adr in enumerate(address):
+        row = adr & 0xff
+        col = (adr >> 8) & 0xff
+        roc_data[col][row] += a_list[i]
+    return roc_data
