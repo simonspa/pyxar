@@ -237,7 +237,7 @@ cdef class PyDTB:
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
         cdef vector[uint32_t] adr
-        return_value = self.thisptr.CalibrateMap_Sof(n_triggers, n_hits, ph_sum, adr)
+        return_value = self.thisptr.CalibrateMap(n_triggers, n_hits, ph_sum, adr)
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 

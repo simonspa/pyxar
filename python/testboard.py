@@ -168,11 +168,16 @@ class Testboard(dtb.PyDTB):
         for roc in self.dut.rocs():
             self.select_roc(roc)
             n_hits = []
-            ph = []
+            ph_sum = []
             address = []
-            self.calibrate(n_triggers, n_hits, ph, address)
+            self.calibrate(n_triggers, n_hits, ph_sum, address)
+            ph = []
+            for p,n in zip(ph_sum,n_hits):
+                if n > 0:
+                    ph.append(p/n)
+                else:
+                    ph.append(p)
             roc.data = decode(roc.n_cols, roc.n_rows, address, ph)
-            roc.data /= n_triggers
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
         for roc in self.dut.rocs():
@@ -186,7 +191,8 @@ class Testboard(dtb.PyDTB):
                 ph_sum = []
                 self.logger.debug('DacDac pix(%s,%s), nTrig: %s, dac1: %s, 0, %s, dac2: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac1, dac_range1, dac2, dac_range2) )
                 self.dac_dac(n_triggers, pixel.col, pixel.row, roc.dac(dac1).number, dac_range1, roc.dac(dac2).number, dac_range2, n_hits, ph_sum)
-                self.set_dacs(roc)
+                self.roc_set_DAC(roc.dac(dac1).number, roc.dac(dac1).value)
+                self.roc_set_DAC(roc.dac(dac2).number, roc.dac(dac2).value)
                 pixel.data = numpy.transpose(list_to_matrix(dac_range1, dac_range2, n_hits))
 
     def get_threshold(self, n_triggers, dac, xtalk, cals, reverse):
@@ -203,7 +209,7 @@ class Testboard(dtb.PyDTB):
             #TODO remove trimming, they will go away with new CTestboard
             trim = roc.trim_for_tb 
             self.chip_threshold(start, step, thr_level, n_triggers, roc.dac(dac).number , xtalk, cals, trim, result)
-            self.set_dacs(roc)
+            self.roc_set_DAC(roc.dac(dac).number, roc.dac(dac).value)
             roc.data = list_to_matrix(roc.n_cols, roc.n_rows, result)
         return self.dut.roc_data
             

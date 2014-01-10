@@ -4,9 +4,9 @@ import test
 class PHCalibration(test.Test):
 
     def prepare(self, config):
-        self.n_triggers = int(config.get('SCurve','n_triggers'))
-        self.points_lowrange = config.get('SCurve','points_lowrange').split(',')
-        self.points_highrange = config.get('SCurve','points_highrange').split(',')
+        self.n_triggers = int(config.get('PHCalibration','n_triggers'))
+        self.points_lowrange = config.get('PHCalibration','points_lowrange').split(',')
+        self.points_highrange = config.get('PHCalibration','points_highrange').split(',')
         self.dac = 'Vcal'
         self.xtalk = 0
         self.reverse = False
