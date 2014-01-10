@@ -3,10 +3,7 @@
 #include "analyzer.h"
 #include <stdio.h>
 
-using namespace std;
-
-
-void DumpData(const vector<uint16_t> &x, unsigned int n)
+void DumpData(const std::vector<uint16_t> &x, unsigned int n)
 {
 	printf("\n");
 	unsigned int i;
@@ -21,23 +18,23 @@ void DumpData(const vector<uint16_t> &x, unsigned int n)
 	printf("\n");
 }
 
-void DecodeTbmHeader(unsigned int raw)
+void DecodeTbmHeader(unsigned int raw, int16_t &evNr, int16_t &stkCnt)
 {
-	int evNr = raw >> 8;
-	int stkCnt = raw & 6;
-	printf("  EV(%3i) STF(%c) PKR(%c) STKCNT(%2i)",
+	evNr = raw >> 8;
+	stkCnt = raw & 6;
+    /*	printf("  EV(%3i) STF(%c) PKR(%c) STKCNT(%2i)",
 		evNr,
 		(raw&0x0080)?'1':'0',
 		(raw&0x0040)?'1':'0',
 		stkCnt
-		); 
+		); */
 }
 
-void DecodeTbmTrailer(unsigned int raw)
+void DecodeTbmTrailer(unsigned int raw, int16_t &dataId, int16_t &data)
 {
-	int dataId = (raw >> 6) & 0x3;
-	int data   = raw & 0x3f;
-	printf("  NTP(%c) RST(%c) RSR(%c) SYE(%c) SYT(%c) CTC(%c) CAL(%c) SF(%c) D%i(%2i)",
+	dataId = (raw >> 6) & 0x3;
+	data   = raw & 0x3f;
+    /*	printf("  NTP(%c) RST(%c) RSR(%c) SYE(%c) SYT(%c) CTC(%c) CAL(%c) SF(%c) D%i(%2i)",
 		(raw&0x8000)?'1':'0',
 		(raw&0x4000)?'1':'0',
 		(raw&0x2000)?'1':'0',
@@ -48,33 +45,39 @@ void DecodeTbmTrailer(unsigned int raw)
 		(raw&0x0100)?'1':'0',
 		dataId,
 		data
-		);
+		);*/
 }
 
-void DecodePixelRaw(unsigned int raw)
+void DecodePixel(unsigned int raw, int16_t &n, int16_t &ph, int16_t &col, int16_t &row) 
 {
-	unsigned int ph = (raw & 0x0f) + ((raw >> 1) & 0xf0);
+    n = 1;
+    ph = (raw & 0x0f) + ((raw >> 1) & 0xf0);
 	raw >>= 9;
 	int c =    (raw >> 12) & 7;
 	c = c*6 + ((raw >>  9) & 7);
 	int r =    (raw >>  6) & 7;
 	r = r*6 + ((raw >>  3) & 7);
 	r = r*6 + ( raw        & 7);
-	int y = 80 - r/2;
-	int x = 2*c + (r&1);
-	printf("   Pixel [%05o] %2i/%2i: %3u", raw, x, y, ph);
+	row = 80 - r/2;
+	col = 2*c + (r&1);
+	//printf("   Pixel [%05o] %2i/%2i: %3u", raw, col, row, ph);
 }
 
-void DecodePixelW(const vector<uint16_t> &data, int &pos, PixelReadoutData &pix)
+int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::vector<uint16_t> &ph, std::vector<uint32_t> &adr)
 { 
 
     uint32_t words_remaining = 0;
-    int TBM_eventnr,TBM_stackinfo,ColAddr,RowAddr,PulseHeight,TBM_trailerBits,TBM_readbackData;
-    int size = data.size();
-	printf("#samples: %i  remaining: %i\n", size, int(words_remaining));
-    unsigned int hdr, trl;
+    uint16_t hdr, trl;
 	unsigned int raw;
-	for (int i=0; i<size; i++)
+    int16_t n_pix = 0, ph_pix = 0, col = 0, row = 0, evNr = 0, stkCnt = 0, dataId = 0, dataNr = 0;
+    int16_t roc_n = -1;
+    int16_t tbm_n = -1;
+    uint32_t address;
+    int pos = 0;
+    //Module readout
+    bool TBM_Present = true;
+    if (TBM_Present){
+	for (int i=0; i<data.size(); i++)
 	{
 		int d = data[i] & 0xf;
 		int q = (data[i]>>4) & 0xf;
@@ -82,78 +85,68 @@ void DecodePixelW(const vector<uint16_t> &data, int &pos, PixelReadoutData &pix)
 		{
 		case  0: printf("  0(%1X)", d); break;
 
-		case  1: printf("\n R1(%1X)", d); raw = d; break;
-		case  2: printf(" R2(%1X)", d);   raw = (raw<<4) + d; break;
-		case  3: printf(" R3(%1X)", d);   raw = (raw<<4) + d; break;
-		case  4: printf(" R4(%1X)", d);   raw = (raw<<4) + d; break;
-		case  5: printf(" R5(%1X)", d);   raw = (raw<<4) + d; break;
-		case  6: printf(" R6(%1X)", d);   raw = (raw<<4) + d;
-			     DecodePixelRaw(raw);
+		case  1: raw = d; break;
+		case  2: raw = (raw<<4) + d; break;
+		case  3: raw = (raw<<4) + d; break;
+		case  4: raw = (raw<<4) + d; break;
+		case  5: raw = (raw<<4) + d; break;
+		case  6: raw = (raw<<4) + d;
+			     DecodePixel(raw, n_pix, ph_pix, col, row);
+                 n.push_back(n_pix);
+                 ph.push_back(ph_pix);
+                 address = tbm_n;
+                 address = (address << 8) + roc_n;
+                 address = (address << 8) + col;
+                 address = (address << 8) + row;
+                 adr.push_back(address);
 				 break;
 
-		case  7: printf("\nROC-HEADER(%1X): ", d); break;
+		case  7: roc_n++; break;
 
-		case  8: printf("\n\nTBM H1(%1X) ", d); hdr = d; break;
-		case  9: printf("H2(%1X) ", d);       hdr = (hdr<<4) + d; break;
-		case 10: printf("H3(%1X) ", d);       hdr = (hdr<<4) + d; break;
-		case 11: printf("H4(%1X) ", d);       hdr = (hdr<<4) + d; 
-			     DecodeTbmHeader(hdr);
+		case  8: hdr = d; break;
+		case  9: hdr = (hdr<<4) + d; break;
+		case 10: hdr = (hdr<<4) + d; break;
+		case 11: hdr = (hdr<<4) + d; 
+			     DecodeTbmHeader(hdr, evNr, stkCnt);
+                 tbm_n++;
+                 roc_n = -1;
 			     break;
 
-		case 12: printf("\nTBM T1(%1X) ", d); trl = d; break;
-		case 13: printf("T2(%1X) ", d);       trl = (trl<<4) + d; break;
-		case 14: printf("T3(%1X) ", d);       trl = (trl<<4) + d; break;
-		case 15: printf("T4(%1X) ", d);       trl = (trl<<4) + d;
-			     DecodeTbmTrailer(trl);
+		case 12: trl = d; break;
+		case 13: trl = (trl<<4) + d; break;
+		case 14: trl = (trl<<4) + d; break;
+		case 15: trl = (trl<<4) + d;
+			     DecodeTbmTrailer(trl, dataId, dataNr);
 			     break;
 		}
 	}
-
-	printf("\n");
-/*
-	pix.Clear();
-
-	// check header
-	if (pos >= int(data.size())) {
-        //printf("Missing data");
-        throw int(1); // missing data
+  }
+    //Single ROC
+    else {
+	    while (!(pos >= int(data.size()))) {
+        // check header
+	    if ((data[pos] & 0x8ffc) != 0x87f8)
+		    return -2; // wrong header
+	    int hdr = data[pos++] & 0xfff;
+	    // read pixels while not data end or trailer
+	    while (!(pos >= int(data.size()) || (data[pos] & 0x8000))) {
+        // store 24 bits in raw
+		raw = (data[pos++] & 0xfff) << 12;
+		if (pos >= int(data.size()) || (data[pos] & 0x8000))
+			return -3; // incomplete data
+		raw += data[pos++] & 0xfff;
+		DecodePixel(raw, n_pix, ph_pix, col, row);
+        n.push_back(n_pix);
+        ph.push_back(ph_pix);
+        address = 0;
+        address = (address << 8) ;
+        address = (address << 8) + col;
+        address = (address << 8) + row;
+        adr.push_back(address);
+	    }
+        }
     }
-	if ((data[pos] & 0x8ffc) != 0x87f8){
-        //printf("Wrong header");
-         throw int(2); // wrong header
-    }
-	pix.hdr = data[pos++] & 0xfff;
-
-	if (pos >= int(data.size()) || (data[pos] & 0x8000)){
-        //printf("Empty readout");
-         return; // empty data readout
-    }
-
-	// read first pixel
-	raw = (data[pos++] & 0xfff) << 12;
-	if (pos >= int(data.size()) || (data[pos] & 0x8000)){
-        //printf("Incomplete");
-         throw int(3); // incomplete data
-    }
-	raw += data[pos++] & 0xfff;
-	pix.n++;
-
-	// read additional noisy pixel
-	int cnt = 0;
-	while (!(pos >= int(data.size()) || (data[pos] & 0x8000))) { pos++; cnt++; }
-	pix.n += cnt / 2;
-
-	pix.p = (raw & 0x0f) + ((raw >> 1) & 0xf0);
-	raw >>= 9;
-	int c =    (raw >> 12) & 7;
-	c = c*6 + ((raw >>  9) & 7);
-	int r =    (raw >>  6) & 7;
-	r = r*6 + ((raw >>  3) & 7);
-	r = r*6 + ( raw        & 7);
-	pix.y = 80 - r/2;
-	pix.x = 2*c + (r&1);*/
 }
-
 
 
 

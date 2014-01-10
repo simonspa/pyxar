@@ -5,7 +5,7 @@
 #include "pixel_dtb.h"
 #include "datastream.h"
 #include <vector>
-// #include <stdint.h>
+#include <stdint.h>
 
 
 struct PixelReadoutData
@@ -25,6 +25,6 @@ void DecodeTbmTrailer(unsigned int raw);
 
 void DecodeTbmHeader(unsigned int raw);
 
-void DecodePixelRaw(unsigned int raw);
+void DecodePixel(unsigned int raw);
 
-void DecodePixelW(const std::vector<uint16_t> &x, int &pos, PixelReadoutData &pix);
+int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::vector<uint16_t> &ph, std::vector<uint32_t> &adr);

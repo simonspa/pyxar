@@ -17,6 +17,6 @@
  21 VIbias_roc 150
  22    VIColOr  99
  25       Vcal 200
- 26     CalDel  60
+ 26     CalDel  50
 253    CtrlReg   0
 254        WBC 100

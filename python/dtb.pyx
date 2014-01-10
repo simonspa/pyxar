@@ -46,13 +46,13 @@ cdef extern from "pixel_dtb.h":
         void ArmPixel(int, int) except +
         void DisarmPixel(int, int) except +
         int8_t CalibrateDacDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
-        int8_t CalibrateMap(int16_t, vector[int16_t] &, vector[int32_t] &) 
+        int8_t CalibrateMap(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
         int8_t TrimChip(vector[int8_t] &) 
         int32_t MaskTest(int16_t, int16_t*) 
         int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
         int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
-        void Ping(int32_t col, int32_t row, int32_t nTrig) 
         int8_t CalibrateMap_Sof(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
+        int8_t CalibrateDacDacScan_Sof(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
     cdef int PG_TOK 
     cdef int PG_TRG 
     cdef int PG_RESR 
@@ -247,22 +247,11 @@ cdef class PyDTB:
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
-        return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
+        return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
         return return_value
 
     def pixel_threshold(self, n_triggers, col, row, start, step, thrLevel, dacReg, xtalk, cals, trim):
-        return 0
-        #return self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)
-
-    def ping(self, n_triggers, num_hits, ph):
-        cdef vector[int16_t] n_hits
-        cdef vector[int32_t] ph_sum
-        cdef vector[uint32_t] adr
-        return_value = self.thisptr.CalibrateMap_Sof(n_triggers, n_hits, ph_sum, adr)
-        for i in xrange(len(adr)):
-            num_hits.append(n_hits[i]) 
-            ph.append(ph_sum[i]) 
-        return return_value
+        return self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)

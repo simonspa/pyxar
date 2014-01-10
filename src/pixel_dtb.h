@@ -358,7 +358,7 @@ public:
     RPC_EXPORT int8_t CalibratePixel(int16_t nTriggers, int16_t col, int16_t row, int16_t &nReadouts, int32_t &PHsum);
 	RPC_EXPORT int8_t CalibrateDacScan(int16_t nTriggers, int16_t col, int16_t row, int16_t dacReg1, int16_t dacRange1, vectorR<int16_t> &nReadouts, vectorR<int32_t> &PHsum);
     RPC_EXPORT int8_t CalibrateDacDacScan(int16_t nTriggers, int16_t col, int16_t row, int16_t dacReg1, int16_t dacRange1, int16_t dacReg2, int16_t dacRange2, vectorR<int16_t> &nReadouts, vectorR<int32_t> &PHsum);
-    RPC_EXPORT int8_t CalibrateMap(int16_t nTriggers, vectorR<int16_t> &nReadouts, vectorR<int32_t> &totalPH);
+    RPC_EXPORT int8_t CalibrateMap(int16_t nTriggers, vectorR<int16_t> &nReadouts, vectorR<int32_t> &totalPH, vector<uint32_t> &address);
     RPC_EXPORT int8_t TrimChip(vector<int8_t> &trim);
 
     RPC_EXPORT bool GetPixelAddressInverted();
@@ -387,7 +387,7 @@ public:
     RPC_EXPORT int32_t CountReadouts(int32_t nTriggers);
 	RPC_EXPORT int32_t CountReadouts(int32_t nTriggers, int32_t chipId);
 	RPC_EXPORT int32_t CountReadouts(int32_t nTriggers, int32_t dacReg, int32_t dacValue);
-	int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim){};
+	RPC_EXPORT int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim);
 	int32_t ChipThreshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[]);
 	void ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[]);
     RPC_EXPORT int32_t PH(int32_t col, int32_t row, int32_t trim, int16_t nTriggers);
@@ -400,11 +400,9 @@ public:
     int8_t Daq_Enable2(int32_t block);
     int8_t Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size, uint32_t &n);
     int8_t Daq_Disable2();
-    int8_t DecodeTbmTrailer(unsigned int raw, int16_t &dataId, int16_t &data); 
-    int8_t DecodeTbmHeader(unsigned int raw, int16_t &evNr, int16_t &stkCnt);
-    int8_t DecodePixel(unsigned int raw, int16_t &n, int16_t &ph, int16_t &col, int16_t &row);
-    int8_t Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vector<uint16_t> &ph, vector<uint32_t> &adr);
+    int8_t CalibrateReadouts(int16_t nTriggers, int16_t &nReadouts, int32_t &PHsum);
     int8_t CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &addres);
+    int8_t CalibrateDacDacScan_Sof(int16_t nTriggers, int16_t col, int16_t row, int16_t dacReg1, int16_t dacRange1, int16_t dacReg2, int16_t dacRange2, vector<int16_t> &nReadouts, vector<int32_t> &PHsum);
     // ----------------------------
 
 

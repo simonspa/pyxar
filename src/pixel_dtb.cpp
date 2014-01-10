@@ -178,7 +178,6 @@ void CTestboard::InitDAC()
 int8_t CTestboard::Daq_Enable2(int32_t block) {
 	Daq_Open(block, 0);
 	Daq_Open(block, 1);
-    mDelay(50);
 	Daq_Start(0);
 	Daq_Start(1);
 	return 1;
@@ -187,7 +186,6 @@ int8_t CTestboard::Daq_Enable2(int32_t block) {
 int8_t CTestboard::Daq_Disable2() {
 	Daq_Stop(0);
 	Daq_Stop(1);
-    mDelay(50);
 	Daq_Close(0);
 	Daq_Close(1);
 	return 1;
@@ -196,141 +194,9 @@ int8_t CTestboard::Daq_Disable2() {
 int8_t CTestboard::Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size_2, uint32_t &n) {
 	vector<uint16_t> data1;
     Daq_Read(data, daq_read_size_2, n, 0);
-	mDelay(50);
     Daq_Read(data1, daq_read_size_2, n, 1);
-	mDelay(50);
     data.insert( data.end(), data1.begin(), data1.end() );
 	return 1;
-}
-
-int8_t CTestboard::DecodeTbmHeader(unsigned int raw, int16_t &evNr, int16_t &stkCnt)
-{
-	evNr = raw >> 8;
-	stkCnt = raw & 6;
-    /*	printf("  EV(%3i) STF(%c) PKR(%c) STKCNT(%2i)",
-		evNr,
-		(raw&0x0080)?'1':'0',
-		(raw&0x0040)?'1':'0',
-		stkCnt
-		); */
-}
-
-int8_t CTestboard::DecodeTbmTrailer(unsigned int raw, int16_t &dataId, int16_t &data)
-{
-	dataId = (raw >> 6) & 0x3;
-	data   = raw & 0x3f;
-    /*	printf("  NTP(%c) RST(%c) RSR(%c) SYE(%c) SYT(%c) CTC(%c) CAL(%c) SF(%c) D%i(%2i)",
-		(raw&0x8000)?'1':'0',
-		(raw&0x4000)?'1':'0',
-		(raw&0x2000)?'1':'0',
-		(raw&0x1000)?'1':'0',
-		(raw&0x0800)?'1':'0',
-		(raw&0x0400)?'1':'0',
-		(raw&0x0200)?'1':'0',
-		(raw&0x0100)?'1':'0',
-		dataId,
-		data
-		);*/
-}
-
-int8_t CTestboard::DecodePixel(unsigned int raw, int16_t &n, int16_t &ph, int16_t &col, int16_t &row) 
-{
-    n = 1;
-    ph = (raw & 0x0f) + ((raw >> 1) & 0xf0);
-	raw >>= 9;
-	int c =    (raw >> 12) & 7;
-	c = c*6 + ((raw >>  9) & 7);
-	int r =    (raw >>  6) & 7;
-	r = r*6 + ((raw >>  3) & 7);
-	r = r*6 + ( raw        & 7);
-	row = 80 - r/2;
-	col = 2*c + (r&1);
-	//printf("   Pixel [%05o] %2i/%2i: %3u", raw, col, row, ph);
-	return 1;
-}
-
-int8_t CTestboard::Decode(const vector<uint16_t> &data, vector<uint16_t> &n, vector<uint16_t> &ph, vector<uint32_t> &adr)
-{ 
-
-    uint32_t words_remaining = 0;
-    uint16_t hdr, trl;
-	unsigned int raw;
-    int16_t n_pix = 0, ph_pix = 0, col = 0, row = 0, evNr = 0, stkCnt = 0, dataId = 0, dataNr = 0;
-    int16_t roc_n = -1;
-    int16_t tbm_n = -1;
-    uint32_t address;
-    int pos = 0;
-    //Module readout
-    if (TBM_Present()){
-	for (int i=0; i<data.size(); i++)
-	{
-		int d = data[i] & 0xf;
-		int q = (data[i]>>4) & 0xf;
-		switch (q)
-		{
-		case  0: printf("  0(%1X)", d); break;
-
-		case  1: raw = d; break;
-		case  2: raw = (raw<<4) + d; break;
-		case  3: raw = (raw<<4) + d; break;
-		case  4: raw = (raw<<4) + d; break;
-		case  5: raw = (raw<<4) + d; break;
-		case  6: raw = (raw<<4) + d;
-			     DecodePixel(raw, n_pix, ph_pix, col, row);
-                 n.push_back(n_pix);
-                 ph.push_back(ph_pix);
-                 address = tbm_n;
-                 address = (address << 8) + roc_n;
-                 address = (address << 8) + col;
-                 address = (address << 8) + row;
-                 adr.push_back(address);
-				 break;
-
-		case  7: roc_n++; break;
-
-		case  8: hdr = d; break;
-		case  9: hdr = (hdr<<4) + d; break;
-		case 10: hdr = (hdr<<4) + d; break;
-		case 11: hdr = (hdr<<4) + d; 
-			     DecodeTbmHeader(hdr, evNr, stkCnt);
-                 tbm_n++;
-                 roc_n = -1;
-			     break;
-
-		case 12: trl = d; break;
-		case 13: trl = (trl<<4) + d; break;
-		case 14: trl = (trl<<4) + d; break;
-		case 15: trl = (trl<<4) + d;
-			     DecodeTbmTrailer(trl, dataId, dataNr);
-			     break;
-		}
-	}
-  }
-    //Single ROC
-    else {
-	    while (!(pos >= int(data.size()))) {
-        // check header
-	    if ((data[pos] & 0x8ffc) != 0x87f8)
-		    return -2; // wrong header
-	    int hdr = data[pos++] & 0xfff;
-	    // read pixels while not data end or trailer
-	    while (!(pos >= int(data.size()) || (data[pos] & 0x8000))) {
-        // store 24 bits in raw
-		raw = (data[pos++] & 0xfff) << 12;
-		if (pos >= int(data.size()) || (data[pos] & 0x8000))
-			return -3; // incomplete data
-		raw += data[pos++] & 0xfff;
-		DecodePixel(raw, n_pix, ph_pix, col, row);
-        n.push_back(n_pix);
-        ph.push_back(ph_pix);
-        address = 0;
-        address = (address << 8) ;
-        address = (address << 8) + col;
-        address = (address << 8) + row;
-        adr.push_back(address);
-	    }
-        }
-    }
 }
 
 int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &adress)
@@ -413,6 +279,73 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
         printf("   Pixel [0x%08x] %1u %3u\n", adress[l], nReadouts[l], PHsum[l]);
     }*/
     return 1;
+}
+
+int8_t CTestboard::CalibrateReadouts(int16_t nTriggers, int16_t &nReadouts, int32_t &PHsum){
+
+	nReadouts = 0;
+	PHsum = 0;
+    uint16_t daq_read_size = 32768;
+    uint32_t avail_size = 0;
+	int16_t ok = -1;
+
+    vector<uint16_t> nhits, ph;
+    vector<uint32_t> adr;
+	vector<uint16_t> data;
+	uDelay(5);
+
+	for (int16_t i = 0; i < nTriggers; i++)
+	{
+		Pg_Single();
+		uDelay(4);
+	}
+
+	Daq_Read2(data, daq_read_size, avail_size);
+
+    ok = Decode(data, nhits, ph, adr);
+
+	for (int i = 0; i < adr.size(); i++)
+	{
+		nReadouts+= nhits[i];
+		PHsum+= ph[i];;
+		
+	}
+
+	return 1;
+}
+
+
+int8_t CTestboard::CalibrateDacDacScan_Sof(int16_t nTriggers, int16_t col, int16_t row, int16_t dacReg1,
+		int16_t dacRange1, int16_t dacReg2, int16_t dacRange2,
+		vector<int16_t> &nReadouts, vector<int32_t> &PHsum) {
+
+	int16_t ok = -1;
+    uint16_t daq_read_size = 32768;
+    uint32_t avail_size = 0;
+    uint8_t status;
+    int16_t n;
+	int32_t ph;
+
+    roc_Col_Enable(col, true);
+	roc_Pix_Cal(col, row, false);
+	uDelay(5);
+	Daq_Enable2(daq_read_size);
+	for (int i = 0; i < dacRange1; i++)
+	{
+		roc_SetDAC(dacReg1, i);
+		for (int k = 0; k < dacRange2; k++)
+		{
+			roc_SetDAC(dacReg2, k);
+			CalibrateReadouts(nTriggers, n, ph);
+			nReadouts.push_back(n);
+			PHsum.push_back(ph);
+		}
+	}
+	Daq_Disable2();
+	roc_ClrCal();
+	roc_Col_Enable(col, false);
+
+	return 1;
 }
 
 void CTestboard::ArmPixel(int col, int row)

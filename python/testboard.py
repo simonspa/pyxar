@@ -139,12 +139,11 @@ class Testboard(dtb.PyDTB):
             self.m_delay(200)
             #TODO expose to config
             self.set_mod_addr(31)
-            self.m_delay(200)
-            self.flush()
         else:
             #Just without TBM
             self.set_roc_addr(0)
-            self.m_delay(200)
+        self.m_delay(200)
+        self.flush()
         for tbm in self.dut.tbms():
             self.init_tbm(tbm, config)
         for roc in self.dut.rocs():
@@ -160,25 +159,20 @@ class Testboard(dtb.PyDTB):
         for roc in self.dut.rocs():
             self.select_roc(roc)
             n_hits = []
-            ph_sum = []
-            addres = []
-            self.calibrate(n_triggers, n_hits, ph_sum, addres)
-            roc.data = decode(roc.n_cols, roc.n_rows, addres, n_hits)
-            #roc.data = list_to_matrix(roc.n_cols, roc.n_rows, n_hits)
+            ph = []
+            address = []
+            self.calibrate(n_triggers, n_hits, ph, address)
+            roc.data = decode(roc.n_cols, roc.n_rows, address, n_hits)
 
     def get_ph(self, n_triggers):
         for roc in self.dut.rocs():
             self.select_roc(roc)
             n_hits = []
-            ph_sum = []
-            self.calibrate(n_triggers, n_hits, ph_sum)
             ph = []
-            for p,n in zip(ph_sum,n_hits):
-                if n > 0:
-                    ph.append(p/n)
-                else:
-                    ph.append(p)
-            roc.data = list_to_matrix(roc.n_cols, roc.n_rows, ph)
+            address = []
+            self.calibrate(n_triggers, n_hits, ph, address)
+            roc.data = decode(roc.n_cols, roc.n_rows, address, ph)
+            roc.data /= n_triggers
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
         for roc in self.dut.rocs():
@@ -225,10 +219,3 @@ class Testboard(dtb.PyDTB):
     
     def id(self):
         self.logger.info('ID: %.2f mA' %self.get_id())
-    
-    def get_ping(self, n_triggers):
-        for roc in self.dut.rocs():
-            self.select_roc(roc)
-            n_hits = []
-            ph_sum = []
-            self.ping(n_triggers, n_hits, ph_sum)
