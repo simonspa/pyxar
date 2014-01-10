@@ -6,3 +6,7 @@ max_id = 1000
 max_va = 1699
 max_vd = 2500
 hv_on = False
+pg_cal = 100
+pg_trg = 16
+pg_resr = 25
+tct_wbc = 5

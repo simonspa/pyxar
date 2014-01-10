@@ -30,7 +30,7 @@ cdef extern from "pixel_dtb.h":
         double GetIA() except +
         double GetID() except +
         void SetMHz(int) except +
-        void Init_PG() except +
+        void Pg_SetCmd(uint16_t addr, uint16_t cmd) except +
         void roc_I2cAddr(uint8_t) except +
         void SetRocAddress(uint8_t) except +
         void roc_SetDAC(uint8_t, uint8_t) except +
@@ -53,6 +53,11 @@ cdef extern from "pixel_dtb.h":
         int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
         void Ping(int32_t col, int32_t row, int32_t nTrig) 
         int8_t CalibrateMap_Sof(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
+    cdef int PG_TOK 
+    cdef int PG_TRG 
+    cdef int PG_RESR 
+    cdef int PG_CAL 
+    cdef int PG_SYNC 
     cdef int SIG_SDA
     cdef int SIG_CTR
     cdef int SIG_CLK
@@ -63,6 +68,11 @@ cdef class PyDTB:
     cdef CTestboard *thisptr
     def __cinit__(self): 
         self.thisptr = new CTestboard()
+        self.PG_TOK = PG_TOK
+        self.PG_TRG = PG_TRG
+        self.PG_RESR = PG_RESR
+        self.PG_CAL = PG_CAL
+        self.PG_SYNC = PG_SYNC
 
     def __dealloc__(self): 
         del self.thisptr
@@ -136,8 +146,8 @@ cdef class PyDTB:
         self.thisptr.SetMHz(value)
         self.thisptr.Flush()
     
-    def init_pg(self):
-        self.thisptr.Init_PG()
+    def pg_setcmd(self, addr, cmd):
+        self.thisptr.Pg_SetCmd(addr, cmd)
         self.thisptr.Flush()
     
     def pon(self):

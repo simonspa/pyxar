@@ -317,10 +317,8 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 	vector<uint16_t> data;
 
 	for (uint8_t col = 0; col < ROC_NUMCOLS; col++) {
-	//for (uint8_t col = 1; col < 3; col++) {
 		roc_Col_Enable(col, true);
 		for (uint8_t row = 0; row < ROC_NUMROWS; row++) {
-		//for (uint8_t row = 0; row < 2; row++) {
 			//arm
 			roc_Pix_Cal(col, row, false);
 			uDelay(5);

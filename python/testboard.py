@@ -17,7 +17,7 @@ class Testboard(dtb.PyDTB):
         #TODO expose timing to config
         self.adjust_sig_level(10)
         self.set_mhz(4)
-        self.init_pg()
+        self.init_pg(config)
         #END TODO
         self.pon()
         self.reset_off()
@@ -45,6 +45,29 @@ class Testboard(dtb.PyDTB):
         self.hv_off()
         self.poff()
         self.cleanup()
+
+
+    def init_pg(self, config):
+        #Module
+        cal_delay = int(config.get('Testboard','pg_cal'))
+        tct_wbc = int(config.get('Testboard','tct_wbc'))
+        resr_delay = int(config.get('Testboard','pg_resr'))
+        trg_delay = int(config.get('Testboard','pg_trg'))
+        if self.dut.n_tbms > 0:
+            self.pg_setcmd(0, self.PG_RESR + resr_delay)
+            self.pg_setcmd(1, self.PG_CAL  + cal_delay + tct_wbc)
+            self.pg_setcmd(2, self.PG_SYNC + self.PG_TRG)
+            self.pg_setcmd(3, self.PG_CAL  + cal_delay + tct_wbc)
+            self.pg_setcmd(4, self.PG_TRG  + trg_delay)
+            self.pg_setcmd(5, self.PG_CAL  + cal_delay + tct_wbc)
+            self.pg_setcmd(6, self.PG_TRG  )
+        #Single roc
+        else:
+            self.pg_setcmd(0, self.PG_RESR + resr_delay);
+            self.pg_setcmd(1, self.PG_CAL  + cal_delay + tct_wbc)
+            self.pg_setcmd(2, self.PG_TRG  + trg_delay)
+            self.pg_setcmd(3, self.PG_TOK);
+        self.m_delay(200)
 
     def init_tbm(self, tbm, config):
         self.logger.info('Initializing %s' %tbm)
@@ -90,10 +113,6 @@ class Testboard(dtb.PyDTB):
     def select_roc(self, roc):
         #TODO check if roc is already active
         self.i2_c_addr(roc.number)
-        #TODO Just without TBM?
-        #self.set_roc_addr(roc.number)
-        #TODO move delay to FW
-        self.m_delay(200)
 
     def init_roc(self, roc):
         self.logger.info('Initializing ROC: %s' %roc.number)
@@ -113,6 +132,10 @@ class Testboard(dtb.PyDTB):
             self.set_mod_addr(31)
             self.m_delay(200)
             self.flush()
+        else:
+            #Just without TBM
+            self.set_roc_addr(0)
+            self.m_delay(200)
         for tbm in self.dut.tbms():
             self.init_tbm(tbm, config)
         for roc in self.dut.rocs():
