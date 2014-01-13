@@ -124,14 +124,15 @@ class Roc(object):
         self._n_pixels = self._n_rows*self._n_cols
         self.number = number
         self._data = None
+        self._work_dir = config.get('General','work_dir')
 
         try:
-            self.dacParameterFile = open(config.get('Module','parameterFiles')+'/dacParameters_C%s.dat'%self.number)
+            self.dacParameterFile = open('%s/dacParameters_C%s.dat'%(self._work_dir, self.number))
         except IOError:
             self.dacParameterFile = None
             self.logger.warning('could not open dacParameter file for ROC %i'%self.number)
         try:
-            self.trimParameterFile = open(config.get('Module','parameterFiles')+'/trimParameters_C%s.dat'%self.number)
+            self.trimParameterFile = open('%s/trimParameters_C%s.dat'%(self._work_dir, self.number))
         except IOError:
             self.trimParameterFile = None
             self.logger.warning('could not open trimParameter file for ROC %i'%self.number)
@@ -190,10 +191,12 @@ class Roc(object):
             if (pix.col == 0 and pix.row == 2):
                 self.logger.debug('%s %s' %(pix, pix.trim))
 
-    def save_trim(self, file_name):
+    def save_trim(self, file_name, directory = None):
+        if not directory:
+            directory = self._work_dir
         try:
             #TODO think of path
-            trimParameterFile = open('trimParameters_%s_C%s.dat'%(file_name, self.number),'w')
+            trimParameterFile = open('%s/trimParameters%s_C%s.dat'%(directory, file_name, self.number),'w')
         except IOError:
             trimParameterFile = None
             self.logger.warning('could not open trimParameter file for ROC %i'%self.number)
@@ -202,11 +205,12 @@ class Roc(object):
             trimParameterFile.write(line)
         trimParameterFile.close()
 
-    def save_dacs(self, file_name):
+    def save_dacs(self, file_name, directory = None):
+        if not directory:
+            directory = self._work_dir
         try:
             #TODO think of path
-            dacParameterFile = open('dacParameters_%s_C%s.dat'%(file_name, self.number),'w')
-            trimParameterFile = open('trimParameters_%s_C%s.dat'%(file_name, self.number),'w')
+            dacParameterFile = open('%s/dacParameters%s_C%s.dat'%(directory, file_name, self.number),'w')
         except IOError:
             dacParameterFile = None
             self.logger.warning('could not open dacParameter file for ROC %i'%self.number)
@@ -214,6 +218,10 @@ class Roc(object):
             line = '{0:3d} {1:15s} {2:3d}\n'.format(dac.number, dac.name, dac.value)
             dacParameterFile.write(line)
         dacParameterFile.close()
+
+    def save(self, file_name, directory = None):
+        self.save_trim(file_name, directory)
+        self.save_dacs(file_name, directory)
     
     @property
     def data(self):

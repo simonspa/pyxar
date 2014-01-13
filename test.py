@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sys
 import os
 import logging
@@ -10,15 +11,16 @@ from python import BetterConfigParser
 from gui import PxarGui
 from python import PyCmd
 from python import colorer
-logging.basicConfig(level=logging.DEBUG, format='%(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 __version__ = "PyXar: 0.1"
 
 class Pxar(PyCmd):
     
     def do_init(self, line):
-        configs = ['data/general','data/module','data/tb','data/test.cfg']
+        configs = ['%s/general' %(self.directory),'%s/module' %(self.directory),'%s/tb' %(self.directory),'%s/test.cfg' %(self.directory)]
         self.config = BetterConfigParser()
         self.config.read(configs)
+        self.config.set('General', 'work_dir', self.directory)
         self.dut = DUT(self.config)
         self.tb = Testboard(self.config, self.dut)
         self.logger = logging.getLogger(__name__)
@@ -37,8 +39,13 @@ class Pxar(PyCmd):
         window.update()
  
 if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option("-d", "--dir", dest="work_dir", default='data',
+                  help="Folder with settings.", metavar="DIR")
+    (options, args) = parser.parse_args()
     window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
     pxar = Pxar()
+    pxar.directory = os.path.abspath(options.work_dir)
     #TODO remove
     pxar.do_init('')
     pxar.cmdloop(__version__)
