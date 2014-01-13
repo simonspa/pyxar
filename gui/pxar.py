@@ -2,6 +2,8 @@ import ROOT
 
 class PxarGui( ROOT.TGMainFrame ):
     def __init__( self, parent, width, height ):
+
+       self.img = ROOT.TImage.Open('gui/pyXar_welcome.jpg')
        self.previous = ROOT.TPyDispatcher( self.draw_previous )
        self.forward = ROOT.TPyDispatcher( self.draw_next )
        ROOT.TGMainFrame.__init__( self, parent, width, height )
@@ -37,6 +39,7 @@ class PxarGui( ROOT.TGMainFrame ):
        self.MapWindow()
        self.histos = [] 
        self.pos = 0
+       self.img.Draw()
 
     def __del__(self):
        self.Cleanup()
