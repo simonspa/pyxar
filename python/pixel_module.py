@@ -191,7 +191,29 @@ class Roc(object):
                 self.logger.debug('%s %s' %(pix, pix.trim))
 
     def save_trim(self, file_name):
-        return numpy.savetxt(file_name, self.trim)
+        try:
+            #TODO think of path
+            trimParameterFile = open('trimParameters_%s_C%s.dat'%(file_name, self.number),'w')
+        except IOError:
+            trimParameterFile = None
+            self.logger.warning('could not open trimParameter file for ROC %i'%self.number)
+        for pixel in self.pixels():
+            line = '{0:2d} Pix {1:2d} {2:2d}\n'.format(pixel.trim, pixel.col, pixel.row)
+            trimParameterFile.write(line)
+        trimParameterFile.close()
+
+    def save_dacs(self, file_name):
+        try:
+            #TODO think of path
+            dacParameterFile = open('dacParameters_%s_C%s.dat'%(file_name, self.number),'w')
+            trimParameterFile = open('trimParameters_%s_C%s.dat'%(file_name, self.number),'w')
+        except IOError:
+            dacParameterFile = None
+            self.logger.warning('could not open dacParameter file for ROC %i'%self.number)
+        for dac in self.dacs():
+            line = '{0:3d} {1:15s} {2:3d}\n'.format(dac.number, dac.name, dac.value)
+            dacParameterFile.write(line)
+        dacParameterFile.close()
     
     @property
     def data(self):
