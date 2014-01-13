@@ -432,7 +432,7 @@ void CTestboard::ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrL
 			
 			thr = PixelThreshold(col, row, startValue, step, thrLevel, nTrig, dacReg, xtalk, cals, trim[col*ROC_NUMROWS + row]);
 			res[col*ROC_NUMROWS + row] = thr;
-            printf("   Pixel %1u %1u %3u\n", col, row, thr); 
+            //printf("   Pixel %1u %1u %3u\n", col, row, thr); 
 
 		}
 		roc_Col_Enable(col, 0);
@@ -482,10 +482,13 @@ int32_t CTestboard::ChipThreshold(int32_t start, int32_t step, int32_t thrLevel,
   	startValue = 0;
   	roughStep = 4;
   }
-  
+
+  vector<int8_t> trimV(trim, trim + sizeof trim / sizeof trim[0]);
+ 
   for (int i = 0; i < ROC_NUMROWS * ROC_NUMCOLS; i++) roughThr[i] = startValue;
-  //ChipThresholdIntern(roughThr, roughStep, 0, 1, dacReg, xtalk, cals, trim, roughThr);
-  ChipThresholdIntern(roughThr, step, 0, 1, dacReg, xtalk, cals, trim, res);
-  //ChipThresholdIntern(roughThr, step, thrLevel, nTrig, dacReg, xtalk, cals, trim, res);  
+  TrimChip(trimV);
+  ChipThresholdIntern(roughThr, roughStep, 0, 1, dacReg, xtalk, cals, trim, roughThr);
+  TrimChip(trimV);
+  ChipThresholdIntern(roughThr, step, thrLevel, nTrig, dacReg, xtalk, cals, trim, res);  
   return 1;
 }
