@@ -202,6 +202,18 @@ class Roc(object):
             trimParameterFile.write(line)
         trimParameterFile.close()
 
+    def save_dacs(self, file_name):
+        try:
+            #TODO think of path
+            dacParameterFile = open('dacParameters_%s_C%s.dat'%(file_name, self.number),'w')
+            trimParameterFile = open('trimParameters_%s_C%s.dat'%(file_name, self.number),'w')
+        except IOError:
+            dacParameterFile = None
+            self.logger.warning('could not open dacParameter file for ROC %i'%self.number)
+        for dac in self.dacs():
+            line = '{0:3d} {1:15s} {2:3d}\n'.format(dac.number, dac.name, dac.value)
+            dacParameterFile.write(line)
+        dacParameterFile.close()
     
     @property
     def data(self):
