@@ -55,7 +55,7 @@ class PyCmd(CmdTB, object):
     """Simple command processor example."""
     def __init__(self):
         super(PyCmd, self).__init__()
-        self.prompt = 'PyXar > '
+        self.prompt = 'pyXar > '
         self.directory = 'data'
 
     def help_init(self):
