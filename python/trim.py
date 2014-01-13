@@ -25,10 +25,12 @@ class Trim(test.Test):
         self.logger.info('Running trimming to Vcal %s' %self.vcal)
         #Determine min vthr
         self.get_vthr()
-        self.tb.set_dac('VthrComp', self.vthr)
+        for i,roc in enumerate(self.dut.rocs()):
+            self.tb.set_dac_roc(roc,'VthrComp', self.vthr[i])
         #Determine min vtrim
         self.get_vtrim()
-        self.tb.set_dac('Vtrim', self.vtrim)
+        for i,roc in enumerate(self.dut.rocs()):
+            self.tb.set_dac_roc(roc,'Vtrim', self.vtrim[i])
         #Get trim bits and set them to half the max range
         trim_bits = self.dut.trim
         numpy.clip(trim_bits, self._max_trim_bit/2, self._max_trim_bit/2, out=trim_bits)
@@ -120,12 +122,13 @@ class Trim(test.Test):
         #TODO check if cals=False makes sense
         dut_VthrComp_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, self.reverse)
         #TODO think of data structure for DUT
+        self.vthr = []
         for roc in self.dut.rocs():
             dut_vthr_min = numpy.amin(dut_VthrComp_map[roc.number]) 
             #todo self.vthr...?
-            self.vthr = dut_vthr_min
-            self.tb.set_dac_roc(roc,'VthrComp', self.vthr)
-            self.logger.info('Determined VthrComp %s for %s' %(self.vthr,roc))
+            self.vthr.append(dut_vthr_min)
+            self.tb.set_dac_roc(roc,'VthrComp', dut_vthr_min)
+            #self.logger.info('Determined VthrComp %s for %s' %(self.vthr,roc))
         #TODO remove hardcoded values
         self.tb.set_dac('Vcal', 200)
 
@@ -137,6 +140,9 @@ class Trim(test.Test):
             #TODO implement pixel threshold
             #get Vcal Map
             dut_Vcal_map = self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse)
+            #ToDo
+            #self.tb.daq_enable()
+            self.vtrim = []
             for roc in self.dut.rocs():
                 #determine limit 5 standard deviations away from mean or 254 
                 vcalMaxLimit = min(254,numpy.mean(dut_Vcal_map[roc.number])+5*numpy.std(dut_Vcal_map[roc.number]))
@@ -168,10 +174,11 @@ class Trim(test.Test):
                 #    if  thr < self.vcal:
                 #        break
                 #    vtrim+=1
+                #self.tb.daq_disable()
                 self.tb.disarm_pixel(col,row)
                 #TODO determine necessary Vtrim for this pixel
                 self.logger.info('Found Vtrim %s'%vtrim)
                 #TODO self.vtrim
-                self.vtrim = vtrim
+                self.vtrim.append(vtrim)
                 self.logger.info('Determined Vtrim %s' %self.vtrim)
 
