@@ -56,6 +56,7 @@ class PyCmd(CmdTB, object):
     def __init__(self):
         super(PyCmd, self).__init__()
         self.prompt = 'PyXar > '
+        self.directory = 'data'
 
     def help_init(self):
         print "Initialize DUT and TB as specified in module and tb config."

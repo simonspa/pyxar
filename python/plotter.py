@@ -5,7 +5,7 @@ class Plotter(object):
 
     def __init__(self, config, test):
         self.config = config
-        self.name = type(test).__name__
+        self.name = test.name
         self._histos = [self.matrix_to_th2(result['data'], result['title'], result['x_title'], result['y_title']) for result in test.results]
     
     @property

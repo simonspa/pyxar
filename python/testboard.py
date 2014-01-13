@@ -10,7 +10,7 @@ class Testboard(dtb.PyDTB):
         super(Testboard, self).__init__()
         self.dut = dut
         usb_id = config.get('Testboard','id')
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info('Using testboard id: %s' %usb_id)
         self.open(usb_id)
         self._set_max_vals(config)

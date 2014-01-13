@@ -1,5 +1,7 @@
 import logging
 import time
+import os
+import ROOT
 from plotter import Plotter
 
 class Test(object):
@@ -8,8 +10,9 @@ class Test(object):
         self.tb = tb
         self.dut = tb.dut
         self.config = config
-        self.logger = logging.getLogger(__name__)
-        self.test = str(__name__)
+        self.name = self.__class__.__name__
+        self.logger = logging.getLogger(self.name)
+        self.test = str(self.__class__.__name__)
         self.x_title = 'Column'
         self.y_title = 'Row'
         self._results = []
@@ -22,6 +25,7 @@ class Test(object):
         self.prepare(config)
         self.run(config)
         self.cleanup(config)
+        self.dump(config)
         self.restore(config)
         stop_time = time.time()
         delta_t = stop_time - start_time 
@@ -57,6 +61,26 @@ class Test(object):
                 if dac.changed:
                     self.tb.set_dac_roc(roc,dac.number,dac.stored_value)
                     self.logger.info('restore %s'%dac)
+    
+    def dump(self,config):
+        '''Dump results in folder'''
+        directory = '%s/%s' %(self.config.get('General','work_dir'),self.name)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        #Write config
+        config_file = open('%s/config' %(directory), 'w')
+        config.write(config_file)
+        config_file.close()
+        #Write ROC settings
+        for roc in self.dut.rocs():
+            roc.save('', directory)
+        #Write HISTOS
+        #TODO does RECREATE make sense?
+        a_file = ROOT.TFile('%s/result.root' %(directory), 'RECREATE' )
+        for histo in self._histos:
+            histo.Write()
+        a_file.Close()
+        
 
     @property
     def results(self):
