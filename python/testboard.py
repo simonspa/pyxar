@@ -106,6 +106,7 @@ class Testboard(dtb.PyDTB):
         for dac in roc.dacs():
             self.logger.debug('Setting dac: %s' %dac)
             self.roc_set_DAC(dac.number, dac.value)
+            self.m_delay(50)
         self.flush()
     
     def set_dac(self, reg, value):
@@ -118,10 +119,13 @@ class Testboard(dtb.PyDTB):
         roc.dac(reg).value = value
         self.logger.debug('Setting %s %s' %(roc, roc.dac(reg)))
         self.roc_set_DAC(roc.dac(reg).number, roc.dac(reg).value)
+        self.m_delay(50)
 
     def select_roc(self, roc):
         #TODO check if roc is already active
         self.i2_c_addr(roc.number)
+        #if self.dut.n_tbms == 0:
+        #    self.set_roc_addr(0)
 
     def init_roc(self, roc):
         self.logger.info('Initializing ROC: %s' %roc.number)
@@ -130,6 +134,7 @@ class Testboard(dtb.PyDTB):
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
+        self.roc_chip_mask()
         self.roc_clr_cal()
         self.flush()
 
@@ -140,6 +145,7 @@ class Testboard(dtb.PyDTB):
             #TODO expose to config
             self.set_mod_addr(31)
         else:
+            self.tbm_enable(False)
             #Just without TBM
             self.set_roc_addr(0)
         self.m_delay(200)
@@ -156,11 +162,14 @@ class Testboard(dtb.PyDTB):
             self.trim_chip(roc.trim_for_tb)
 
     def get_calibrate(self, n_triggers):
+        #self.init_deser()
         for roc in self.dut.rocs():
             self.select_roc(roc)
+            #self.init_roc(roc)
             n_hits = []
             ph = []
             address = []
+            self.trim(self.dut.trim)
             self.calibrate(n_triggers, n_hits, ph, address)
             roc.data = decode(roc.n_cols, roc.n_rows, address, n_hits)
 
@@ -191,8 +200,8 @@ class Testboard(dtb.PyDTB):
                 ph_sum = []
                 self.logger.debug('DacDac pix(%s,%s), nTrig: %s, dac1: %s, 0, %s, dac2: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac1, dac_range1, dac2, dac_range2) )
                 self.dac_dac(n_triggers, pixel.col, pixel.row, roc.dac(dac1).number, dac_range1, roc.dac(dac2).number, dac_range2, n_hits, ph_sum)
-                self.roc_set_DAC(roc.dac(dac1).number, roc.dac(dac1).value)
-                self.roc_set_DAC(roc.dac(dac2).number, roc.dac(dac2).value)
+                self.set_dac_roc(roc,dac1,roc.dac(dac1).value)
+                self.set_dac_roc(roc,dac2,roc.dac(dac2).value)
                 pixel.data = numpy.transpose(list_to_matrix(dac_range1, dac_range2, n_hits))
 
     def get_threshold(self, n_triggers, dac, xtalk, cals, reverse):
@@ -204,12 +213,12 @@ class Testboard(dtb.PyDTB):
         thr_level = int(n_triggers/2.)
         for roc in self.dut.rocs():
             self.select_roc(roc)
-            self.logger.info('Start: %s, step: %s, thr_level: %s, n_triggers: %s, dac: %s, xtalk: %s, cals: %s' %(start, step, thr_level, n_triggers, dac, xtalk, cals))
+            self.logger.info('Start: %s, step: %s, thr_level: %s, n_triggers: %s, dac: %s, num: %s, xtalk: %s, cals: %s' %(start, step, thr_level, n_triggers, dac, roc.dac(dac).number, xtalk, cals))
             result = [0] * roc.n_pixels
             #TODO remove trimming, they will go away with new CTestboard
             trim = roc.trim_for_tb 
             self.chip_threshold(start, step, thr_level, n_triggers, roc.dac(dac).number , xtalk, cals, trim, result)
-            self.roc_set_DAC(roc.dac(dac).number, roc.dac(dac).value)
+            self.set_dac_roc(roc,dac,roc.dac(dac).value)
             roc.data = list_to_matrix(roc.n_cols, roc.n_rows, result)
         return self.dut.roc_data
             

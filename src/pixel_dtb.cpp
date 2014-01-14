@@ -419,7 +419,7 @@ void CTestboard::ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrL
 {
   int32_t thr, startValue;
   uint16_t daq_read_size = 32768;
-    Daq_Enable2(daq_read_size);
+    //Daq_Enable2(daq_read_size);
 	for (int col = 0; col < ROC_NUMCOLS; col++)
 	{
 		EnableColumn(col);
@@ -437,7 +437,7 @@ void CTestboard::ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrL
 		}
 		roc_Col_Enable(col, 0);
 	}
-    Daq_Disable2();
+    //Daq_Disable2();
 }
 
 void CTestboard::Init_Reset()

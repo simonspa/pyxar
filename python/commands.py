@@ -29,6 +29,7 @@ class CmdTB(shell_cmd, object):
     def __init__(self):
         super(CmdTB, self).__init__()
         self.TB = ['ia','id','init_dut','set_dac']
+        self.DUT = []
         #TODO, get rid of this, needed on OSX109
         if 'libedit' in readline.__doc__:
             readline.parse_and_bind("bind ^I rl_complete")
@@ -46,15 +47,38 @@ class CmdTB(shell_cmd, object):
         return completions
     
     def do_tb(self, line):
-        print 'Running tb %s' %line
         args = line.split()
         for arg in args[1:]:
             try: 
                 arg = int(arg)
             except ValueError:
                 pass
-        getattr(self.tb, args[0])(*args[1:])
+        try:
+            getattr(self.tb, args[0])(*args[1:])
+        except:
+            print 'wrong command'
 
+    def complete_dut(self, text, line, begidx, endidx):
+        if not text:
+            completions = self.DUT[:]
+        else:
+            completions = [ f
+                            for f in self.DUT
+                            if f.startswith(text)
+                            ]
+        return completions
+    
+    def do_dut(self, line):
+        args = line.split()
+        for arg in args[1:]:
+            try: 
+                arg = int(arg)
+            except ValueError:
+                pass
+        try:
+            getattr(self.tb.dut, args[0])(*args[1:])
+        except:
+            print 'wrong command'
 
 class PyCmd(CmdTB, object):
     """Simple command processor example."""
@@ -69,7 +93,7 @@ class PyCmd(CmdTB, object):
     def do_DacDac(self, line):
         #TODO Expose to cui
         self.dut.roc(0).pixel(5,5).active = True
-        self.dut.roc(1).pixel(5,5).active = True
+        #self.dut.roc(1).pixel(5,5).active = True
         self.run_test('DacDac')
     
     def help_DacDac(self):

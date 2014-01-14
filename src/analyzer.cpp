@@ -75,7 +75,7 @@ int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::
     uint32_t address;
     int pos = 0;
     //Module readout
-    bool TBM_Present = true;
+    bool TBM_Present = false;
     if (TBM_Present){
 	for (int i=0; i<data.size(); i++)
 	{
@@ -83,7 +83,7 @@ int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::
 		int q = (data[i]>>4) & 0xf;
 		switch (q)
 		{
-		case  0: printf("  0(%1X)", d); break;
+		case  0: break;
 
 		case  1: raw = d; break;
 		case  2: raw = (raw<<4) + d; break;
