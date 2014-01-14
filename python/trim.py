@@ -47,10 +47,17 @@ class Trim(test.Test):
         #TODO decide what is important to the user
         plot = Plotter(self.config, self)
         for roc in self.dut.rocs():
+            #save data
+            roc.save(self.vcal)
             min_axis = numpy.amin(self.vcal_dists)
             max_axis = numpy.amax(self.vcal_dists)
             vcal_stack = ROOT.THStack("Vcal %s" %roc.number,"Vcal dist for each trimming step; Vcal; # pixels")
             trim_stack = ROOT.THStack("TrimBits %s" %roc.number,"Trim bits for each trimming step; TrimBit; # pixels")
+            try:
+                self._histos.append(plot.matrix_to_th2(self.dut_VthrComp_map[roc.number],'Vthr_Map_ROC_%s'%roc.number,'col','row'))
+                self._histos.append(plot.matrix_to_th2(self.dut_Noise_map[roc.number],'Noise_Map_ROC_%s'%roc.number,'col','row'))
+            except AttributeError:
+                pass
             for step in range(self.n_steps+1):
                 self._histos.append(plot.matrix_to_th2(self.vcal_dists[step][roc.number],'Vcal_Map_%s_ROC_%s' %(step, roc.number),'col','row'))
                 h_vcal = Plotter.create_th1(self.vcal_dists[step][roc.number],'%s_ROC_%s' %(step, roc.number), self.dac, '# pixels', min_axis, max_axis) 
@@ -115,25 +122,38 @@ class Trim(test.Test):
     
     def get_vthr(self):
         if self.vthr > 0:
+            thr = self.vthr
+            self.vthr = []
+            for roc in self.dut.rocs():
+                self.vthr.append(thr)
             self.logger.info('Using min VthrComp %s from config' %self.vthr)
             return
         #Set vcal to expected value
         self.tb.set_dac('Vcal', self.vcal)
+        #self.tb.flush()
         #TODO check if cals=False makes sense
-        dut_VthrComp_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, self.reverse)
+        self.dut_VthrComp_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, self.reverse)
+        self.dut_Noise_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, True)
         #TODO think of data structure for DUT
         self.vthr = []
         for roc in self.dut.rocs():
-            dut_vthr_min = numpy.amin(dut_VthrComp_map[roc.number]) 
+            dut_vthr_min = numpy.amin(self.dut_VthrComp_map[roc.number])
+            dut_noise_min = numpy.amin(self.dut_Noise_map[roc.number])
             #todo self.vthr...?
+            if dut_vthr_min < dut_noise_min -10:
+                dut_vthr_min = dut_noise_min -10
             self.vthr.append(dut_vthr_min)
-            self.tb.set_dac_roc(roc,'VthrComp', dut_vthr_min)
+            #self.tb.set_dac_roc(roc,'VthrComp', dut_vthr_min)
             #self.logger.info('Determined VthrComp %s for %s' %(self.vthr,roc))
         #TODO remove hardcoded values
         self.tb.set_dac('Vcal', 200)
 
     def get_vtrim(self):
         if self.vtrim > 0:
+            vtrim = self.vtrim
+            self.vtrim = []
+            for roc in self.dut.rocs():
+                self.vtrim.append(vtrim)
             self.logger.info('Using min Vtrim %s from config' %self.vtrim)
             return
         else:
