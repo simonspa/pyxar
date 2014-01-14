@@ -47,8 +47,13 @@ class CmdTB(shell_cmd, object):
     
     def do_tb(self, line):
         print 'Running tb %s' %line
-        #TODO Think of better way of parsing
-        getattr(self.tb, line)
+        args = line.split()
+        for arg in args[1:]:
+            try: 
+                arg = int(arg)
+            except ValueError:
+                pass
+        getattr(self.tb, args[0])(*args[1:])
 
 
 class PyCmd(CmdTB, object):
@@ -64,6 +69,7 @@ class PyCmd(CmdTB, object):
     def do_DacDac(self, line):
         #TODO Expose to cui
         self.dut.roc(0).pixel(5,5).active = True
+        self.dut.roc(1).pixel(5,5).active = True
         self.run_test('DacDac')
     
     def help_DacDac(self):
