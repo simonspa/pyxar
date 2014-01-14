@@ -19,6 +19,7 @@ class Trim(test.Test):
         self._max_trim_bit = 15
         self.vcal_dists = []
         self.trim_dists = []
+        self._init_vcal = [roc.dac('Vcal').value for roc in self.dut.rocs()]
 
     def run(self, config): 
         pass
@@ -47,10 +48,17 @@ class Trim(test.Test):
         #TODO decide what is important to the user
         plot = Plotter(self.config, self)
         for roc in self.dut.rocs():
+            #save data
+            roc.save(self.vcal)
             min_axis = numpy.amin(self.vcal_dists)
             max_axis = numpy.amax(self.vcal_dists)
             vcal_stack = ROOT.THStack("Vcal %s" %roc.number,"Vcal dist for each trimming step; Vcal; # pixels")
             trim_stack = ROOT.THStack("TrimBits %s" %roc.number,"Trim bits for each trimming step; TrimBit; # pixels")
+            try:
+                self._histos.append(plot.matrix_to_th2(self.dut_VthrComp_map[roc.number],'Vthr_Map_ROC_%s'%roc.number,'col','row'))
+                self._histos.append(plot.matrix_to_th2(self.dut_Noise_map[roc.number],'Noise_Map_ROC_%s'%roc.number,'col','row'))
+            except AttributeError:
+                pass
             for step in range(self.n_steps+1):
                 self._histos.append(plot.matrix_to_th2(self.vcal_dists[step][roc.number],'Vcal_Map_%s_ROC_%s' %(step, roc.number),'col','row'))
                 h_vcal = Plotter.create_th1(self.vcal_dists[step][roc.number],'%s_ROC_%s' %(step, roc.number), self.dac, '# pixels', min_axis, max_axis) 
@@ -115,66 +123,68 @@ class Trim(test.Test):
     
     def get_vthr(self):
         if self.vthr > 0:
+            thr = self.vthr
+            self.vthr = []
+            for roc in self.dut.rocs():
+                self.vthr.append(thr)
             self.logger.info('Using min VthrComp %s from config' %self.vthr)
             return
         #Set vcal to expected value
         self.tb.set_dac('Vcal', self.vcal)
-        #TODO check if cals=False makes sense
-        dut_VthrComp_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, self.reverse)
-        #TODO think of data structure for DUT
+        self.dut_VthrComp_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, self.reverse)
+        self.dut_Noise_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, True)
         self.vthr = []
-        for roc in self.dut.rocs():
-            mean = numpy.mean(dut_VthrComp_map[roc.number])
-            std_dev = numpy.std(dut_VthrComp_map[roc.number])
-            minimum = numpy.amin(dut_VthrComp_map[roc.number]) 
-            dut_vthr_min = int(max(mean -3*std_dev, minimum))
-            self.logger.debug('VthrComp %s mean: %s sigma: %s min: %s set: %s' %(roc, mean, std_dev, minimum, dut_vthr_min))
-            #todo self.vthr...?
+        for i, roc in enumerate(self.dut.rocs()):
+            mean = numpy.mean(self.dut_VthrComp_map[roc.number])
+            std_dev = numpy.std(self.dut_VthrComp_map[roc.number])/2.
+            minimum = numpy.amin(self.dut_VthrComp_map[roc.number]) 
+            noise_min = numpy.amin(self.dut_Noise_map[roc.number])
+            dut_vthr_min = int(minimum)
+            if minimum < noise_min -10:
+                dut_vthr_min = int(noise_min -10)
+            #determine limit 3 standard deviations away from mean 
+            if minimum < int((mean -3*std_dev)):
+                dut_vthr_min = int((mean -3*std_dev))
+            self.logger.debug('VthrComp %s mean: %.2f sigma: %.2f min: %s noise_min %s set: %s' %(roc, mean, std_dev, minimum, noise_min, dut_vthr_min))
             self.vthr.append(dut_vthr_min)
-            self.tb.set_dac_roc(roc,'VthrComp', dut_vthr_min)
-            #self.logger.info('Determined VthrComp %s for %s' %(self.vthr,roc))
-        #TODO remove hardcoded values
-        self.tb.set_dac('Vcal', 200)
+            #reset Vcal to initial value
+            self.tb.set_dac_roc(roc,'Vcal', self._init_vcal[i])
 
     def get_vtrim(self):
         if self.vtrim > 0:
-            self.logger.info('Using min Vtrim %s from config' %self.vtrim)
-            return
-        else:
-            #TODO implement pixel threshold
-            #get Vcal Map
-            dut_Vcal_map = self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse)
-            #ToDo
-            #self.tb.daq_enable()
+            vtrim = self.vtrim
             self.vtrim = []
             for roc in self.dut.rocs():
-                #determine limit 5 standard deviations away from mean or 254 
-                vcalMaxLimit = min(254,numpy.mean(dut_Vcal_map[roc.number])+5*numpy.std(dut_Vcal_map[roc.number]))
-                #get maximum Vcal pixel
-                col,row =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(dut_Vcal_map[roc.number],vcalMaxLimit)),numpy.shape(dut_Vcal_map[roc.number]))
-                self.logger.info('Maximum Vcal of %s in Pixel %s, %s in %s'%(dut_Vcal_map[roc.number,col,row],col,row,roc))
-                vtrim = 0
-                self.tb.select_roc(roc)
-                self.tb.arm_pixel(col,row)
-                found = False
-                low =0
-                high=255
-                while low<high:
-                    vtrim = (high+low)//2
-                    self.tb.set_dac_roc(roc,'Vtrim', vtrim)
-                    thr = self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0)
-                    self.logger.debug('threshold = %s'%thr)
-                    if thr < self.vcal:
-                        high = vtrim-1
-                    elif thr > self.vcal:
-                        low = vtrim+1
-                    else:
-                        break
-                #self.tb.daq_disable()
-                self.tb.disarm_pixel(col,row)
-                #TODO determine necessary Vtrim for this pixel
-                self.logger.info('Found Vtrim %s'%vtrim)
-                #TODO self.vtrim
                 self.vtrim.append(vtrim)
-                self.logger.info('Determined Vtrim %s' %self.vtrim)
-
+            self.logger.info('Using min Vtrim %s from config' %self.vtrim)
+            return
+        #get Vcal Map
+        dut_Vcal_map = self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse)
+        self.vtrim = []
+        for roc in self.dut.rocs():
+            #determine limit 5 standard deviations away from mean or 254 
+            vcalMaxLimit = min(254,numpy.mean(dut_Vcal_map[roc.number])+5*numpy.std(dut_Vcal_map[roc.number]))
+            #get maximum Vcal pixel
+            col,row =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(dut_Vcal_map[roc.number],vcalMaxLimit)),numpy.shape(dut_Vcal_map[roc.number]))
+            self.logger.info('Maximum Vcal of %s in Pixel %s, %s in %s'%(dut_Vcal_map[roc.number,col,row],col,row,roc))
+            vtrim = 0
+            self.tb.select_roc(roc)
+            self.tb.arm_pixel(col,row)
+            found = False
+            low =0
+            high=255
+            while low<high:
+                vtrim = (high+low)//2
+                self.tb.set_dac_roc(roc,'Vtrim', vtrim)
+                thr = self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0)
+                self.logger.debug('threshold = %s'%thr)
+                if thr < self.vcal:
+                    high = vtrim-1
+                elif thr > self.vcal:
+                    low = vtrim+1
+                else:
+                    break
+            self.tb.disarm_pixel(col,row)
+            self.logger.info('Found Vtrim %s'%vtrim)
+            self.vtrim.append(vtrim)
+            self.logger.info('Determined Vtrim %s' %self.vtrim)
