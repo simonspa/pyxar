@@ -15,7 +15,7 @@ class PHCalibration(test.Test):
 
     def dump_to_file(self):
         for roc in self.dut.rocs():
-            outfile = open('phCalibration_C%s.dat' %roc.number, 'w')
+            outfile = open('%s/phCalibration_C%s.dat' %(self.directory, roc.number), 'w')
             outfile.write('Pulsee heights for the following Vcal values:\n')
             outfile.write('Low range: %s\n'%' '.join(self.points_lowrange))
             outfile.write('High range: %s\n\n'%' '.join(self.points_highrange))
@@ -35,9 +35,12 @@ class PHCalibration(test.Test):
         for point in self.points_highrange:
             self.logger.info('Scanning Pulseheight for Vcal %s (highrange)'%point)
             self.get_point(point)
-        self.dump_to_file()
 
     def get_point(self, point):
         self.tb.set_dac(self.dac, int(point))
         self.tb.get_ph(self.n_triggers)
         self._ph_data.append(numpy.copy(self.dut.roc_data))
+
+    def dump(self):
+        super(PHCalibration, self).dump()
+        self.dump_to_file()

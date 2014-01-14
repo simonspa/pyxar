@@ -11,6 +11,7 @@ class Test(object):
         self.dut = tb.dut
         self.config = config
         self.name = self.__class__.__name__
+        self.directory = '%s/%s' %(self.config.get('General','work_dir'),self.name)
         self.logger = logging.getLogger(self.name)
         self.test = str(self.__class__.__name__)
         self.x_title = 'Column'
@@ -25,13 +26,13 @@ class Test(object):
         self.prepare(config)
         self.run(config)
         self.cleanup(config)
-        self.dump(config)
-        self.restore(config)
+        self.dump()
+        self.restore()
         stop_time = time.time()
         delta_t = stop_time - start_time 
         self.logger.info('Test finished after %.1f seconds' %delta_t)
 
-    def store(self,config):
+    def store(self, config):
         '''save dac parameters before test'''
         self.dut.store_dacs()
 
@@ -54,7 +55,7 @@ class Test(object):
             self._histos.append(th1)
         self._histos.extend(plot.histos)
 
-    def restore(self,config):
+    def restore(self):
         '''restore saved dac parameters'''
         for roc in self.dut.rocs():
             for dac in roc.dacs():
@@ -62,21 +63,20 @@ class Test(object):
                     self.tb.set_dac_roc(roc,dac.number,dac.stored_value)
                     self.logger.info('restore %s'%dac)
     
-    def dump(self,config):
+    def dump(self):
         '''Dump results in folder'''
-        directory = '%s/%s' %(self.config.get('General','work_dir'),self.name)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
         #Write config
-        config_file = open('%s/config' %(directory), 'w')
-        config.write(config_file)
+        config_file = open('%s/config' %(self.directory), 'w')
+        self.config.write(config_file)
         config_file.close()
         #Write ROC settings
         for roc in self.dut.rocs():
-            roc.save('', directory)
+            roc.save('', self.directory)
         #Write HISTOS
         #TODO does RECREATE make sense?
-        a_file = ROOT.TFile('%s/result.root' %(directory), 'RECREATE' )
+        a_file = ROOT.TFile('%s/result.root' %(self.directory), 'RECREATE' )
         for histo in self._histos:
             histo.Write()
         a_file.Close()
