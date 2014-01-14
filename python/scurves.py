@@ -17,7 +17,7 @@ class SCurves(test.Test):
 
     def dump_to_file(self):
         for roc in self.dut.rocs():
-            outfile = open('SCurveData_C%s.dat' %roc.number, 'w')
+            outfile = open('%s/SCurveData_C%s.dat' %(self.directory, roc.number), 'w')
             outfile.write("Mode 1\n")
             for pixel in roc.pixels():
                 rough_thr = self.dut_thr_map[roc.number][pixel.col][pixel.row]
@@ -44,4 +44,7 @@ class SCurves(test.Test):
             self.tb.set_dac(self.dac, dac_value)
             self.tb.get_calibrate(self.n_triggers)
             self._scurve_data[dac_value] = numpy.copy(self.dut.roc_data)
+
+    def dump(self):
+        super(SCurves, self).dump()
         self.dump_to_file()
