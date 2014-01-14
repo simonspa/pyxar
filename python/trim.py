@@ -124,7 +124,11 @@ class Trim(test.Test):
         #TODO think of data structure for DUT
         self.vthr = []
         for roc in self.dut.rocs():
-            dut_vthr_min = numpy.amin(dut_VthrComp_map[roc.number]) 
+            mean = numpy.mean(dut_VthrComp_map[roc.number])
+            std_dev = numpy.std(dut_VthrComp_map[roc.number])
+            minimum = numpy.amin(dut_VthrComp_map[roc.number]) 
+            dut_vthr_min = int(max(mean -3*std_dev, minimum))
+            self.logger.debug('VthrComp %s mean: %s sigma: %s min: %s set: %s' %(roc, mean, std_dev, minimum, dut_vthr_min))
             #todo self.vthr...?
             self.vthr.append(dut_vthr_min)
             self.tb.set_dac_roc(roc,'VthrComp', dut_vthr_min)
@@ -166,14 +170,6 @@ class Trim(test.Test):
                         low = vtrim+1
                     else:
                         break
-
-                #while vtrim<255:
-                #    self.tb.set_dac_roc(roc,'Vtrim', vtrim)
-                #    thr = self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0)
-                #    self.logger.debug('threshold = %s'%thr)
-                #    if  thr < self.vcal:
-                #        break
-                #    vtrim+=1
                 #self.tb.daq_disable()
                 self.tb.disarm_pixel(col,row)
                 #TODO determine necessary Vtrim for this pixel
