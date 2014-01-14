@@ -142,9 +142,9 @@ class Trim(test.Test):
             dut_vthr_min = int(minimum)
             if minimum < noise_min -10:
                 dut_vthr_min = int(noise_min -10)
-            #determine limit 3 standard deviations away from mean 
-            if minimum < int((mean -3*std_dev)):
-                dut_vthr_min = int((mean -3*std_dev))
+            #determine limit 4 standard deviations away from mean 
+            if minimum < int((mean -4*std_dev)):
+                dut_vthr_min = int((mean -4*std_dev))
             self.logger.debug('VthrComp %s mean: %.2f sigma: %.2f min: %s noise_min %s set: %s' %(roc, mean, std_dev, minimum, noise_min, dut_vthr_min))
             self.vthr.append(dut_vthr_min)
             #reset Vcal to initial value
