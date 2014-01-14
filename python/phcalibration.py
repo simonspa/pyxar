@@ -14,15 +14,15 @@ class PHCalibration(test.Test):
         self._ph_data = []
 
     def dump_to_file(self):
-        for roc in self.dut.rocs():
+        for i, roc in enumerate(self.dut.rocs()):
             outfile = open('%s/phCalibration_C%s.dat' %(self.directory, roc.number), 'w')
-            outfile.write('Pulsee heights for the following Vcal values:\n')
+            outfile.write('Pulse heights for the following Vcal values:\n')
             outfile.write('Low range: %s\n'%' '.join(self.points_lowrange))
             outfile.write('High range: %s\n\n'%' '.join(self.points_highrange))
             for pixel in roc.pixels():
                 format_list = []
                 for point in self._ph_data:
-                    format_list.append(point[roc.number][pixel.col][pixel.row])
+                    format_list.append(point[i][pixel.col][pixel.row])
                 outfile.write("\t".join("%2.0f" % x for x in format_list)+'\tPix %i %i'%(pixel.col,pixel.row)+"\n")
             outfile.close()
 
