@@ -35,7 +35,7 @@ class CmdTB(shell_cmd, object):
         else:
             readline.parse_and_bind("tab: complete")
     
-    def complete_tb(self, f, text, line, begidx, endidx):
+    def complete_tb(self, text, line, begidx, endidx):
         if not text:
             completions = self.TB[:]
         else:
