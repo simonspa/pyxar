@@ -106,7 +106,6 @@ class Testboard(dtb.PyDTB):
         for dac in roc.dacs():
             self.logger.debug('Setting dac: %s' %dac)
             self.roc_set_DAC(dac.number, dac.value)
-            self.m_delay(50)
         self.flush()
     
     def set_dac(self, reg, value):
@@ -124,6 +123,7 @@ class Testboard(dtb.PyDTB):
     def select_roc(self, roc):
         #TODO check if roc is already active
         self.i2_c_addr(roc.number)
+        self.m_delay(200)
         #if self.dut.n_tbms == 0:
         #    self.set_roc_addr(0)
 
@@ -134,6 +134,7 @@ class Testboard(dtb.PyDTB):
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
+        self.m_delay(200)
         self.roc_clr_cal()
         self.flush()
 
@@ -161,14 +162,11 @@ class Testboard(dtb.PyDTB):
             self.trim_chip(roc.trim_for_tb)
 
     def get_calibrate(self, n_triggers):
-        #self.init_deser()
         for roc in self.dut.rocs():
             self.select_roc(roc)
-            #self.init_roc(roc)
             n_hits = []
             ph = []
             address = []
-            self.trim(self.dut.trim)
             self.calibrate(n_triggers, n_hits, ph, address)
             roc.data = decode(roc.n_cols, roc.n_rows, address, n_hits)
 
