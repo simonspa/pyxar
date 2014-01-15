@@ -105,8 +105,8 @@ const char *CTestboard::rpc_cmdName[] =
 	/*    91 */ "CalibratePixel$csss0s0i",
 	/*    92 */ "CalibrateDacScan$csssss2s2i",
 	/*    93 */ "CalibrateDacDacScan$csssssss2s2i",
-	/*    94 */ "TrimChip$c1c",
-	/*    95 */ "CalibrateMap$cs2s2i2I",
+	/*    94 */ "TrimChip$s1s",
+	/*    95 */ "CalibrateMap$ss2s2i2I",
 	/*    96 */ "TestColPixel$bCC2C",
 	/*    97 */ "Ethernet_Send$v3c",
 	/*    98 */ "Ethernet_RecvPackets$I"
@@ -1582,9 +1582,9 @@ int8_t CTestboard::CalibrateDacDacScan(int16_t rpc_par1, int16_t rpc_par2, int16
 	return rpc_par0;
 }
 
-int8_t CTestboard::TrimChip(vector<int8_t> &rpc_par1)
+int16_t CTestboard::TrimChip(vector<int16_t> &rpc_par1)
 { RPC_PROFILING
-	int8_t rpc_par0;
+	int16_t rpc_par0;
 	try {
 	uint16_t rpc_clientCallId = rpc_GetCallId(94);
 	RPC_THREAD_LOCK
@@ -1594,16 +1594,16 @@ int8_t CTestboard::TrimChip(vector<int8_t> &rpc_par1)
 	rpc_Send(*rpc_io, rpc_par1);
 	rpc_io->Flush();
 	msg.Receive(*rpc_io);
-	msg.Check(rpc_clientCallId,1);
-	rpc_par0 = msg.Get_INT8();
+	msg.Check(rpc_clientCallId,2);
+	rpc_par0 = msg.Get_INT16();
 	RPC_THREAD_UNLOCK
 	} catch (CRpcError &e) { e.SetFunction(94); throw; };
 	return rpc_par0;
 }
 
-int8_t CTestboard::CalibrateMap(int16_t rpc_par1, vectorR<int16_t> &rpc_par2, vectorR<int32_t> &rpc_par3, vectorR<uint32_t> &rpc_par4)
+int16_t CTestboard::CalibrateMap(int16_t rpc_par1, vectorR<int16_t> &rpc_par2, vectorR<int32_t> &rpc_par3, vectorR<uint32_t> &rpc_par4)
 { RPC_PROFILING
-	int8_t rpc_par0;
+	int16_t rpc_par0;
 	try {
 	uint16_t rpc_clientCallId = rpc_GetCallId(95);
 	RPC_THREAD_LOCK
@@ -1613,8 +1613,8 @@ int8_t CTestboard::CalibrateMap(int16_t rpc_par1, vectorR<int16_t> &rpc_par2, ve
 	msg.Send(*rpc_io);
 	rpc_io->Flush();
 	msg.Receive(*rpc_io);
-	msg.Check(rpc_clientCallId,1);
-	rpc_par0 = msg.Get_INT8();
+	msg.Check(rpc_clientCallId,2);
+	rpc_par0 = msg.Get_INT16();
 	rpc_Receive(*rpc_io, rpc_par2);
 	rpc_Receive(*rpc_io, rpc_par3);
 	rpc_Receive(*rpc_io, rpc_par4);

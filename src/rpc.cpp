@@ -105,8 +105,8 @@ void rpc_TranslateCallName(const string &in, string &out)
 {
 	out.clear();
 
-	unsigned int size = in.rfind('$');
-	unsigned int pos = size;
+	unsigned long size = in.rfind('$');
+	unsigned long pos = size;
 	try
 	{
 		if (pos == string::npos) throw int(1);
@@ -121,7 +121,7 @@ void rpc_TranslateCallName(const string &in, string &out)
 				pos++; if (pos >= in.size()) throw int(2);
 			}
 
-			char *type;
+			string type;
 			switch (in[pos])
 			{
 				case 'v': type = "void";     break;

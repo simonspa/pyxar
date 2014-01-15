@@ -50,8 +50,9 @@ cdef extern from "pixel_dtb.h":
         void ArmPixel(int, int) except +
         void DisarmPixel(int, int) except +
         int8_t CalibrateDacDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
-        int8_t CalibrateMap(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
-        int8_t TrimChip(vector[int8_t] &) 
+        int16_t CalibrateMap(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
+        int16_t TrimChip(vector[int16_t] &) except + 
+        int8_t TrimChip_Sof(vector[int16_t] &)
         int32_t MaskTest(int16_t, int16_t*) 
         int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
         int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
@@ -86,7 +87,6 @@ cdef class PyDTB:
         
     def open(self,usbId):
         self.thisptr.Open(usbId)
-        self.thisptr.Flush()
         self.thisptr.Init()
         self.thisptr.Flush()
         self.thisptr.Welcome()
@@ -101,15 +101,19 @@ cdef class PyDTB:
     
     def m_delay(self, value):
         self.thisptr.mDelay(value)
+        self.thisptr.Flush()
     
     def i2_c_addr(self,identity):
         self.thisptr.roc_I2cAddr(identity)
+        self.thisptr.Flush()
     
     def set_roc_addr(self, identity):
         self.thisptr.SetRocAddress(identity)
+        self.thisptr.Flush()
     
     def roc_set_DAC(self, reg, value):
         self.thisptr.roc_SetDAC(reg, value)
+        self.thisptr.Flush()
 
     def roc_clr_cal(self):
         self.thisptr.roc_ClrCal()
@@ -201,16 +205,24 @@ cdef class PyDTB:
         self.thisptr.Flush()
 
     def get_ia(self):
-        return self.thisptr.GetIA()*1000.
+        return_value = self.thisptr.GetIA()*1000.
+        self.thisptr.Flush()
+        return return_value
     
     def get_id(self):
-        return self.thisptr.GetID()*1000.
+        return_value =  self.thisptr.GetID()*1000.
+        self.thisptr.Flush()
+        return return_value
     
     def get_va(self):
-        return self.thisptr.GetVA()
+        return_value = self.thisptr.GetVA()
+        self.thisptr.Flush()
+        return return_value
     
     def get_vd(self):
-        return self.thisptr.GetVD()
+        return_value = self.thisptr.GetVD()
+        self.thisptr.Flush()
+        return return_value
     
     def reset_on(self):
         self.thisptr.ResetOn()
@@ -239,6 +251,7 @@ cdef class PyDTB:
         for i in xrange(n_trim):
             trim_bits[i] = trim[i]
         return_value = self.thisptr.ChipThreshold(start, step, thr_level, n_triggers, dac_reg, xtalk, cals, trim_bits, data)
+        self.thisptr.Flush()
         for i in xrange(n):
             result[i] = data[i] 
         free(data)
@@ -246,16 +259,20 @@ cdef class PyDTB:
         return return_value
     
     def trim_chip(self, trim):
-        cdef vector[int8_t] trim_bits
-        for i in xrange(len(trim_bits)):
-            trim_bits[i] = trim[i]
-        return self.thisptr.TrimChip(trim_bits)
+        cdef vector[int16_t] trim_bits
+        cdef int16_t bit
+        for bit in trim:
+            trim_bits.push_back(bit)
+        return_value = self.thisptr.TrimChip(trim_bits)
+        self.thisptr.Flush()
+        return return_value
 
     def calibrate(self,n_triggers, num_hits, ph, addr):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
         cdef vector[uint32_t] adr
-        return_value = self.thisptr.CalibrateMap(n_triggers, n_hits, ph_sum, adr)
+        return_value = self.thisptr.CalibrateMap_Sof(n_triggers, n_hits, ph_sum, adr)
+        self.thisptr.Flush()
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
@@ -265,12 +282,15 @@ cdef class PyDTB:
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
-        #return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
-        return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
+        return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
+        #return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
+        self.thisptr.Flush()
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
         return return_value
 
     def pixel_threshold(self, n_triggers, col, row, start, step, thrLevel, dacReg, xtalk, cals, trim):
-        return self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)
+        return_value = self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)
+        self.thisptr.Flush()
+        return return_value
