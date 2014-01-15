@@ -20,5 +20,10 @@ def decode(n_cols, n_rows, address, a_list):
     for i, adr in enumerate(address):
         row = adr & 0xff
         col = (adr >> 8) & 0xff
+        if ( (col >= n_cols or col < 0) or (row >= n_rows or row < 0)):
+            #raise Exception("Adress: %s decoded (col,row) (%s,%s)"%(adr,col,row))
+            print "Adress: %s decoded (col,row) (%s,%s)"%(hex(adr),col,row)
+            col = 0
+            row = 0
         roc_data[col][row] += a_list[i]
     return roc_data
