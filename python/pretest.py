@@ -23,7 +23,7 @@ class Pretest(test.Test):
     def cleanup(self, config):
         pass
 
-    def restore(self, config):
+    def restore(self):
         pass
 
     def rocs_programmable(self):
