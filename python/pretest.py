@@ -46,9 +46,14 @@ class Pretest(test.Test):
         self.logger.info('Adjusting Vana')
         self.tb.set_dac('Vana', 0)
         self.tb.set_dac('Vsf', 0)
-        zero_current = self.tb.get_ia()
-        self.logger.info('Measured zero current ia = %.2f' %zero_current)
         self.tb.m_delay(200)
+        zero_current = 0
+        n_meas = 3
+        for i in range(n_meas):
+            zero_current += self.tb.get_ia()
+            self.tb.m_delay(200)
+        zero_current /= float(n_meas)
+        self.logger.info('Measured zero current ia = %.2f' %zero_current)
         set_current = zero_current
         for roc in self.dut.rocs():
             set_current += self.set_current_vana
