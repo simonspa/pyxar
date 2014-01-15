@@ -137,18 +137,21 @@ class Trim(test.Test):
         for i, roc in enumerate(self.dut.rocs()):
             mean = numpy.mean(self.dut_VthrComp_map[roc.number])
             std_dev = numpy.std(self.dut_VthrComp_map[roc.number])/2.
-            minimum = numpy.amin(self.dut_VthrComp_map[roc.number]) 
+            minimum = numpy.amin(numpy.ma.masked_less_equal(self.dut_VthrComp_map[roc.number],0)) 
             noise_min = numpy.amin(self.dut_Noise_map[roc.number])
             dut_vthr_min = int(minimum)
-            if minimum < noise_min -10:
+            if minimum > noise_min -10:
                 dut_vthr_min = int(noise_min -10)
             #determine limit 4 standard deviations away from mean 
-            if minimum < int((mean -4*std_dev)):
-                dut_vthr_min = int((mean -4*std_dev))
+            #if dut_vthr_min == 0:
+            #if minimum < int((mean -4*std_dev)):
+            #    dut_vthr_min = int((mean -4*std_dev))
             self.logger.debug('VthrComp %s mean: %.2f sigma: %.2f min: %s noise_min %s set: %s' %(roc, mean, std_dev, minimum, noise_min, dut_vthr_min))
             self.vthr.append(dut_vthr_min)
             #reset Vcal to initial value
-            self.tb.set_dac_roc(roc,'Vcal', self._init_vcal[i])
+            #TODO: use restore fctn for this
+            #self.tb.set_dac_roc(roc,'Vcal', self._init_vcal[i])
+            self.tb.set_dac_roc(roc,'Vcal', 100)
 
     def get_vtrim(self):
         if self.vtrim > 0:
