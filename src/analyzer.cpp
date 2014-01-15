@@ -75,7 +75,7 @@ int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::
     uint32_t address;
     int pos = 0;
     //Module readout
-    bool TBM_Present = false;
+    bool TBM_Present = true;
     if (TBM_Present){
 	for (int i=0; i<data.size(); i++)
 	{

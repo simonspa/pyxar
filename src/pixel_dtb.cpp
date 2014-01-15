@@ -199,6 +199,18 @@ int8_t CTestboard::Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size_2, u
 	return 1;
 }
 
+int8_t CTestboard::TrimChip_Sof(vector<int16_t> &trim) {
+//int8_t CTestboard::TrimChip_Sof(int16_t trim[]) {
+	for (int col = 0; col < ROC_NUMCOLS; col++) {
+		for (int row = 0; row < ROC_NUMROWS; row++) {
+			roc_Pix_Trim(col, row, trim[col * ROC_NUMROWS + row]);
+            //cout << "Pix(" << col << "," << row <<") : " << trim[col * ROC_NUMROWS + row] << endl;
+		}
+	}
+	trim.clear();
+	return 1;
+}
+
 int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &adress)
 {
     uint16_t daq_read_size = 32768;
@@ -483,7 +495,7 @@ int32_t CTestboard::ChipThreshold(int32_t start, int32_t step, int32_t thrLevel,
   	roughStep = 4;
   }
 
-  vector<int8_t> trimV(trim, trim + sizeof trim / sizeof trim[0]);
+  vector<int16_t> trimV(trim, trim + sizeof trim / sizeof trim[0]);
  
   for (int i = 0; i < ROC_NUMROWS * ROC_NUMCOLS; i++) roughThr[i] = startValue;
   TrimChip(trimV);
