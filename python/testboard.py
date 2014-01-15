@@ -134,7 +134,6 @@ class Testboard(dtb.PyDTB):
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
-        self.roc_chip_mask()
         self.roc_clr_cal()
         self.flush()
 
