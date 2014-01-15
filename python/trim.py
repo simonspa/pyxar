@@ -19,7 +19,6 @@ class Trim(test.Test):
         self._max_trim_bit = 15
         self.vcal_dists = []
         self.trim_dists = []
-        self._init_vcal = [roc.dac('Vcal').value for roc in self.dut.rocs()]
 
     def run(self, config): 
         pass
@@ -138,10 +137,11 @@ class Trim(test.Test):
             mean = numpy.mean(self.dut_VthrComp_map[roc.number])
             std_dev = numpy.std(self.dut_VthrComp_map[roc.number])/2.
             minimum = numpy.amin(numpy.ma.masked_less_equal(self.dut_VthrComp_map[roc.number],0)) 
-            noise_min = numpy.amin(self.dut_Noise_map[roc.number])
+            #noise_min = numpy.amin(numpy.ma.masked_less_equal(self.dut_Noise_map[roc.number],0)) 
+            noise_min = -1
             dut_vthr_min = int(minimum)
-            if minimum > noise_min -10:
-                dut_vthr_min = int(noise_min -10)
+            #if minimum > noise_min -10:
+            #    dut_vthr_min = max(1,int(noise_min -10))
             #determine limit 4 standard deviations away from mean 
             #if dut_vthr_min == 0:
             #if minimum < int((mean -4*std_dev)):
@@ -149,9 +149,7 @@ class Trim(test.Test):
             self.logger.debug('VthrComp %s mean: %.2f sigma: %.2f min: %s noise_min %s set: %s' %(roc, mean, std_dev, minimum, noise_min, dut_vthr_min))
             self.vthr.append(dut_vthr_min)
             #reset Vcal to initial value
-            #TODO: use restore fctn for this
-            #self.tb.set_dac_roc(roc,'Vcal', self._init_vcal[i])
-            self.tb.set_dac_roc(roc,'Vcal', 100)
+            self.tb.set_dac_roc(roc,'Vcal', roc.dac('Vcal').stored_value)
 
     def get_vtrim(self):
         if self.vtrim > 0:
