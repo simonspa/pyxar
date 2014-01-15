@@ -95,7 +95,7 @@ CRocEvent* CRocDecoder::Read()
 	roc_event.eventNr = sample->eventNr;
 	roc_event.header = 0;
 	roc_event.pixel.clear();
-	unsigned int n = sample->data.size();
+	unsigned long n = sample->data.size();
 	if (n > 0)
 	{
 		roc_event.header = sample->data[0] & 0xfff;

@@ -17,7 +17,7 @@ using namespace std;
 
 struct CDataRecord
 {
-	unsigned int eventNr;
+	unsigned long eventNr;
 	vector<uint16_t> data;
 	void Print(CProtocol &f);
 };
@@ -52,7 +52,7 @@ class CBinaryDTBSource : public CSource<uint16_t>
 	CTestboard *tb;
 	uint16_t lastSample;
 
-	unsigned int pos;
+	unsigned long pos;
 	vector<uint16_t> buffer;
 	uint16_t FillBuffer();
 
@@ -72,8 +72,8 @@ class CBinaryFileSource : public CSource<uint16_t>
 	FILE *f;
 	uint16_t lastSample;
 
-	unsigned int size;
-	unsigned int pos;
+	unsigned long size;
+	unsigned long pos;
 	vector<uint16_t> buffer;
 	uint16_t FillBuffer();
 
