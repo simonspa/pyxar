@@ -13,4 +13,3 @@ class BondMap(test.Test):
         self.logger.info('Running BondMap')
         self.tb.set_dac('CtrlReg', 4)
         dut_thr_map = self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse) 
-        self.tb.set_dac('CtrlReg', 0)
