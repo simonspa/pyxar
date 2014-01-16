@@ -322,6 +322,7 @@ class DUT(object):
         """Initialize Module"""
         self._n_rocs = int(config.get('Module','rocs'))
         self._n_tbms = int(config.get('Module','tbms'))
+        self._work_dir = config.get('General','work_dir')
 
         self.data = None
         #define collections
@@ -334,7 +335,7 @@ class DUT(object):
             self._tbm_list.append(TBM(config,tbm))
 
         try:
-            self.MaskFile = open(config.get('Module','parameterFiles')+'/MaskFile.dat')
+            self.MaskFile = open('%s/MaskFile.dat'%(self._work_dir))
             self.logger.info('using pixel Mask File')
         except IOError:
             self.MaskFile = None
