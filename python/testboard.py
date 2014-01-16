@@ -2,7 +2,7 @@ import dtb
 import logging
 import numpy
 from helpers import list_to_matrix
-from helpers import decode
+from helpers import decode, decode_full
 
 class Testboard(dtb.PyDTB):
     
@@ -123,7 +123,7 @@ class Testboard(dtb.PyDTB):
     def select_roc(self, roc):
         #TODO check if roc is already active
         self.i2_c_addr(roc.number)
-        self.m_delay(200)
+        #self.m_delay(20)
         #if self.dut.n_tbms == 0:
         #    self.set_roc_addr(0)
 
@@ -131,10 +131,13 @@ class Testboard(dtb.PyDTB):
         self.logger.info('Initializing ROC: %s' %roc.number)
         self.select_roc(roc)
         self.set_dacs(roc)
+        self.flush()
+        self.m_delay(100)
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
         self.m_delay(200)
+        self.flush()
         self.roc_clr_cal()
         self.flush()
 
@@ -161,12 +164,42 @@ class Testboard(dtb.PyDTB):
             #TODO check that the translation to TB is really correct
             self.trim_chip(roc.trim_for_tb)
 
+    #def get_calibrate(self, n_triggers):
+    #    self.daq_enable() 
+    #    n_hits = []
+    #    ph = []
+    #    address = []
+    #    for col in range(self.dut.roc(0).n_cols):
+    #        for row in range(self.dut.roc(0).n_rows):
+    #            for roc in self.dut.rocs():
+    #                self.select_roc(roc)
+    #                if row > 0:
+    #                    self.roc_clr_cal();
+    #                    self.disarm_pixel(col,row-1)
+    #                self.arm_pixel(col,row)
+    #            self.calibrate(n_triggers, n_hits, ph, address)
+
+    #        for roc in self.dut.rocs():
+    #            self.select_roc(roc)
+    #            self.roc_clr_cal();
+    #            self.disarm_pixel(col,self.dut.roc(0).n_rows)
+
+    #    self.daq_disable()
+
+    #    #for roc in self.dut.rocs():
+    #    self.logger.debug('decoding')
+    #    #todo: 16
+    #    datas = decode_full(16,roc.n_cols, roc.n_rows, address, n_hits)
+    #    for roc in self.dut.rocs():
+    #        roc.data = datas[roc.number]
+
     def get_calibrate(self, n_triggers):
         for roc in self.dut.rocs():
             self.select_roc(roc)
             n_hits = []
             ph = []
             address = []
+            self.logger.debug('Calibrate %s'%roc)
             self.calibrate(n_triggers, n_hits, ph, address)
             roc.data = decode(roc.n_cols, roc.n_rows, address, n_hits)
 
