@@ -9,10 +9,7 @@ class Testboard(dtb.PyDTB):
     def __init__(self, config, dut):
         super(Testboard, self).__init__()
         self.dut = dut
-        usb_id = config.get('Testboard','id')
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info('Using testboard id: %s' %usb_id)
-        self.open(usb_id)
+        self.start_dtb(config)
         self._set_max_vals(config)
         #TODO expose timing to config
         self.adjust_sig_level(10)
@@ -25,6 +22,14 @@ class Testboard(dtb.PyDTB):
         if eval(config.get('Testboard','hv_on')):
             self.hv_on()
         self.init_dut(config)
+
+    def start_dtb(self, config):
+        usb_id = config.get('Testboard','id')
+        usb_id = self.find_dtb()
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.open(usb_id)
+        info_dtb = self.get_info()
+        self.logger.info('Using testboard id: %s\n%s' %(usb_id,info_dtb.strip()))
 
     def _set_max_vals(self, config):
         max_ia = int(config.get('Testboard','max_ia'))
