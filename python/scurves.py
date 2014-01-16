@@ -34,8 +34,8 @@ class SCurves(test.Test):
         #Measure map to determine rough threshold
         #TODO check if 4 is enough
         self.dut_thr_map = self.tb.get_threshold(4, self.dac, self.xtalk, self.cals, self.reverse)
-        self.min_thr_dac = max(0, numpy.amin(self.dut_thr_map)-self.scan_range/2)
-        self.max_thr_dac = min(255, numpy.amax(self.dut_thr_map)+self.scan_range/2)
+        self.min_thr_dac = max(0, numpy.amin( numpy.ma.masked_less_equal(self.dut_thr_map,0) )-self.scan_range/2)
+        self.max_thr_dac = min(255, numpy.amax( numpy.ma.masked_greater_equal(self.dut_thr_map,255) )+self.scan_range/2)
         #TODO remove and understand why threshold screws calibrate
         self.tb.init_dut(config)
         #Measure scan DAC around min and max threshold pm half the range
