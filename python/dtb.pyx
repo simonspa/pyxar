@@ -10,6 +10,7 @@ cdef extern from "pixel_dtb.h":
         CTestboard()
         bool FindDTB(string &usbId) except +
         bool Open(string &usbId) except +
+        void GetInfo(string &usbId) except +
         void Close() except +
         void Welcome() except +
         void Flush() except +
@@ -83,17 +84,22 @@ cdef class PyDTB:
         del self.thisptr
     
     def find_dtb(self):
-        cdef string a_dtb_id
-        self.thisptr.FindDTB(a_dtb_id)
-        return a_dtb_id
+        cdef string dtb_id
+        self.thisptr.FindDTB(dtb_id)
+        return dtb_id
         
-    def open(self,usbId):
-        self.thisptr.Open(usbId)
+    def open(self, usbId):
+        return_value = self.thisptr.Open(usbId)
         self.thisptr.Init()
         self.thisptr.Flush()
+        return return_value
+
+    def get_info(self):
+        cdef string dtb_info
         self.thisptr.Welcome()
+        self.thisptr.GetInfo(dtb_info)
         self.thisptr.Flush()
-        return True
+        return dtb_info
     
     def cleanup(self):
         self.thisptr.Close()
