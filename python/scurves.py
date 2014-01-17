@@ -21,8 +21,8 @@ class SCurves(test.Test):
             outfile.write("Mode 1\n")
             for pixel in roc.pixels():
                 rough_thr = self.dut_thr_map[roc.number][pixel.col][pixel.row]
-                min_range = max(0, rough_thr-self.scan_range/2)
-                max_range = min(255, rough_thr+self.scan_range/2)
+                min_range = max(self.min_thr_dac, rough_thr-self.scan_range/2)
+                max_range = min(self.max_thr_dac, rough_thr+self.scan_range/2)
                 format_list = []
                 for i in xrange(min_range, max_range):
                     format_list.append(self._scurve_data[i][roc.number][pixel.col][pixel.row])
