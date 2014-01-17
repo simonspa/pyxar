@@ -2,6 +2,7 @@
 import sys
 import os
 import logging
+import logging.config
 import ROOT
 from optparse import OptionParser
 from python import Testboard
@@ -11,10 +12,15 @@ from python import BetterConfigParser
 from gui import PxarGui
 from python import PyCmd
 from python import colorer
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 __version__ = "pyXar: 0.2"
 
-class Pxar(PyCmd):
+class Pyxar(PyCmd):
+
+    def __init__(self):
+        super(Pyxar, self).__init__()
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.has_gui = False
+        self.window = None
     
     def do_init(self, line):
         configs = ['%s/general' %(self.directory),'%s/module' %(self.directory),'%s/tb' %(self.directory),'%s/test.cfg' %(self.directory)]
@@ -23,10 +29,15 @@ class Pxar(PyCmd):
         self.config.set('General', 'work_dir', self.directory)
         self.dut = DUT(self.config)
         self.tb = Testboard(self.config, self.dut)
-        self.logger = logging.getLogger(__name__)
-        self.logger.info('Initialzed testboard')
+        self.logger.info('Initialzed DTB.')
         self.tb.ia()
         self.tb.id()
+
+    def do_gui(self):
+        if self.window:
+            return
+        self.has_gui = True
+        self.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
 
     @staticmethod
     def str_to_class(str):
@@ -35,17 +46,24 @@ class Pxar(PyCmd):
     def run_test(self, line):
         a_test = globals()[line](self.tb, self.config)
         a_test.go(self.config)
-        window.histos.extend(a_test.histos)
-        window.update()
+        if self.window:
+            self.window.histos.extend(a_test.histos)
+            self.window.update()
  
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-d", "--dir", dest="work_dir", default='data',
                   help="Folder with settings.", metavar="DIR")
+    parser.add_option("-n", "--nogui", dest="gui", default=True, action="store_false",
+                  help="Run without gui")
     (options, args) = parser.parse_args()
-    window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
-    pxar = Pxar()
-    pxar.directory = os.path.abspath(options.work_dir)
+    a_workdir = os.path.abspath(options.work_dir)
+    logging.config.fileConfig('%s/logging.conf' %a_workdir)
+    pyxar = Pyxar()
+    pyxar.directory = a_workdir
+    pyxar.has_gui = options.gui
+    if options.gui:
+        pyxar.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
     #TODO remove
-    pxar.do_init('')
-    pxar.cmdloop(__version__)
+    pyxar.do_init('')
+    pyxar.cmdloop(__version__)
