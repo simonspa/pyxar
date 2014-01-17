@@ -39,6 +39,7 @@ cdef extern from "pixel_dtb.h":
         void roc_Chip_Mask() except +
         void Daq_Select_Deser160(uint8_t shift) except +
         void Daq_Select_Deser400() except +
+        void Daq_Deser400_Reset(uint8_t) except +
         uint32_t Daq_Open(uint32_t buffersize, uint8_t channel) except +
         void Daq_Close(uint8_t channel) except +
         void Daq_Start(uint8_t channel) except +
@@ -99,10 +100,7 @@ cdef class PyDTB:
     def get_info(self):
         cdef string dtb_info
         self.thisptr.Init()
-        self.thisptr.Flush()
-        self.thisptr.Welcome()
         self.thisptr.GetInfo(dtb_info)
-        self.thisptr.Flush()
         return dtb_info
     
     def cleanup(self):
@@ -115,19 +113,16 @@ cdef class PyDTB:
         cdef uint16_t _value
         _value = value
         self.thisptr.mDelay(_value)
-        self.thisptr.Flush()
     
     def i2_c_addr(self, int identity):
         cdef uint8_t _identity
         _identity = identity
         self.thisptr.roc_I2cAddr(_identity)
-        self.thisptr.Flush()
     
     def set_roc_addr(self, int identity):
         cdef uint8_t _identity
         _identity = identity
         self.thisptr.SetRocAddress(_identity)
-        self.thisptr.Flush()
     
     def roc_set_DAC(self, int reg, int value):
         cdef uint8_t _reg
@@ -135,7 +130,6 @@ cdef class PyDTB:
         _reg = reg
         _value = value
         self.thisptr.roc_SetDAC(_reg, _value)
-        self.thisptr.Flush()
 
     def roc_clr_cal(self):
         self.thisptr.roc_ClrCal()
@@ -143,13 +137,11 @@ cdef class PyDTB:
     
     def roc_chip_mask(self):
         self.thisptr.roc_Chip_Mask()
-        self.thisptr.Flush()
     
     def set_mod_addr(self, int identity):
         cdef uint8_t _identity
         _identity = identity
         self.thisptr.mod_Addr(_identity)
-        self.thisptr.Flush()
 
     def adjust_sig_level(self, int level):
         cdef uint8_t _level
@@ -158,7 +150,6 @@ cdef class PyDTB:
         self.thisptr.Sig_SetLevel(SIG_CTR, _level)
         self.thisptr.Sig_SetLevel(SIG_CLK, _level)
         self.thisptr.Sig_SetLevel(SIG_TIN, _level)
-        self.thisptr.Flush()
     
     def tbm_set_DAC(self, int reg, int value):
         cdef uint8_t _reg
@@ -166,43 +157,37 @@ cdef class PyDTB:
         _reg = reg
         _value = value
         self.thisptr.tbm_Set(_reg, _value)
-        self.thisptr.Flush()
 
     def tbm_enable(self, bool on):
         cdef bool _on
         _on = on
         self.thisptr.tbm_Enable(_on)
-        self.thisptr.Flush()
 
     def daq_select_deser160(self, int shift):
         cdef uint8_t _shift
         _shift = shift
         self.thisptr.Daq_Select_Deser160(_shift)
-        self.thisptr.Flush()
     
     def daq_select_deser400(self):
         self.thisptr.Daq_Select_Deser400()
-        self.thisptr.Flush()
+        self.thisptr.Daq_Deser400_Reset(3)
     
     def daq_enable(self):
         self.thisptr.Daq_Open(32470, 0)
         self.thisptr.Daq_Open(32470, 1)
         self.thisptr.Daq_Start(0)
         self.thisptr.Daq_Start(1)
-        self.thisptr.Flush()
     
     def daq_disable(self):
         self.thisptr.Daq_Stop(0)
         self.thisptr.Daq_Stop(1)
         self.thisptr.Daq_Close(0)
         self.thisptr.Daq_Close(1)
-        self.thisptr.Flush()
     
     def set_mhz(self, int value):
         cdef int _value
         _value = value
         self.thisptr.SetMHz(_value)
-        self.thisptr.Flush()
     
     def pg_setcmd(self, addr, cmd):
         cdef uint16_t _addr
@@ -210,47 +195,38 @@ cdef class PyDTB:
         _addr = addr
         _cmd = cmd
         self.thisptr.Pg_SetCmd(_addr, _cmd)
-        self.thisptr.Flush()
     
     def pon(self):
         self.thisptr.Pon()
-        self.thisptr.Flush()
 
     def poff(self):
         self.thisptr.Poff()
-        self.thisptr.Flush()
     
     def hv_on(self):
         self.thisptr.HVon()
-        self.thisptr.Flush()
 
     def hv_off(self):
         self.thisptr.HVoff()
-        self.thisptr.Flush()
     
     def set_id(self, int value):
         cdef uint16_t _value
         _value = value
         self.thisptr.SetID(_value)
-        self.thisptr.Flush()
 
     def set_vd(self, int value):
         cdef uint16_t _value
         _value = value
         self.thisptr.SetVD(_value)
-        self.thisptr.Flush()
     
     def set_ia(self, int value):
         cdef uint16_t _value
         _value = value
         self.thisptr.SetIA(_value)
-        self.thisptr.Flush()
 
     def set_va(self, int value):
         cdef uint16_t _value
         _value = value
         self.thisptr.SetVA(_value)
-        self.thisptr.Flush()
 
     def get_ia(self):
         return_value = self.thisptr.GetIA()*1000.
@@ -269,25 +245,20 @@ cdef class PyDTB:
     
     def get_vd(self):
         return_value = self.thisptr.GetVD()
-        self.thisptr.Flush()
         return return_value
     
     def reset_on(self):
         self.thisptr.ResetOn()
-        self.thisptr.Flush()
 
     def reset_off(self):
         self.thisptr.ResetOff()
-        self.thisptr.Flush()
     
     def arm_pixel(self, col, row):
         self.thisptr.EnableColumn(col)
         self.thisptr.ArmPixel(col, row)
-        self.thisptr.Flush()
     
     def disarm_pixel(self, col, row):
         self.thisptr.DisarmPixel(col, row)
-        self.thisptr.Flush()
         
     def chip_threshold(self, start, step, thr_level, n_triggers, dac_reg, xtalk, cals, trim, result):
         cdef int32_t *data
@@ -299,7 +270,6 @@ cdef class PyDTB:
         for i in xrange(n_trim):
             trim_bits[i] = trim[i]
         return_value = self.thisptr.ChipThreshold(start, step, thr_level, n_triggers, dac_reg, xtalk, cals, trim_bits, data)
-        self.thisptr.Flush()
         for i in xrange(n):
             result[i] = data[i] 
         free(data)
@@ -311,8 +281,7 @@ cdef class PyDTB:
         cdef int16_t bit
         for bit in trim:
             trim_bits.push_back(bit)
-        return_value = self.thisptr.TrimChip(trim_bits)
-        self.thisptr.Flush()
+        cdef uint8_t return_value = self.thisptr.TrimChip(trim_bits)
         return return_value
 
     def calibrate(self,n_triggers, num_hits, ph, addr):
@@ -321,7 +290,6 @@ cdef class PyDTB:
         cdef vector[uint32_t] adr
         #return_value = self.thisptr.CalibrateMap_Sof(n_triggers, n_hits, ph_sum, adr)
         return_value = self.thisptr.CalibrateMap(n_triggers, n_hits, ph_sum, adr)
-        self.thisptr.Flush()
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
@@ -333,7 +301,6 @@ cdef class PyDTB:
         cdef vector[int32_t] ph_sum
         #return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
         return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
-        self.thisptr.Flush()
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
@@ -341,5 +308,4 @@ cdef class PyDTB:
 
     def pixel_threshold(self, n_triggers, col, row, start, step, thrLevel, dacReg, xtalk, cals, trim):
         return_value = self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)
-        self.thisptr.Flush()
         return return_value
