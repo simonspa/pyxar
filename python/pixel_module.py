@@ -117,7 +117,7 @@ class DAC(object):
 class Roc(object):
 
     def __init__(self, config,number=0):
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(self.__class__.__name__)
         """Initialize ROC (readout chip)."""
         self._n_rows = int(config.get('ROC','rows'))
         self._n_cols = int(config.get('ROC','cols'))
@@ -318,7 +318,7 @@ class TBM(object):
 
 class DUT(object):
     def __init__(self, config):
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(self.__class__.__name__)
         """Initialize Module"""
         self._n_rocs = int(config.get('Module','rocs'))
         self._n_tbms = int(config.get('Module','tbms'))

@@ -1,6 +1,7 @@
 import dtb
 import logging
 import numpy
+import sys
 from helpers import list_to_matrix
 from helpers import decode, decode_full
 
@@ -8,6 +9,7 @@ class Testboard(dtb.PyDTB):
     
     def __init__(self, config, dut):
         super(Testboard, self).__init__()
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.dut = dut
         self.start_dtb(config)
         self._set_max_vals(config)
@@ -25,9 +27,10 @@ class Testboard(dtb.PyDTB):
 
     def start_dtb(self, config):
         usb_id = config.get('Testboard','id')
-        usb_id = self.find_dtb()
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.open(usb_id)
+        usb_id = self.find_dtb(usb_id)
+        if not self.open(usb_id):
+            self.logger.info('No DTB %s found, no DTB connected.' %usb_id)
+            sys.exit(-1)
         info_dtb = self.get_info()
         self.logger.info('Using testboard id: %s\n%s' %(usb_id,info_dtb.strip()))
 

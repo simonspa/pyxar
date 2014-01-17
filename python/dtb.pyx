@@ -83,19 +83,23 @@ cdef class PyDTB:
     def __dealloc__(self): 
         del self.thisptr
     
-    def find_dtb(self):
+    def find_dtb(self, request_id):
         cdef string dtb_id
+        dtb_id = request_id
         self.thisptr.FindDTB(dtb_id)
         return dtb_id
         
     def open(self, usbId):
-        return_value = self.thisptr.Open(usbId)
-        self.thisptr.Init()
-        self.thisptr.Flush()
+        try:
+            return_value = self.thisptr.Open(usbId)
+        except RuntimeError:
+            return False
         return return_value
 
     def get_info(self):
         cdef string dtb_info
+        self.thisptr.Init()
+        self.thisptr.Flush()
         self.thisptr.Welcome()
         self.thisptr.GetInfo(dtb_info)
         self.thisptr.Flush()
