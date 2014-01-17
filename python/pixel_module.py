@@ -1,3 +1,4 @@
+import sys
 import copy
 import logging 
 import numpy
@@ -130,7 +131,10 @@ class Roc(object):
             self.dacParameterFile = open('%s/dacParameters_C%s.dat'%(self._work_dir, self.number))
         except IOError:
             self.dacParameterFile = None
-            self.logger.warning('could not open dacParameter file for ROC %i'%self.number)
+            self.logger.error('could not open dacParameter file for ROC %i:'%self.number)
+            self.logger.error('%s/dacParameters_C%s.dat'%(self._work_dir, self.number) )
+            self.logger.error('exiting')
+            sys.exit(-1)
         try:
             self.trimParameterFile = open('%s/trimParameters_C%s.dat'%(self._work_dir, self.number))
         except IOError:
