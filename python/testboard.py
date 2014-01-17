@@ -26,10 +26,12 @@ class Testboard(dtb.PyDTB):
         self.init_dut(config)
 
     def start_dtb(self, config):
-        usb_id = config.get('Testboard','id')
-        usb_id = self.find_dtb(usb_id)
+        request_id = config.get('Testboard','id')
+        usb_id = self.find_dtb(request_id)
+        if not (usb_id == request_id):
+            self.logger.warning('No DTB %s found, using %s instead.' %(request_id, usb_id) )
         if not self.open(usb_id):
-            self.logger.info('No DTB %s found, no DTB connected.' %usb_id)
+            self.logger.error('No DTB %s found, no DTB connected, exiting...' %usb_id)
             sys.exit(-1)
         info_dtb = self.get_info()
         self.logger.info('Using testboard id: %s\n%s' %(usb_id,info_dtb.strip()))
