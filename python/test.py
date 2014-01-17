@@ -12,7 +12,11 @@ class Test(object):
         self.config = config
         self.name = self.__class__.__name__
         self.directory = '%s/%s' %(self.config.get('General','work_dir'),self.name)
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
         self.logger = logging.getLogger(self.name)
+        test_logger = logging.FileHandler('%s/test.log' %self.directory)
+        self.logger.addHandler(test_logger)
         self.test = str(self.__class__.__name__)
         self.x_title = 'Column'
         self.y_title = 'Row'
@@ -65,8 +69,6 @@ class Test(object):
     
     def dump(self):
         '''Dump results in folder'''
-        if not os.path.exists(self.directory):
-            os.makedirs(self.directory)
         #Write config
         config_file = open('%s/config' %(self.directory), 'w')
         self.config.write(config_file)
