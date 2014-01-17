@@ -27,4 +27,4 @@ void DecodeTbmHeader(unsigned int raw);
 
 void DecodePixel(unsigned int raw);
 
-int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::vector<uint16_t> &ph, std::vector<uint32_t> &adr);
+int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::vector<uint16_t> &ph, std::vector<uint32_t> &adr, bool has_tbm = true);

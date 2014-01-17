@@ -7,7 +7,7 @@
 
 const char CTestboard::rpc_timestamp[] = "";
 
-const unsigned int CTestboard::rpc_cmdListSize = 99;
+const unsigned int CTestboard::rpc_cmdListSize = 100;
 
 const char *CTestboard::rpc_cmdName[] =
 {
@@ -107,9 +107,10 @@ const char *CTestboard::rpc_cmdName[] =
 	/*    93 */ "CalibrateDacDacScan$csssssss2s2i",
 	/*    94 */ "TrimChip$s1s",
 	/*    95 */ "CalibrateMap$ss2s2i2I",
-	/*    96 */ "TestColPixel$bCC2C",
-	/*    97 */ "Ethernet_Send$v3c",
-	/*    98 */ "Ethernet_RecvPackets$I"
+	/*    96 */ "TriggerRow$ssss",
+	/*    97 */ "TestColPixel$bCC2C",
+	/*    98 */ "Ethernet_Send$v3c",
+	/*    99 */ "Ethernet_RecvPackets$I"
 };
 
 uint16_t CTestboard::GetRpcVersion()
@@ -1623,11 +1624,32 @@ int16_t CTestboard::CalibrateMap(int16_t rpc_par1, vectorR<int16_t> &rpc_par2, v
 	return rpc_par0;
 }
 
+int16_t CTestboard::TriggerRow(int16_t rpc_par1, int16_t rpc_par2, int16_t rpc_par3)
+{ RPC_PROFILING
+	int16_t rpc_par0;
+	try {
+	uint16_t rpc_clientCallId = rpc_GetCallId(96);
+	RPC_THREAD_LOCK
+	rpcMessage msg;
+	msg.Create(rpc_clientCallId);
+	msg.Put_INT16(rpc_par1);
+	msg.Put_INT16(rpc_par2);
+	msg.Put_INT16(rpc_par3);
+	msg.Send(*rpc_io);
+	rpc_io->Flush();
+	msg.Receive(*rpc_io);
+	msg.Check(rpc_clientCallId,2);
+	rpc_par0 = msg.Get_INT16();
+	RPC_THREAD_UNLOCK
+	} catch (CRpcError &e) { e.SetFunction(96); throw; };
+	return rpc_par0;
+}
+
 bool CTestboard::TestColPixel(uint8_t rpc_par1, uint8_t rpc_par2, vectorR<uint8_t> &rpc_par3)
 { RPC_PROFILING
 	bool rpc_par0;
 	try {
-	uint16_t rpc_clientCallId = rpc_GetCallId(96);
+	uint16_t rpc_clientCallId = rpc_GetCallId(97);
 	RPC_THREAD_LOCK
 	rpcMessage msg;
 	msg.Create(rpc_clientCallId);
@@ -1640,28 +1662,28 @@ bool CTestboard::TestColPixel(uint8_t rpc_par1, uint8_t rpc_par2, vectorR<uint8_
 	rpc_par0 = msg.Get_BOOL();
 	rpc_Receive(*rpc_io, rpc_par3);
 	RPC_THREAD_UNLOCK
-	} catch (CRpcError &e) { e.SetFunction(96); throw; };
+	} catch (CRpcError &e) { e.SetFunction(97); throw; };
 	return rpc_par0;
 }
 
 void CTestboard::Ethernet_Send(string &rpc_par1)
 { RPC_PROFILING
 	try {
-	uint16_t rpc_clientCallId = rpc_GetCallId(97);
+	uint16_t rpc_clientCallId = rpc_GetCallId(98);
 	RPC_THREAD_LOCK
 	rpcMessage msg;
 	msg.Create(rpc_clientCallId);
 	msg.Send(*rpc_io);
 	rpc_Send(*rpc_io, rpc_par1);
 	RPC_THREAD_UNLOCK
-	} catch (CRpcError &e) { e.SetFunction(97); throw; };
+	} catch (CRpcError &e) { e.SetFunction(98); throw; };
 }
 
 uint32_t CTestboard::Ethernet_RecvPackets()
 { RPC_PROFILING
 	uint32_t rpc_par0;
 	try {
-	uint16_t rpc_clientCallId = rpc_GetCallId(98);
+	uint16_t rpc_clientCallId = rpc_GetCallId(99);
 	RPC_THREAD_LOCK
 	rpcMessage msg;
 	msg.Create(rpc_clientCallId);
@@ -1671,7 +1693,7 @@ uint32_t CTestboard::Ethernet_RecvPackets()
 	msg.Check(rpc_clientCallId,4);
 	rpc_par0 = msg.Get_UINT32();
 	RPC_THREAD_UNLOCK
-	} catch (CRpcError &e) { e.SetFunction(98); throw; };
+	} catch (CRpcError &e) { e.SetFunction(99); throw; };
 	return rpc_par0;
 }
 

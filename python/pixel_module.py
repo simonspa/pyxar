@@ -1,3 +1,4 @@
+import sys
 import copy
 import logging 
 import numpy
@@ -130,7 +131,10 @@ class Roc(object):
             self.dacParameterFile = open('%s/dacParameters_C%s.dat'%(self._work_dir, self.number))
         except IOError:
             self.dacParameterFile = None
-            self.logger.warning('could not open dacParameter file for ROC %i'%self.number)
+            self.logger.error('could not open dacParameter file for ROC %i:'%self.number)
+            self.logger.error('%s/dacParameters_C%s.dat'%(self._work_dir, self.number) )
+            self.logger.error('exiting')
+            sys.exit(-1)
         try:
             self.trimParameterFile = open('%s/trimParameters_C%s.dat'%(self._work_dir, self.number))
         except IOError:
@@ -158,7 +162,10 @@ class Roc(object):
             num, dac_name, val = line.split()
             dac_number = int(num)
             self._dac_number_to_name[dac_number] = dac_name
-            self._dac_name_to_number = {v:k for k, v in self._dac_number_to_name.items()}
+            #Python 2.2
+            self._dac_name_to_number = dict([(v, k) for k, v in self._dac_number_to_name.iteritems()]) 
+            #Python 2.7
+            #self._dac_name_to_number = {v:k for k, v in self._dac_number_to_name.items()}
             dac_bits = eval(config.get('ROC','dac_bits'))
             self._dac_dict[dac_number] = (DAC(dac_number,dac_name,dac_bits[dac_number],int(val)))
 

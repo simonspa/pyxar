@@ -63,7 +63,7 @@ void DecodePixel(unsigned int raw, int16_t &n, int16_t &ph, int16_t &col, int16_
 	//printf("   Pixel [%05o] %2i/%2i: %3u", raw, col, row, ph);
 }
 
-int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::vector<uint16_t> &ph, std::vector<uint32_t> &adr)
+int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::vector<uint16_t> &ph, std::vector<uint32_t> &adr, bool has_tbm)
 { 
 
     uint32_t words_remaining = 0;
@@ -75,8 +75,7 @@ int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::
     uint32_t address;
     int pos = 0;
     //Module readout
-    bool TBM_Present = true;
-    if (TBM_Present){
+    if (has_tbm){
 	for (int i=0; i<data.size(); i++)
 	{
 		int d = data[i] & 0xf;

@@ -177,25 +177,25 @@ void CTestboard::InitDAC()
 // to be renamed after kicking out psi46expert dependency
 int8_t CTestboard::Daq_Enable2(int32_t block) {
 	Daq_Open(block, 0);
-	Daq_Open(block, 1);
+	//Daq_Open(block, 1);
 	Daq_Start(0);
-	Daq_Start(1);
+	//Daq_Start(1);
 	return 1;
 }
 // to be renamed after kicking out psi46expert dependency
 int8_t CTestboard::Daq_Disable2() {
 	Daq_Stop(0);
-	Daq_Stop(1);
+	//Daq_Stop(1);
 	Daq_Close(0);
-	Daq_Close(1);
+	//Daq_Close(1);
 	return 1;
 }
 
 int8_t CTestboard::Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size_2, uint32_t &n) {
-	vector<uint16_t> data1;
+	//vector<uint16_t> data1;
     Daq_Read(data, daq_read_size_2, n, 0);
-    Daq_Read(data1, daq_read_size_2, n, 1);
-    data.insert( data.end(), data1.begin(), data1.end() );
+    //Daq_Read(data1, daq_read_size_2, n, 1);
+    //data.insert( data.end(), data1.begin(), data1.end() );
 	return 1;
 }
 
@@ -220,10 +220,12 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 	vector<uint16_t> nhits, ph;
     vector<uint32_t> adr;
 	
+    Daq_Deser400_Reset(3);
     Daq_Enable2(daq_read_size);
 	vector<uint16_t> data;
 
-	for (uint8_t col = 0; col < ROC_NUMCOLS; col++) {
+	for (int16_t col = 0; col < ROC_NUMCOLS; col++) {
+        //TriggerRow(nTriggers,col,50);
 		roc_Col_Enable(col, true);
 		for (uint8_t row = 0; row < ROC_NUMROWS; row++) {
 		//for (uint8_t row = 0; row < 20; row++) {

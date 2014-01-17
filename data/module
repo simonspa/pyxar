@@ -7,6 +7,6 @@ dac_bits = {1:4,2:8,3:8,4:8,7:8,9:8,10:8,11:8,12:8,13:8,14:8,15:8,17:8,18:8,19:8
 channels = 2
 
 [Module]
-rocs = 2
+rocs = 16
 tbms = 1
 parameterFiles = /Users/niklas/Pixel/ethpxar/data/

@@ -20,7 +20,9 @@ class Testboard(dtb.PyDTB):
         self.init_deser()
         #END TODO
         self.pon()
+        self.m_delay(400)
         self.reset_off()
+        self.m_delay(200)
         if eval(config.get('Testboard','hv_on')):
             self.hv_on()
         self.init_dut(config)
@@ -55,7 +57,6 @@ class Testboard(dtb.PyDTB):
         self.hv_off()
         self.poff()
         self.cleanup()
-
 
     def init_pg(self, config):
         cal_delay = int(config.get('Testboard','pg_cal'))
@@ -106,12 +107,10 @@ class Testboard(dtb.PyDTB):
         self.tbm_set_DAC(0xFA,0x00)    
         self.tbm_set_DAC(0xEC,0x00)    # Temp measuerement control
         self.tbm_set_DAC(0xFC,0x00)    
-        self.m_delay(200)
-        self.flush()
+        self.m_delay(100)
 
     # set initial values
     def set_dacs(self, roc):
-        self.flush()
         self.logger.debug('Setting DACs of %s' %roc)
         for dac in roc.dacs():
             self.logger.debug('Setting dac: %s' %dac)
@@ -119,9 +118,9 @@ class Testboard(dtb.PyDTB):
         self.flush()
     
     def set_dac(self, reg, value):
-        self.flush()
         for roc in self.dut.rocs():
             self.set_dac_roc(roc,reg,value)
+        self.flush()
 
     def set_dac_roc(self,roc,reg,value):
         self.select_roc(roc)
@@ -133,23 +132,18 @@ class Testboard(dtb.PyDTB):
     def select_roc(self, roc):
         #TODO check if roc is already active
         self.i2_c_addr(roc.number)
-        #self.m_delay(20)
-        #if self.dut.n_tbms == 0:
-        #    self.set_roc_addr(0)
+        self.m_delay(50)
 
     def init_roc(self, roc):
         self.logger.info('Initializing ROC: %s' %roc.number)
         self.select_roc(roc)
         self.set_dacs(roc)
-        self.flush()
         self.m_delay(100)
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
-        self.m_delay(200)
-        self.flush()
+        self.m_delay(100)
         self.roc_clr_cal()
-        self.flush()
 
     def init_dut(self, config):
         if self.dut.n_tbms > 0:
@@ -162,7 +156,6 @@ class Testboard(dtb.PyDTB):
             #Just without TBM
             self.set_roc_addr(0)
         self.m_delay(200)
-        self.flush()
         for tbm in self.dut.tbms():
             self.init_tbm(tbm, config)
         for roc in self.dut.rocs():
@@ -171,37 +164,9 @@ class Testboard(dtb.PyDTB):
     def trim(self, trim_bits):
         self.dut.trim = trim_bits
         for roc in self.dut.rocs():
-            #TODO check that the translation to TB is really correct
+            self.select_roc(roc)
             self.trim_chip(roc.trim_for_tb)
-
-    #def get_calibrate(self, n_triggers):
-    #    self.daq_enable() 
-    #    n_hits = []
-    #    ph = []
-    #    address = []
-    #    for col in range(self.dut.roc(0).n_cols):
-    #        for row in range(self.dut.roc(0).n_rows):
-    #            for roc in self.dut.rocs():
-    #                self.select_roc(roc)
-    #                if row > 0:
-    #                    self.roc_clr_cal();
-    #                    self.disarm_pixel(col,row-1)
-    #                self.arm_pixel(col,row)
-    #            self.calibrate(n_triggers, n_hits, ph, address)
-
-    #        for roc in self.dut.rocs():
-    #            self.select_roc(roc)
-    #            self.roc_clr_cal();
-    #            self.disarm_pixel(col,self.dut.roc(0).n_rows)
-
-    #    self.daq_disable()
-
-    #    #for roc in self.dut.rocs():
-    #    self.logger.debug('decoding')
-    #    #todo: 16
-    #    datas = decode_full(16,roc.n_cols, roc.n_rows, address, n_hits)
-    #    for roc in self.dut.rocs():
-    #        roc.data = datas[roc.number]
+            self.m_delay(100)
 
     def get_calibrate(self, n_triggers):
         for roc in self.dut.rocs():
@@ -209,7 +174,7 @@ class Testboard(dtb.PyDTB):
             n_hits = []
             ph = []
             address = []
-            self.logger.debug('Calibrate %s'%roc)
+            self.logger.debug('Calibrate %s , n_triggers: %s' %(roc, n_triggers) )
             self.calibrate(n_triggers, n_hits, ph, address)
             roc.data = decode(roc.n_cols, roc.n_rows, address, n_hits)
 
@@ -219,6 +184,7 @@ class Testboard(dtb.PyDTB):
             n_hits = []
             ph_sum = []
             address = []
+            self.logger.debug('PH %s , n_triggers: %s' %(roc, n_triggers) )
             self.calibrate(n_triggers, n_hits, ph_sum, address)
             ph = []
             for p,n in zip(ph_sum,n_hits):
