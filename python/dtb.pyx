@@ -112,19 +112,29 @@ cdef class PyDTB:
         self.thisptr.Flush()
     
     def m_delay(self, value):
-        self.thisptr.mDelay(value)
+        cdef uint16_t _value
+        _value = value
+        self.thisptr.mDelay(_value)
         self.thisptr.Flush()
     
     def i2_c_addr(self,identity):
-        self.thisptr.roc_I2cAddr(identity)
+        cdef uint8_t _identity
+        _identity = identity
+        self.thisptr.roc_I2cAddr(_identity)
         self.thisptr.Flush()
     
     def set_roc_addr(self, identity):
-        self.thisptr.SetRocAddress(identity)
+        cdef uint8_t _identity
+        _identity = identity
+        self.thisptr.SetRocAddress(_identity)
         self.thisptr.Flush()
     
     def roc_set_DAC(self, reg, value):
-        self.thisptr.roc_SetDAC(reg, value)
+        cdef uint8_t _reg
+        cdef uint8_t _value
+        _reg = reg
+        _value = value
+        self.thisptr.roc_SetDAC(_reg, _value)
         self.thisptr.Flush()
 
     def roc_clr_cal(self):
@@ -136,26 +146,38 @@ cdef class PyDTB:
         self.thisptr.Flush()
     
     def set_mod_addr(self, identity):
-        self.thisptr.mod_Addr(identity)
+        cdef uint8_t _identity
+        _identity = identity
+        self.thisptr.mod_Addr(_identity)
         self.thisptr.Flush()
 
     def adjust_sig_level(self, level):
-        self.thisptr.Sig_SetLevel(SIG_SDA, level)
-        self.thisptr.Sig_SetLevel(SIG_CTR, level)
-        self.thisptr.Sig_SetLevel(SIG_CLK, level)
-        self.thisptr.Sig_SetLevel(SIG_TIN, level)
+        cdef uint8_t _level
+        _level = level
+        self.thisptr.Sig_SetLevel(SIG_SDA, _level)
+        self.thisptr.Sig_SetLevel(SIG_CTR, _level)
+        self.thisptr.Sig_SetLevel(SIG_CLK, _level)
+        self.thisptr.Sig_SetLevel(SIG_TIN, _level)
         self.thisptr.Flush()
     
     def tbm_set_DAC(self, reg, value):
-        self.thisptr.tbm_Set(reg, value)
+        cdef uint8_t _reg
+        cdef uint8_t _value
+        _reg = reg
+        _value = value
+        self.thisptr.tbm_Set(_reg, _value)
         self.thisptr.Flush()
 
     def tbm_enable(self, on):
-        self.thisptr.tbm_Enable(on)
+        cdef bool _on
+        _on = on
+        self.thisptr.tbm_Enable(_on)
         self.thisptr.Flush()
 
     def daq_select_deser160(self, shift):
-        self.thisptr.Daq_Select_Deser160(shift)
+        cdef uint8_t _shift
+        _shift = shift
+        self.thisptr.Daq_Select_Deser160(_shift)
         self.thisptr.Flush()
     
     def daq_select_deser400(self):
@@ -181,7 +203,11 @@ cdef class PyDTB:
         self.thisptr.Flush()
     
     def pg_setcmd(self, addr, cmd):
-        self.thisptr.Pg_SetCmd(addr, cmd)
+        cdef uint16_t _addr
+        cdef uint16_t _cmd
+        _addr = addr
+        _cmd = cmd
+        self.thisptr.Pg_SetCmd(_addr, _cmd)
         self.thisptr.Flush()
     
     def pon(self):
@@ -201,19 +227,27 @@ cdef class PyDTB:
         self.thisptr.Flush()
     
     def set_id(self, value):
-        self.thisptr.SetID(value)
+        cdef uint16_t _value
+        _value = value
+        self.thisptr.SetID(_value)
         self.thisptr.Flush()
 
     def set_vd(self, value):
-        self.thisptr.SetVD(value)
+        cdef uint16_t _value
+        _value = value
+        self.thisptr.SetVD(_value)
         self.thisptr.Flush()
     
     def set_ia(self, value):
-        self.thisptr.SetIA(value)
+        cdef uint16_t _value
+        _value = value
+        self.thisptr.SetIA(_value)
         self.thisptr.Flush()
 
     def set_va(self, value):
-        self.thisptr.SetVA(value)
+        cdef uint16_t _value
+        _value = value
+        self.thisptr.SetVA(_value)
         self.thisptr.Flush()
 
     def get_ia(self):
