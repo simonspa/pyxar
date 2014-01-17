@@ -33,7 +33,7 @@ class Pyxar(PyCmd):
         self.tb.ia()
         self.tb.id()
 
-    def do_gui(self):
+    def do_gui(self, line):
         if self.window:
             return
         self.has_gui = True
