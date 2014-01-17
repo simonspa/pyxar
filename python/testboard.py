@@ -9,6 +9,7 @@ class Testboard(dtb.PyDTB):
     
     def __init__(self, config, dut):
         super(Testboard, self).__init__()
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.dut = dut
         self.start_dtb(config)
         self._set_max_vals(config)
@@ -27,7 +28,6 @@ class Testboard(dtb.PyDTB):
     def start_dtb(self, config):
         usb_id = config.get('Testboard','id')
         usb_id = self.find_dtb(usb_id)
-        self.logger = logging.getLogger(self.__class__.__name__)
         if not self.open(usb_id):
             self.logger.info('No DTB %s found, no DTB connected.' %usb_id)
             sys.exit(-1)
