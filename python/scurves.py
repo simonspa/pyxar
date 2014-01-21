@@ -26,7 +26,10 @@ class SCurves(test.Test):
                 format_list = []
                 for i in xrange(min_range, max_range):
                     format_list.append(self._scurve_data[i][roc.number][pixel.col][pixel.row])
-                outfile.write(str(self.scan_range)+" "+str(rough_thr)+" "+" ".join("%2.0f" % x for x in format_list)+"\n")
+                if not len(format_list) == self.scan_range:
+                    self.logger.warning('No valid data for %s %s, filling 0' %(roc, pixel))
+                    format_list = [0]*32
+                outfile.write('%2.0f\t%3.0f\t'%(self.scan_range, rough_thr)+'\t'.join("%2.0f" % x for x in format_list)+'\n')
             outfile.close()
         
 
