@@ -9,6 +9,6 @@ setup(
                   ["python/dtb.pyx","src/analyzer.cpp","src/protocol.cpp","src/datastream.cpp","src/pixel_dtb.cpp","src/rpc.cpp","src/rpc_error.cpp","src/profiler.cpp","src/rpc_calls.cpp","src/rpc_io.cpp","src/USBInterface.libftd2xx.cc"],
                   include_dirs=["src","/usr/local/include"],
                   language="c++",
-                  libraries=["m"] 
+                  libraries=["ftd2xx"] 
         ),
 ])
