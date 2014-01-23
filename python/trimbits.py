@@ -12,12 +12,13 @@ class TrimBits(test.Test):
         self.reverse = False
         self.dac = 'VthrComp'
         self.n_triggers = int(config.get('TrimBits','n_triggers'))
+        self.vtrim15 = int(config.get('TrimBits','Vtrim15'))
         self.vtrim14 = int(config.get('TrimBits','Vtrim14'))
         self.vtrim13 = int(config.get('TrimBits','Vtrim13'))
         self.vtrim11 = int(config.get('TrimBits','Vtrim11'))
         self.vtrim7 = int(config.get('TrimBits','Vtrim7'))
-        self.vtrims = [self.vtrim14, self.vtrim13, self.vtrim11, self.vtrim7]
-        self.trim_bit = [14,13,11,7]
+        self.vtrims = [self.vtrim15, self.vtrim14, self.vtrim13, self.vtrim11, self.vtrim7]
+        self.trim_bit = [15,14,13,11,7]
         self.vthr_dists = []
 
     def run(self, config): 
@@ -33,14 +34,17 @@ class TrimBits(test.Test):
             self.vthr_dists.append(dut_thr_map)
 
     def cleanup(self, config):
-        color_dict = [ROOT.kBlack,ROOT.kRed,ROOT.kBlue,ROOT.kGreen]
+        color_dict = [ROOT.kYellow,ROOT.kBlack,ROOT.kRed,ROOT.kBlue,ROOT.kGreen]
         plot = Plotter(self.config, self)
         for roc in self.dut.rocs():
-            min_axis = numpy.amin(self.vthr_dists)
-            max_axis = numpy.amax(self.vthr_dists)
+            min_axis = numpy.amin([self.vthr_dists[0][roc.number]-self.vthr_dists[step][roc.number] for step in range(1,5)])
+            max_axis = numpy.amax([self.vthr_dists[0][roc.number]-self.vthr_dists[step][roc.number] for step in range(1,5)])
             vthr_stack = ROOT.THStack("%s_%s" %(self.dac, roc.number),"%s dist for each trim bit setting; %s; # pixels" %(self.dac, self.dac))
-            for step, bit in enumerate(self.trim_bit):
-                h_vthr = Plotter.create_th1(self.vthr_dists[step][roc.number],'VthrComp_Trim_%s_ROC_%s' %(bit, roc.number), self.dac, '# pixels', min_axis, max_axis) 
+            for step in range(5):
+                self._histos.append(plot.matrix_to_th2(self.vthr_dists[step][roc.number],'Vthr_Map_%s_ROC_%s' %(step, roc.number),'col','row'))
+                if step == 0:
+                    continue
+                h_vthr = Plotter.create_th1(self.vthr_dists[0][roc.number]-self.vthr_dists[step][roc.number],'VthrCompDifference_Trim_%s_ROC_%s' %(self.trim_bit[step], roc.number), self.dac, '# pixels', min_axis, max_axis) 
                 h_vthr.SetLineColor(color_dict[step])
                 vthr_stack.Add(h_vthr)
                 self._histos.append(h_vthr)
