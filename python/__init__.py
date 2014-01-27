@@ -10,6 +10,7 @@ from pretest import Pretest
 from scurves import SCurves
 from phcalibration import PHCalibration
 from phmap import PHMap
+from phscan import PHScan
 from pixel_module import DUT
 from plotter import Plotter
 from BetterConfigParser import BetterConfigParser

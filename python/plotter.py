@@ -1,5 +1,6 @@
 import ROOT
 import numpy
+import array
 
 class Plotter(object):
 
@@ -28,6 +29,20 @@ class Plotter(object):
             th1.Fill(entry)
         return th1
         
+    @staticmethod
+    def create_tgraph(data, name, x_title, y_title, minimum = None, maximum = None):
+        xdata = list(xrange(len(data)))
+        x = array.array('d', xdata)
+        y = array.array('d', data)
+        gr = ROOT.TGraph(len(x),x,y)
+        #gr.SetDirectory(0)
+        gr.SetTitle(name)
+        gr.GetXaxis().SetTitle(x_title)
+        gr.GetYaxis().SetTitle(y_title)
+        gr.SetDrawOption('AL*')
+        gr.SetLineWidth(2)
+        return gr
+
     @staticmethod
     def create_th2(data, len_x, len_y, name, x_title, y_title):
         th2 = ROOT.TH2F(name, name, len_x, 0, len_x , len_y, 0, len_y)

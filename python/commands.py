@@ -96,6 +96,13 @@ class PyCmd(CmdTB, object):
         #self.dut.roc(1).pixel(5,5).active = True
         self.run_test('DacDac')
     
+    def do_PHScan(self, line):
+        #TODO Expose to cui
+        self.dut.roc(0).pixel(5,5).active = True
+        self.dut.roc(0).pixel(15,15).active = True
+        #self.dut.roc(1).pixel(5,5).active = True
+        self.run_test('PHScan')
+
     def help_DacDac(self):
         print "Run a DacDac scan using the DACs from test.cfg"
     

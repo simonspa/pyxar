@@ -53,6 +53,8 @@ class PxarGui( ROOT.TGMainFrame ):
             self.histos[self.pos].Draw('COLZ')
         elif histo_type == ROOT.THStack:
             self.histos[self.pos].Draw('NOSTACK')
+        elif histo_type == ROOT.TGraph:
+            self.histos[self.pos].Draw('AL*')
         else:
             self.histos[self.pos].Draw()
         ROOT.gPad.Update()

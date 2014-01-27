@@ -177,25 +177,25 @@ void CTestboard::InitDAC()
 // to be renamed after kicking out psi46expert dependency
 int8_t CTestboard::Daq_Enable2(int32_t block) {
 	Daq_Open(block, 0);
-	//Daq_Open(block, 1);
+	Daq_Open(block, 1);
 	Daq_Start(0);
-	//Daq_Start(1);
+	Daq_Start(1);
 	return 1;
 }
 // to be renamed after kicking out psi46expert dependency
 int8_t CTestboard::Daq_Disable2() {
 	Daq_Stop(0);
-	//Daq_Stop(1);
+	Daq_Stop(1);
 	Daq_Close(0);
-	//Daq_Close(1);
+	Daq_Close(1);
 	return 1;
 }
 
 int8_t CTestboard::Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size_2, uint32_t &n) {
-	//vector<uint16_t> data1;
+	vector<uint16_t> data1;
     Daq_Read(data, daq_read_size_2, n, 0);
-    //Daq_Read(data1, daq_read_size_2, n, 1);
-    //data.insert( data.end(), data1.begin(), data1.end() );
+    Daq_Read(data1, daq_read_size_2, n, 1);
+    data.insert( data.end(), data1.begin(), data1.end() );
 	return 1;
 }
 

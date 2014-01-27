@@ -52,6 +52,7 @@ cdef extern from "pixel_dtb.h":
         void ArmPixel(int, int) except +
         void DisarmPixel(int, int) except +
         int8_t CalibrateDacDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
+        int8_t CalibrateDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
         int16_t CalibrateMap(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
         int16_t TrimChip(vector[int16_t] &) except + 
         int8_t TrimChip_Sof(vector[int16_t] &)
@@ -301,6 +302,15 @@ cdef class PyDTB:
         cdef vector[int32_t] ph_sum
         #return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
         return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
+        for i in xrange(len(n_hits)):
+            num_hits.append(n_hits[i]) 
+            ph.append(ph_sum[i]) 
+        return return_value
+
+    def dac(self, n_triggers, col, row, dac, dacRange, num_hits, ph):
+        cdef vector[int16_t] n_hits
+        cdef vector[int32_t] ph_sum
+        return_value = self.thisptr.CalibrateDacScan(n_triggers, col, row, dac, dacRange, n_hits, ph_sum)
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 

@@ -210,6 +210,25 @@ class Testboard(dtb.PyDTB):
                 self.set_dac_roc(roc,dac2,roc.dac(dac2).value)
                 pixel.data = numpy.transpose(list_to_matrix(dac_range1, dac_range2, n_hits))
 
+    def get_ph_dac(self, n_triggers, dac):
+        for roc in self.dut.rocs():
+            self.select_roc(roc)
+            #TODO TB function has too long vector by one unit
+            dac_range = roc.dac(dac).range
+            for pixel in roc.active_pixels():
+                n_hits = []
+                ph_sum = []
+                self.logger.debug('PHScan pix(%s,%s), nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac, dac_range) )
+                self.dac(n_triggers, pixel.col, pixel.row, roc.dac(dac).number, dac_range,  n_hits, ph_sum)
+                self.set_dac_roc(roc,dac,roc.dac(dac).value)
+                ph = []
+                for p,n in zip(ph_sum,n_hits):
+                    if n > 0:
+                        ph.append(p/n)
+                    else:
+                        ph.append(p)
+                pixel.data = numpy.array(ph)
+
     def get_threshold(self, n_triggers, dac, xtalk, cals, reverse):
         #TODO Don't hardcode pars, they will go away with new CTestboard
         start = 0
