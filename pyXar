@@ -3,23 +3,26 @@ import sys
 import os
 import logging
 import logging.config
+import optparse
 import ROOT
-from optparse import OptionParser
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 from python import Testboard
 from python import DUT
-from python import DacDac, Calibrate, Threshold, Trim, Pretest, BondMap, SCurves, PHCalibration, PHMap
+from python import DacDac, Calibrate, Threshold, Trim, TrimBits, Pretest, BondMap, SCurves, PHCalibration, PHMap
 from python import BetterConfigParser
 from gui import PxarGui
 from python import PyCmd
-from python import colorer
+from python import ColorFormatter
 __version__ = "pyXar: 0.2"
 
 class Pyxar(PyCmd):
 
-    def __init__(self):
+    def __init__(self, a_workdir):
         super(Pyxar, self).__init__()
+        logging.ColorFormatter = ColorFormatter
+        logging.config.fileConfig('%s/logging.conf' %a_workdir)
+        self.directory = a_workdir
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.has_gui = False
         self.window = None
     
     def do_init(self, line):
@@ -36,7 +39,6 @@ class Pyxar(PyCmd):
     def do_gui(self, line):
         if self.window:
             return
-        self.has_gui = True
         self.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
 
     @staticmethod
@@ -51,17 +53,14 @@ class Pyxar(PyCmd):
             self.window.update()
  
 if __name__ == '__main__':
-    parser = OptionParser()
+    parser = optparse.OptionParser()
     parser.add_option("-d", "--dir", dest="work_dir", default='data',
-                  help="Folder with settings.", metavar="DIR")
+                  help="Folder with DUT/DTB settings.", metavar="DIR")
     parser.add_option("-n", "--nogui", dest="gui", default=True, action="store_false",
-                  help="Run without gui")
+                  help="Run without gui.")
     (options, args) = parser.parse_args()
     a_workdir = os.path.abspath(options.work_dir)
-    logging.config.fileConfig('%s/logging.conf' %a_workdir)
-    pyxar = Pyxar()
-    pyxar.directory = a_workdir
-    pyxar.has_gui = options.gui
+    pyxar = Pyxar(a_workdir)
     if options.gui:
         pyxar.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
     #TODO remove

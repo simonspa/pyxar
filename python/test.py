@@ -55,7 +55,7 @@ class Test(object):
             self._results.append(plot_dict)
         plot = Plotter(self.config, self)
         for roc in self.dut.rocs():
-            th1 = Plotter.create_th1(roc.data,'ROC_%s' %(roc.number), 'Projection of test', '# pixels')
+            th1 = Plotter.create_th1(roc.data,self.test+'_Distribution_ROC_%s' %(roc.number), 'Projection of test', '# pixels')
             self._histos.append(th1)
         self._histos.extend(plot.histos)
 

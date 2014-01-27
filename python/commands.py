@@ -123,6 +123,12 @@ class PyCmd(CmdTB, object):
     def help_Trim(self):
         print "Trim the DUT to values specified in test.cfg"
     
+    def do_TrimBits(self, line):
+        self.run_test('TrimBits')
+    
+    def help_TrimBits(self):
+        print "Test if the trim bits are working on the DUT via running threshold maps using test parameters specified in test.cfg under [TrimBits]"
+    
     def do_Pretest(self, line):
         self.run_test('Pretest')
     

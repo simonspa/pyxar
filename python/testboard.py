@@ -14,7 +14,7 @@ class Testboard(dtb.PyDTB):
         self.start_dtb(config)
         self._set_max_vals(config)
         #TODO expose timing to config
-        self.adjust_sig_level(10)
+        self.adjust_sig_level(15)
         self.set_mhz(4)
         self.init_pg(config)
         self.init_deser()

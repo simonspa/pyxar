@@ -12,6 +12,7 @@ class Pretest(test.Test):
         self._init_vsf = [roc.dac('Vsf').value for roc in self.dut.rocs()]
         self._init_vana = [roc.dac('Vana').value for roc in self.dut.rocs()]
         self.set_current_vana = 24.1
+        self.minimal_diff = 1.
     
     def run(self, config):
         self.logger.info('Running pretest')
@@ -38,7 +39,7 @@ class Pretest(test.Test):
             ia_off = self.tb.get_ia()
             self.logger.debug('Vana = %s: ia = %.2f' %(roc.dac('Vana').range-1, ia_on))
             self.logger.debug('Vana = 0: ia = %.2f' %ia_off)
-            if (ia_on-ia_off) > 0.1:
+            if (ia_on-ia_off) > self.minimal_diff:
                 self.logger.info('ROC %s is programmable' %roc.number)
             self.tb.set_dac_roc(roc, 'Vana', self._init_vana[roc.number])
 

@@ -60,17 +60,20 @@ class Trim(test.Test):
                 pass
             for step in range(self.n_steps+1):
                 self._histos.append(plot.matrix_to_th2(self.vcal_dists[step][roc.number],'Vcal_Map_%s_ROC_%s' %(step, roc.number),'col','row'))
-                h_vcal = Plotter.create_th1(self.vcal_dists[step][roc.number],'%s_ROC_%s' %(step, roc.number), self.dac, '# pixels', min_axis, max_axis) 
+                self._histos.append(plot.matrix_to_th2(self.trim_dists[step][roc.number],'Trim_Map_%s_ROC_%s' %(step, roc.number),'col','row'))
+                h_vcal = Plotter.create_th1(self.vcal_dists[step][roc.number],'%s_%s_ROC_%s' %('Vcal_Distribution', step, roc.number), self.dac, '# pixels', min_axis, max_axis) 
                 h_vcal.SetLineColor(color_dict[step])
                 vcal_stack.Add(h_vcal)
-                h_trim = Plotter.create_th1(self.trim_dists[step][roc.number],'%s_ROC_%s' %(step, roc.number), 'Trim bit', '# pixels', self._min_trim_bit, self._max_trim_bit) 
+                h_trim = Plotter.create_th1(self.trim_dists[step][roc.number],'%s_%s_ROC_%s' %('Trim_Distribution', step, roc.number), 'Trim bit', '# pixels', self._min_trim_bit, self._max_trim_bit) 
                 h_trim.SetLineColor(color_dict[step])
+                trim_stack.Add(h_trim)
                 if step == 4:
                     h_trim.SetFillStyle(3002)
                     h_trim.SetFillColor(color_dict[step])
                     h_vcal.SetFillStyle(3002)
                     h_vcal.SetFillColor(color_dict[step])
-                trim_stack.Add(h_trim)
+                    self._histos.append(h_vcal)
+                    self._histos.append(h_trim)
             self._histos.append(trim_stack)
             self._histos.append(vcal_stack)
 
