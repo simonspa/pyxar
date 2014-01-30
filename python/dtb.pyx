@@ -32,6 +32,9 @@ cdef extern from "pixel_dtb.h":
         double GetID() except +
         void SetMHz(int) except +
         void Pg_SetCmd(uint16_t addr, uint16_t cmd) except +
+        void Pg_Stop() except +
+        void Pg_Single() except +
+        void Pg_Loop(uint16_t period) except +
         void roc_I2cAddr(uint8_t) except +
         void SetRocAddress(uint8_t) except +
         void roc_SetDAC(uint8_t, uint8_t) except +
@@ -175,8 +178,8 @@ cdef class PyDTB:
         self.thisptr.Daq_Deser400_Reset(3)
     
     def daq_enable(self):
-        self.thisptr.Daq_Open(32470, 0)
-        self.thisptr.Daq_Open(32470, 1)
+        self.thisptr.Daq_Open(5000000, 0)
+        self.thisptr.Daq_Open(5000000, 1)
         self.thisptr.Daq_Start(0)
         self.thisptr.Daq_Start(1)
     
@@ -197,6 +200,18 @@ cdef class PyDTB:
         _addr = addr
         _cmd = cmd
         self.thisptr.Pg_SetCmd(_addr, _cmd)
+    
+    def pg_stop(self):
+        self.thisptr.Pg_Stop()
+    
+    def pg_single(self):
+        self.thisptr.Pg_Single()
+    
+    
+    def pg_loop(self, period):
+        cdef uint16_t _period
+        _period = period
+        self.thisptr.Pg_Loop(_period)
     
     def pon(self):
         self.thisptr.Pon()
@@ -259,6 +274,9 @@ cdef class PyDTB:
         self.thisptr.EnableColumn(col)
         self.thisptr.ArmPixel(col, row)
     
+    def enable_column(self, col):
+        self.thisptr.EnableColumn(col)
+    
     def disarm_pixel(self, col, row):
         self.thisptr.DisarmPixel(col, row)
         
@@ -303,7 +321,7 @@ cdef class PyDTB:
         cdef vector[uint16_t] _ph
         cdef vector[uint32_t] _addr
         return_value = self.thisptr.Daq_Read_Decoded(_n_hits, _ph, _addr)
-        for i in xrange(len(n_hits)):
+        for i in xrange(len(_n_hits)):
             n_hits.append(_n_hits[i]) 
             ph.append(_ph[i]) 
             addr.append(_addr[i]) 

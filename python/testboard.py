@@ -168,6 +168,13 @@ class Testboard(dtb.PyDTB):
             self.trim_chip(roc.trim_for_tb)
             self.m_delay(100)
 
+    def get_data(self):
+        n_hits = []
+        ph = []
+        address = []
+        self.daq_read_decoded(n_hits, ph, address)
+        return decode_full(self.dut.n_rocs, self.dut.roc(0).n_cols, self.dut.roc(0).n_rows, address, n_hits)
+
     def get_calibrate(self, n_triggers):
         for roc in self.dut.rocs():
             self.select_roc(roc)

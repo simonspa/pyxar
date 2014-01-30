@@ -34,6 +34,7 @@ def decode_full(n_rocs, n_cols, n_rows, address, a_list):
     datas = []
     for i in range(n_rocs):
         datas.append(np.zeros(s))
+    datas = np.array(datas)
     for i, adr in enumerate(address):
         row = adr & 0xff
         col = (adr >> 8) & 0xff
