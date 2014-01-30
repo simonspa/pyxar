@@ -405,6 +405,8 @@ public:
     int8_t CalibrateReadouts(int16_t nTriggers, int16_t &nReadouts, int32_t &PHsum);
     int8_t CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &addres);
     int8_t CalibrateDacDacScan_Sof(int16_t nTriggers, int16_t col, int16_t row, int16_t dacReg1, int16_t dacRange1, int16_t dacReg2, int16_t dacRange2, vector<int16_t> &nReadouts, vector<int32_t> &PHsum);
+    int8_t Daq_Read_Decoded(vector<uint16_t> &nReadouts, vector<uint16_t> &PHsum, vector<uint32_t> &adress);
+    
 
     RPC_EXPORT int16_t TriggerRow(int16_t nTriggers, int16_t col, int16_t delay);
     // ----------------------------

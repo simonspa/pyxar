@@ -51,6 +51,7 @@ cdef extern from "pixel_dtb.h":
         void EnableColumn(int) except +
         void ArmPixel(int, int) except +
         void DisarmPixel(int, int) except +
+        int8_t Daq_Read_Decoded(vector[uint16_t] &, vector[uint16_t] &, vector[uint32_t] &) 
         int8_t CalibrateDacDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
         int8_t CalibrateDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
         int16_t CalibrateMap(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
@@ -295,6 +296,17 @@ cdef class PyDTB:
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
             addr.append(adr[i]) 
+        return return_value
+    
+    def daq_read_decoded(self, n_hits, ph, addr):
+        cdef vector[uint16_t] _n_hits
+        cdef vector[uint16_t] _ph
+        cdef vector[uint32_t] _addr
+        return_value = self.thisptr.Daq_Read_Decoded(_n_hits, _ph, _addr)
+        for i in xrange(len(n_hits)):
+            n_hits.append(_n_hits[i]) 
+            ph.append(_ph[i]) 
+            addr.append(_addr[i]) 
         return return_value
 
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):

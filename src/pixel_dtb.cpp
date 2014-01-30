@@ -199,6 +199,17 @@ int8_t CTestboard::Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size_2, u
 	return 1;
 }
 
+int8_t CTestboard::Daq_Read_Decoded(vector<uint16_t> &nReadouts, vector<uint16_t> &PHsum, vector<uint32_t> &adress) {
+    uint16_t daq_read_size = 32768;
+	int8_t ok = -1;
+    uint32_t avail_size = 0;
+	vector<uint16_t> data;
+	Daq_Read2(data, daq_read_size, avail_size);
+	//decode readouts
+	ok = Decode(data, nReadouts, PHsum, adress, TBM_Present());
+    return ok;
+}
+
 int8_t CTestboard::TrimChip_Sof(vector<int16_t> &trim) {
 //int8_t CTestboard::TrimChip_Sof(int16_t trim[]) {
 	for (int col = 0; col < ROC_NUMCOLS; col++) {
@@ -245,7 +256,7 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 		data.clear();
 		Daq_Read2(data, daq_read_size, avail_size);
 		//decode readouts
-		ok = Decode(data, nhits, ph, adr);
+		ok = Decode(data, nhits, ph, adr, TBM_Present());
         //if (ok){
             nReadouts.insert( nReadouts.end(), nhits.begin(), nhits.end() );
             PHsum.insert( PHsum.end(), ph.begin(), ph.end() );
@@ -316,7 +327,7 @@ int8_t CTestboard::CalibrateReadouts(int16_t nTriggers, int16_t &nReadouts, int3
 
 	Daq_Read2(data, daq_read_size, avail_size);
 
-    ok = Decode(data, nhits, ph, adr);
+    ok = Decode(data, nhits, ph, adr, TBM_Present());
 
 	for (int i = 0; i < adr.size(); i++)
 	{
