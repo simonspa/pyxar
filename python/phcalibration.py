@@ -28,6 +28,7 @@ class PHCalibration(test.Test):
 
     def run(self, config):
         #Measure scan DAC around min and max threshold pm half the range
+        self.tb.set_dac('CtrlReg',0)
         for point in self.points_lowrange:
             self.logger.info('Scanning Pulseheight for Vcal %s (lowrange)'%point)
             self.get_point(point)

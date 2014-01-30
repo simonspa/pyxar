@@ -180,19 +180,22 @@ class Testboard(dtb.PyDTB):
 
     def get_ph(self, n_triggers):
         for roc in self.dut.rocs():
-            self.select_roc(roc)
-            n_hits = []
-            ph_sum = []
-            address = []
-            self.logger.debug('PH %s , n_triggers: %s' %(roc, n_triggers) )
-            self.calibrate(n_triggers, n_hits, ph_sum, address)
-            ph = []
-            for p,n in zip(ph_sum,n_hits):
-                if n > 0:
-                    ph.append(p/n)
-                else:
-                    ph.append(p)
-            roc.data = decode(roc.n_cols, roc.n_rows, address, ph)
+            self.get_ph_roc(n_triggers, roc)
+
+    def get_ph_roc(self, n_triggers, roc):
+        self.select_roc(roc)
+        n_hits = []
+        ph_sum = []
+        address = []
+        self.logger.debug('PH %s , n_triggers: %s' %(roc, n_triggers) )
+        self.calibrate(n_triggers, n_hits, ph_sum, address)
+        cals = decode(roc.n_cols, roc.n_rows, address, n_hits)
+        phs = decode(roc.n_cols, roc.n_rows, address, ph_sum)
+        # allow division by 0
+        old_err_state = numpy.seterr(divide='raise')
+        ignored_states = numpy.seterr(**old_err_state)
+        roc.data = numpy.nan_to_num(numpy.divide(phs, cals))
+
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
         for roc in self.dut.rocs():
@@ -224,7 +227,7 @@ class Testboard(dtb.PyDTB):
                 ph = []
                 for p,n in zip(ph_sum,n_hits):
                     if n > 0:
-                        ph.append(p/n)
+                        ph.append(1.*p/n)
                     else:
                         ph.append(p)
                 pixel.data = numpy.array(ph)

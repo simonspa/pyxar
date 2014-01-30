@@ -99,7 +99,7 @@ class PyCmd(CmdTB, object):
     def do_PHScan(self, line):
         #TODO Expose to cui
         self.dut.roc(0).pixel(5,5).active = True
-        self.dut.roc(0).pixel(15,15).active = True
+        #self.dut.roc(0).pixel(15,15).active = True
         #self.dut.roc(1).pixel(5,5).active = True
         self.run_test('PHScan')
 
