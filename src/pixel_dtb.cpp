@@ -177,9 +177,9 @@ void CTestboard::InitDAC()
 // to be renamed after kicking out psi46expert dependency
 int8_t CTestboard::Daq_Enable2(int32_t block) {
 	Daq_Open(block, 0);
-	//Daq_Open(block, 1);
+	Daq_Open(block, 1);
 	Daq_Start(0);
-	//Daq_Start(1);
+	Daq_Start(1);
 	return 1;
 }
 // to be renamed after kicking out psi46expert dependency
@@ -235,7 +235,7 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 {
 	int16_t ok = -1;
     //uint32_t daq_avail_size = 32768;
-    uint32_t daq_avail_size = 1000000;
+    uint32_t daq_avail_size = 5000000;
     uint16_t daq_read_size = 10000;
 
     uint8_t status;
@@ -248,7 +248,7 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 
 	for (int16_t col = 0; col < ROC_NUMCOLS; col++) {
 
-        TriggerRow(nTriggers, col, nRocs, 20);
+        TriggerRow(nTriggers, col, nRocs, 50);
 
 		//read data
         uint32_t avail_size = daq_avail_size;
@@ -257,10 +257,10 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
 		//decode readouts
 		ok = Decode(data, nhits, ph, adr, 0, TBM_Present());
         data.clear();
-        avail_size = 1000000;
+        avail_size = daq_avail_size;
 	    Daq_Read2(data, daq_read_size, avail_size, 1);
-
         ok = Decode(data, nhits, ph, adr, 1, TBM_Present());
+
         //if (ok){
             nReadouts.insert( nReadouts.end(), nhits.begin(), nhits.end() );
             PHsum.insert( PHsum.end(), ph.begin(), ph.end() );
