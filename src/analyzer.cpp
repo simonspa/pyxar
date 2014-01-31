@@ -63,7 +63,7 @@ void DecodePixel(unsigned int raw, int16_t &n, int16_t &ph, int16_t &col, int16_
 	//printf("   Pixel [%05o] %2i/%2i: %3u", raw, col, row, ph);
 }
 
-int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::vector<uint16_t> &ph, std::vector<uint32_t> &adr, bool has_tbm)
+int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::vector<uint16_t> &ph, std::vector<uint32_t> &adr, uint8_t channel, bool has_tbm)
 { 
 
     uint32_t words_remaining = 0;
@@ -93,7 +93,7 @@ int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::
 			     DecodePixel(raw, n_pix, ph_pix, col, row);
                  n.push_back(n_pix);
                  ph.push_back(ph_pix);
-                 address = tbm_n;
+                 address = channel;
                  address = (address << 8) + roc_n;
                  address = (address << 8) + col;
                  address = (address << 8) + row;
@@ -107,7 +107,6 @@ int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::
 		case 10: hdr = (hdr<<4) + d; break;
 		case 11: hdr = (hdr<<4) + d; 
 			     DecodeTbmHeader(hdr, evNr, stkCnt);
-                 //tbm_n = tbm_n ^ 0x01;
                  roc_n = -1;
 			     break;
 

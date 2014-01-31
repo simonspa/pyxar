@@ -1,5 +1,6 @@
 from testboard import Testboard
 from test import Test
+from hrtest import HRTest
 from dacdac import DacDac
 from calibrate import Calibrate
 from threshold import Threshold
@@ -16,3 +17,4 @@ from plotter import Plotter
 from BetterConfigParser import BetterConfigParser
 from commands import PyCmd
 from colorer import ColorFormatter
+from hrmap import HRMap
