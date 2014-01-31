@@ -47,16 +47,12 @@ class Pyxar(PyCmd):
         return reduce(getattr, str.split("."), sys.modules[__name__])
     
     def run_test(self, line):
-        a_test = globals()[line](self.tb, self.config)
+        a_test = globals()[line](self.tb, self.config, self.window)
         a_test.go(self.config)
         if self.window:
             self.window.histos.extend(a_test.histos)
             self.window.update()
     
-    def run_hrtest(self, line):
-        a_test = globals()[line](self.tb, self.config, self.window)
-        a_test.go(self.config)
- 
 if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option("-d", "--dir", dest="work_dir", default='data',

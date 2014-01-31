@@ -149,7 +149,7 @@ class PyCmd(CmdTB, object):
         self.run_test('PHMap')
     
     def do_HRMap(self, line):
-        self.run_hrtest('HRMap')
+        self.run_test('HRMap')
 
     def do_FullTest(self, line):
         self.run_test('Calibrate')

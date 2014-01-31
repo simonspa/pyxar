@@ -6,7 +6,7 @@ from plotter import Plotter
 
 class Test(object):
 
-    def __init__(self, tb, config = None):
+    def __init__(self, tb, config = None, window = None):
         self.tb = tb
         self.dut = tb.dut
         self.config = config
@@ -82,7 +82,6 @@ class Test(object):
         for histo in self._histos:
             histo.Write()
         a_file.Close()
-        
 
     @property
     def results(self):
