@@ -177,17 +177,28 @@ class Testboard(dtb.PyDTB):
 
     def get_calibrate(self, n_triggers):
         n_hits = []
-        ph = []
+        ph_sum = []
         address = []
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
-        self.calibrate(n_triggers, n_hits, ph, address, self.dut.n_rocs)
+        self.calibrate_parallel(n_triggers, n_hits, ph_sum, address, self.dut.n_rocs)
         data = decode_full(self.dut.n_rocs,self.dut.roc(0).n_cols, self.dut.roc(0).n_rows, address, n_hits)
         for roc in self.dut.rocs():
             roc.data = data[roc.number]
 
     def get_ph(self, n_triggers):
+        n_hits = []
+        ph_sum = []
+        address = []
+        self.logger.debug('PH %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
+        self.calibrate_parallel(n_triggers, n_hits, ph_sum, address, self.dut.n_rocs)
+        cals = decode_full(self.dut.n_rocs, self.dut.roc(0).n_cols, self.dut.roc(0).n_rows, address, n_hits)
+        phs = decode_full(self.dut.n_rocs, self.dut.roc(0).n_cols, self.dut.roc(0).n_rows, address, ph_sum)
+        # allow division by 0
+        old_err_state = numpy.seterr(divide='raise')
+        ignored_states = numpy.seterr(**old_err_state)
+        data = numpy.nan_to_num(numpy.divide(phs, cals))
         for roc in self.dut.rocs():
-            self.get_ph_roc(n_triggers, roc)
+            roc.data = data[roc.number]
 
     def get_ph_roc(self, n_triggers, roc):
         self.select_roc(roc)

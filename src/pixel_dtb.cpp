@@ -231,7 +231,9 @@ int8_t CTestboard::TrimChip_Sof(vector<int16_t> &trim) {
 	return 1;
 }
 
-int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &adress, int16_t nRocs)
+
+
+int8_t CTestboard::CalibrateMap_Par(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &adress, int16_t nRocs)
 {
 	int16_t ok = -1;
     //uint32_t daq_avail_size = 32768;
@@ -276,89 +278,93 @@ int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadout
     return 1;
 }
 
-//int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &adress)
-//{
-//    uint16_t daq_read_size = 32768;
-//	int16_t ok = -1;
-//    uint32_t avail_size = 0;
-//    uint8_t status;
-//	vector<uint16_t> nhits, ph;
-//    vector<uint32_t> adr;
-//	
-//    Daq_Deser400_Reset(3);
-//    Daq_Enable2(daq_read_size);
-//	vector<uint16_t> data;
-//
-//	for (int16_t col = 0; col < ROC_NUMCOLS; col++) {
-//        //TriggerRow(nTriggers,col,50);
-//		roc_Col_Enable(col, true);
-//		for (uint8_t row = 0; row < ROC_NUMROWS; row++) {
-//		//for (uint8_t row = 0; row < 20; row++) {
-//			//arm
-//			roc_Pix_Cal(col, row, false);
-//			uDelay(5);
-//			for (uint8_t trigger = 0; trigger < nTriggers; trigger++) {
-//				//send triggers
-//				Pg_Single();
-//				uDelay(4);
-//			}
-//			// clear
-//			roc_ClrCal();
-//		}
-//
-//		//read data
-//		data.clear();
-//		Daq_Read2(data, daq_read_size, avail_size);
-//		//decode readouts
-//		ok = Decode(data, nhits, ph, adr, TBM_Present());
-//        //if (ok){
-//            nReadouts.insert( nReadouts.end(), nhits.begin(), nhits.end() );
-//            PHsum.insert( PHsum.end(), ph.begin(), ph.end() );
-//            adress.insert( adress.end(), adr.begin(), adr.end() );
-//            nhits.clear();
-//            ph.clear();
-//            adr.clear();
-//        //}
-//		roc_Col_Enable(col, false);
-//	}
-//
-//	Daq_Disable2();
-//    //Working example
-//    /*int col = 5, row = 5;
-//    Daq_Select_Deser400();
-//	mDelay(10);
-//    Daq_Deser400_Reset(3);
-//	mDelay(10);
-//    Daq_Enable2(daq_read_size);
-//
-//    for (int i=0;    i<16;      i++) {
-//    roc_I2cAddr(i);
-//	mDelay(50);
-//    roc_Col_Enable(col, true);
-//    roc_Pix_Trim(col, row, 15);
-//	roc_Pix_Cal(col, row, false);
-//	mDelay(50);
-//    }
-//
-//    for (int16_t l=0; l < nTriggers; l++)
-//    {
-//                Pg_Single();
-//	            mDelay(100);
-//    }
-//    for (int i =0;    i<16;      i++) roc_ClrCal();
-//	mDelay(100);
-//    vector<uint16_t> data;
-//    status = Daq_Read2(data, daq_read_size, avail_size);
-//    int32_t nHits = 0;
-//    DumpData(data, 200);
-//	mDelay(50);
-//    ok = Decode(data, nhits, ph, adr);
-//    Daq_Disable2();*/
-//    /*for (int l=0; l < adress.size(); l++){
-//        printf("   Pixel [0x%08x] %1u %3u\n", adress[l], nReadouts[l], PHsum[l]);
-//    }*/
-//    return 1;
-//}
+int8_t CTestboard::CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &adress)
+{
+    uint16_t daq_read_size = 32768;
+	int16_t ok = -1;
+    uint32_t daq_avail_size = 32768;
+    uint8_t status;
+	vector<uint16_t> nhits, ph;
+    vector<uint32_t> adr;
+	
+    Daq_Deser400_Reset(3);
+    Daq_Enable2(daq_read_size);
+	vector<uint16_t> data;
+
+	for (int16_t col = 0; col < ROC_NUMCOLS; col++) {
+        //TriggerRow(nTriggers,col,50);
+		roc_Col_Enable(col, true);
+		for (uint8_t row = 0; row < ROC_NUMROWS; row++) {
+		//for (uint8_t row = 0; row < 20; row++) {
+			//arm
+			roc_Pix_Cal(col, row, false);
+			uDelay(5);
+			for (uint8_t trigger = 0; trigger < nTriggers; trigger++) {
+				//send triggers
+				Pg_Single();
+				uDelay(4);
+			}
+			// clear
+			roc_ClrCal();
+		}
+
+        uint32_t avail_size = daq_avail_size;
+        data.clear();
+        Daq_Read2(data, daq_read_size, avail_size, 0);
+        //decode readouts
+        ok = Decode(data, nhits, ph, adr, 0, TBM_Present());
+        data.clear();
+        avail_size = daq_avail_size;
+        Daq_Read2(data, daq_read_size, avail_size, 1);
+        ok = Decode(data, nhits, ph, adr, 1, TBM_Present());
+
+        nReadouts.insert( nReadouts.end(), nhits.begin(), nhits.end() );
+        PHsum.insert( PHsum.end(), ph.begin(), ph.end() );
+        adress.insert( adress.end(), adr.begin(), adr.end() );
+        nhits.clear();
+        ph.clear();
+        adr.clear();
+
+		roc_Col_Enable(col, false);
+	}
+
+	Daq_Disable2();
+    //Working example
+    /*int col = 5, row = 5;
+    Daq_Select_Deser400();
+	mDelay(10);
+    Daq_Deser400_Reset(3);
+	mDelay(10);
+    Daq_Enable2(daq_read_size);
+
+    for (int i=0;    i<16;      i++) {
+    roc_I2cAddr(i);
+	mDelay(50);
+    roc_Col_Enable(col, true);
+    roc_Pix_Trim(col, row, 15);
+	roc_Pix_Cal(col, row, false);
+	mDelay(50);
+    }
+
+    for (int16_t l=0; l < nTriggers; l++)
+    {
+                Pg_Single();
+	            mDelay(100);
+    }
+    for (int i =0;    i<16;      i++) roc_ClrCal();
+	mDelay(100);
+    vector<uint16_t> data;
+    status = Daq_Read2(data, daq_read_size, avail_size);
+    int32_t nHits = 0;
+    DumpData(data, 200);
+	mDelay(50);
+    ok = Decode(data, nhits, ph, adr);
+    Daq_Disable2();*/
+    /*for (int l=0; l < adress.size(); l++){
+        printf("   Pixel [0x%08x] %1u %3u\n", adress[l], nReadouts[l], PHsum[l]);
+    }*/
+    return 1;
+}
 
 int8_t CTestboard::CalibrateReadouts(int16_t nTriggers, int16_t &nReadouts, int32_t &PHsum){
 
