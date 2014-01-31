@@ -180,7 +180,7 @@ class Testboard(dtb.PyDTB):
         ph_sum = []
         address = []
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
-        self.calibrate_parallel(n_triggers, n_hits, ph_sum, address, self.dut.n_rocs)
+        self.calibrate_parallel(n_triggers, n_hits, ph_sum, address, [roc.number for roc in self.dut.rocs()])
         data = decode_full(self.dut.n_rocs,self.dut.roc(0).n_cols, self.dut.roc(0).n_rows, address, n_hits)
         for roc in self.dut.rocs():
             roc.data = data[roc.number]
@@ -190,7 +190,7 @@ class Testboard(dtb.PyDTB):
         ph_sum = []
         address = []
         self.logger.debug('PH %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
-        self.calibrate_parallel(n_triggers, n_hits, ph_sum, address, self.dut.n_rocs)
+        self.calibrate_parallel(n_triggers, n_hits, ph_sum, address, [roc.number for roc in self.dut.rocs()])
         cals = decode_full(self.dut.n_rocs, self.dut.roc(0).n_cols, self.dut.roc(0).n_rows, address, n_hits)
         phs = decode_full(self.dut.n_rocs, self.dut.roc(0).n_cols, self.dut.roc(0).n_rows, address, ph_sum)
         # allow division by 0

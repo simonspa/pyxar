@@ -404,12 +404,12 @@ public:
     int8_t Daq_Disable2();
     int8_t CalibrateReadouts(int16_t nTriggers, int16_t &nReadouts, int32_t &PHsum);
     int8_t CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &addres);
-    int8_t CalibrateMap_Par(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &addres, int16_t nRocs);
+    int8_t CalibrateMap_Par(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &addres, vector<int16_t> &rocs);
     int8_t CalibrateDacDacScan_Sof(int16_t nTriggers, int16_t col, int16_t row, int16_t dacReg1, int16_t dacLower1, int16_t dacUpper1, int16_t dacReg2, int16_t dacLower2, int16_t dacUpper2, vector<int16_t> &nReadouts, vector<int32_t> &PHsum);
     int8_t Daq_Read_Decoded(vector<uint16_t> &nReadouts, vector<uint16_t> &PHsum, vector<uint32_t> &adress);
     
 
-    RPC_EXPORT int16_t TriggerRow(int16_t nTriggers, int16_t col, int16_t nRocs, int16_t delay=4);
+    RPC_EXPORT int16_t TriggerRow(int16_t nTriggers, int16_t col, vector<int16_t> &rocs, int16_t delay=4);
 
     // new spannagel stuff
     RPC_EXPORT uint32_t GetRpcCallHash();

@@ -112,7 +112,7 @@ const char *CTestboard::rpc_cmdName[] =
 	/*    98 */ "CalibrateDacDacScan$csssssssss2s2i",
 	/*    99 */ "TrimChip$s1s",
 	/*   100 */ "CalibrateMap$ss2s2i2I",
-	/*   101 */ "TriggerRow$sssss",
+	/*   101 */ "TriggerRow$sss1ss",
 	/*   102 */ "TestColPixel$bCC2C",
 	/*   103 */ "Ethernet_Send$v3c",
 	/*   104 */ "Ethernet_RecvPackets$I"
@@ -1709,7 +1709,7 @@ int16_t CTestboard::CalibrateMap(int16_t rpc_par1, vectorR<int16_t> &rpc_par2, v
 	return rpc_par0;
 }
 
-int16_t CTestboard::TriggerRow(int16_t rpc_par1, int16_t rpc_par2, int16_t rpc_par3, int16_t rpc_par4)
+int16_t CTestboard::TriggerRow(int16_t rpc_par1, int16_t rpc_par2, vector<int16_t> &rpc_par3, int16_t rpc_par4)
 { RPC_PROFILING
 	int16_t rpc_par0;
 	try {
@@ -1719,9 +1719,9 @@ int16_t CTestboard::TriggerRow(int16_t rpc_par1, int16_t rpc_par2, int16_t rpc_p
 	msg.Create(rpc_clientCallId);
 	msg.Put_INT16(rpc_par1);
 	msg.Put_INT16(rpc_par2);
-	msg.Put_INT16(rpc_par3);
 	msg.Put_INT16(rpc_par4);
 	msg.Send(*rpc_io);
+	rpc_Send(*rpc_io, rpc_par3);
 	rpc_io->Flush();
 	msg.Receive(*rpc_io);
 	msg.Check(rpc_clientCallId,2);

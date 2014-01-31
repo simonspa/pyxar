@@ -233,7 +233,7 @@ int8_t CTestboard::TrimChip_Sof(vector<int16_t> &trim) {
 
 
 
-int8_t CTestboard::CalibrateMap_Par(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &adress, int16_t nRocs)
+int8_t CTestboard::CalibrateMap_Par(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &adress, vector<int16_t> &rocs)
 {
 	int16_t ok = -1;
     //uint32_t daq_avail_size = 32768;
@@ -250,7 +250,7 @@ int8_t CTestboard::CalibrateMap_Par(int16_t nTriggers, vector<int16_t> &nReadout
 
 	for (int16_t col = 0; col < ROC_NUMCOLS; col++) {
 
-        TriggerRow(nTriggers, col, nRocs, 50);
+        TriggerRow(nTriggers, col, rocs, 50);
 
 		//read data
         uint32_t avail_size = daq_avail_size;

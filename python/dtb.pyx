@@ -64,9 +64,8 @@ cdef extern from "pixel_dtb.h":
         int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
         int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, bool xtalk, bool cals, int32_t trim)
         int8_t CalibrateMap_Sof(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
-        int8_t CalibrateMap_Par(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &, int16_t) 
+        int8_t CalibrateMap_Par(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &, vector[int16_t] &) 
         int8_t CalibrateDacDacScan_Sof(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
-        int16_t TriggerRow(int16_t nTriggers, int16_t col, int16_t nRocs, int16_t delay)
     cdef int PG_TOK 
     cdef int PG_TRG 
     cdef int PG_RESR 
@@ -318,11 +317,14 @@ cdef class PyDTB:
             addr.append(adr[i]) 
         return return_value
     
-    def calibrate_parallel(self,n_triggers, num_hits, ph, addr, n_rocs):
+    def calibrate_parallel(self,n_triggers, num_hits, ph, addr, roc_list):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
         cdef vector[uint32_t] adr
-        return_value = self.thisptr.CalibrateMap_Par(n_triggers, n_hits, ph_sum, adr, n_rocs)
+        cdef vector[int16_t] rocs
+        for roc in roc_list:
+            rocs.push_back(roc)
+        return_value = self.thisptr.CalibrateMap_Par(n_triggers, n_hits, ph_sum, adr, rocs)
         #return_value = self.thisptr.CalibrateMap(n_triggers, n_hits, ph_sum, adr)
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
@@ -362,8 +364,4 @@ cdef class PyDTB:
 
     def pixel_threshold(self, n_triggers, col, row, start, step, thrLevel, dacReg, xtalk, cals, trim):
         return_value = self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)
-        return return_value
-
-    def trigger_row(self, n_triggers, col, n_rocs, delay):
-        return_value = self.thisptr.TriggerRow(n_triggers, col, n_rocs, delay)
         return return_value
