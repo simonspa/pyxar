@@ -71,7 +71,7 @@ int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::
 	unsigned int raw;
     int16_t n_pix = 0, ph_pix = 0, col = 0, row = 0, evNr = 0, stkCnt = 0, dataId = 0, dataNr = 0;
     int16_t roc_n = -1;
-    int16_t tbm_n = 1;
+    int16_t tbm_n = 0;
     uint32_t address;
     int pos = 0;
     //Module readout
@@ -107,7 +107,7 @@ int8_t Decode(const std::vector<uint16_t> &data, std::vector<uint16_t> &n, std::
 		case 10: hdr = (hdr<<4) + d; break;
 		case 11: hdr = (hdr<<4) + d; 
 			     DecodeTbmHeader(hdr, evNr, stkCnt);
-                 tbm_n = tbm_n ^ 0x01;
+                 //tbm_n = tbm_n ^ 0x01;
                  roc_n = -1;
 			     break;
 

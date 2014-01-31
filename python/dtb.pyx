@@ -52,16 +52,17 @@ cdef extern from "pixel_dtb.h":
         void ArmPixel(int, int) except +
         void DisarmPixel(int, int) except +
         int8_t Daq_Read_Decoded(vector[uint16_t] &, vector[uint16_t] &, vector[uint32_t] &) 
-        int8_t CalibrateDacDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
-        int8_t CalibrateDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
+        int8_t CalibrateDacDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
+        int8_t CalibrateDacScan(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
         int16_t CalibrateMap(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
         int16_t TrimChip(vector[int16_t] &) except + 
         int8_t TrimChip_Sof(vector[int16_t] &)
         int32_t MaskTest(int16_t, int16_t*) 
         int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
-        int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
-        int8_t CalibrateMap_Sof(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
-        int8_t CalibrateDacDacScan_Sof(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
+        int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, bool xtalk, bool cals, int32_t trim)
+        int8_t CalibrateMap_Sof(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &, int16_t) 
+        int8_t CalibrateDacDacScan_Sof(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
+        int16_t TriggerRow(int16_t nTriggers, int16_t col, int16_t nRocs, int16_t delay)
     cdef int PG_TOK 
     cdef int PG_TRG 
     cdef int PG_RESR 
@@ -286,11 +287,11 @@ cdef class PyDTB:
         cdef uint8_t return_value = self.thisptr.TrimChip(trim_bits)
         return return_value
 
-    def calibrate(self,n_triggers, num_hits, ph, addr):
+    def calibrate(self,n_triggers, num_hits, ph, addr, n_rocs):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
         cdef vector[uint32_t] adr
-        return_value = self.thisptr.CalibrateMap_Sof(n_triggers, n_hits, ph_sum, adr)
+        return_value = self.thisptr.CalibrateMap_Sof(n_triggers, n_hits, ph_sum, adr, n_rocs)
         #return_value = self.thisptr.CalibrateMap(n_triggers, n_hits, ph_sum, adr)
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
@@ -312,8 +313,8 @@ cdef class PyDTB:
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
-        return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
-        #return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, n_hits, ph_sum)
+        return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, 0, dacRange1, dac2, 0, dacRange2, n_hits, ph_sum)
+        #return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, 0, dacRange1, dac2, 0, dacRange2, n_hits, ph_sum)
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
@@ -322,7 +323,7 @@ cdef class PyDTB:
     def dac(self, n_triggers, col, row, dac, dacRange, num_hits, ph):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
-        return_value = self.thisptr.CalibrateDacScan(n_triggers, col, row, dac, dacRange, n_hits, ph_sum)
+        return_value = self.thisptr.CalibrateDacScan(n_triggers, col, row, dac, 0, dacRange, n_hits, ph_sum)
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
@@ -330,4 +331,8 @@ cdef class PyDTB:
 
     def pixel_threshold(self, n_triggers, col, row, start, step, thrLevel, dacReg, xtalk, cals, trim):
         return_value = self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)
+        return return_value
+
+    def trigger_row(self, n_triggers, col, n_rocs, delay):
+        return_value = self.thisptr.TriggerRow(n_triggers, col, n_rocs, delay)
         return return_value

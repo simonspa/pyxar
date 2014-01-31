@@ -1,7 +1,7 @@
 #!/bin/bash
-rm dtb.so
-rm python/dtb.so
-rm python/dtb.cpp
+rm -v dtb.so
+rm -v python/dtb.so
+rm -v python/dtb.cpp
 CXXFLAGS="-g -Os -Wall" \
 LDFLAGS=" -lftd2xx" \
 python setup.py build_ext -i

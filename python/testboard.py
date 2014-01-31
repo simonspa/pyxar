@@ -169,14 +169,14 @@ class Testboard(dtb.PyDTB):
             self.m_delay(100)
 
     def get_calibrate(self, n_triggers):
+        n_hits = []
+        ph = []
+        address = []
+        self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
+        self.calibrate(n_triggers, n_hits, ph, address, self.dut.n_rocs)
+        data = decode_full(self.dut.n_rocs,self.dut.roc(0).n_cols, self.dut.roc(0).n_rows, address, n_hits)
         for roc in self.dut.rocs():
-            self.select_roc(roc)
-            n_hits = []
-            ph = []
-            address = []
-            self.logger.debug('Calibrate %s , n_triggers: %s' %(roc, n_triggers) )
-            self.calibrate(n_triggers, n_hits, ph, address)
-            roc.data = decode(roc.n_cols, roc.n_rows, address, n_hits)
+            roc.data = data[roc.number]
 
     def get_ph(self, n_triggers):
         for roc in self.dut.rocs():

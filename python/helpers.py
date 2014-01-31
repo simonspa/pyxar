@@ -46,5 +46,6 @@ def decode_full(n_rocs, n_cols, n_rows, address, a_list):
             col = 0
             row = 0
         else:
+            #print roc, col, row
             datas[roc][col][row] += a_list[i]
     return datas
