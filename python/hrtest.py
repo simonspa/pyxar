@@ -41,8 +41,12 @@ class HRTest(test.Test):
     def fill_histo(self):
         for roc in self.dut.rocs():
             for pixel in roc.pixels():
-                tmpCol = int(self.dut.n_rocs*roc.n_cols-(roc.number*roc.n_cols+pixel.col))
-                tmpRow = int(self.divider*roc.n_rows-pixel.row)
+                if roc.number < 8:
+                    tmpCol = int(8*roc.n_cols-(roc.number*roc.n_cols+pixel.col))
+                    tmpRow = int(self.divider*roc.n_rows-pixel.row)
+                else:
+                    tmpCol = int(roc.number%8*roc.n_cols+pixel.col)+1
+                    tmpRow = int(pixel.row+1)
                 data = self._dut_results[roc.number][pixel.col][pixel.row]
                 if data > 0:
                     self._dut_histo.SetBinContent(tmpCol, tmpRow, data)

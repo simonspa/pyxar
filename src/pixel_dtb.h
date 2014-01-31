@@ -400,7 +400,7 @@ public:
     void SetHubID(int32_t value);
 
     int8_t Daq_Enable2(int32_t block);
-    int8_t Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size, uint32_t &n);
+    int8_t Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size, uint32_t &n, uint8_t channel);
     int8_t Daq_Disable2();
     int8_t CalibrateReadouts(int16_t nTriggers, int16_t &nReadouts, int32_t &PHsum);
     int8_t CalibrateMap_Sof(int16_t nTriggers, vector<int16_t> &nReadouts, vector<int32_t> &PHsum, vector<uint32_t> &addres);

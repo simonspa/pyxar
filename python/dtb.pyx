@@ -178,8 +178,8 @@ cdef class PyDTB:
         self.thisptr.Daq_Deser400_Reset(3)
     
     def daq_enable(self):
-        self.thisptr.Daq_Open(5000000, 0)
-        self.thisptr.Daq_Open(5000000, 1)
+        self.thisptr.Daq_Open(10000000, 0)
+        self.thisptr.Daq_Open(10000000, 1)
         self.thisptr.Daq_Start(0)
         self.thisptr.Daq_Start(1)
     

@@ -43,7 +43,7 @@ def decode_full(n_rocs, n_cols, n_rows, address, a_list):
         roc += tbm*8
         if ( (col >= n_cols or col < 0) or (row >= n_rows or row < 0) or (roc < 0 or roc >= n_rocs)):
             #raise Exception("Adress: %s decoded (col,row) (%s,%s)"%(adr,col,row))
-            print "Adress: %s decoded (col,row) (%s,%s)"%(hex(adr),col,row)
+            print "Adress: %s decoded channel roc(col,row) %s %s(%s,%s)"%(hex(adr),tbm,roc,col,row)
             col = 0
             row = 0
         else:
