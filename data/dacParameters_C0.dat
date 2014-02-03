@@ -4,18 +4,18 @@
   4 Vcomp            12
   7 VwllPr           60
   9 VwllSh           60
- 10 VhldDel         117
+ 10 VhldDel         250
  11 Vtrim            29
  12 VthrComp         62
- 13 VIBias_Bus        5
+ 13 VIBias_Bus        1
  14 Vbias_sf          6
- 15 VoffsetOp        50
+ 15 VoffsetOp        85
  17 VOffsetR0        76
  18 VIon            128
  19 Vcomp_ADC       100
  20 VIref_ADC       160
  21 VIbias_roc      150
- 22 VIColOr          20
+ 22 VIColOr          10
  25 Vcal            200
  26 CalDel          126
 253 CtrlReg           0
