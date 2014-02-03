@@ -20,5 +20,3 @@ To compile the library run:
 To start pyxar, run:
 ./pyXar
 
-
-Test2
