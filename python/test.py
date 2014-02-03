@@ -3,6 +3,7 @@ import time
 import os
 import ROOT
 from plotter import Plotter
+import copy
 
 class Test(object):
 
@@ -22,6 +23,24 @@ class Test(object):
         self.y_title = 'Row'
         self._results = []
         self._histos = []
+        self.divider = float(self.dut.n_rocs/8)
+        if self.divider < 1:
+            self.divider = 1
+        self._dut_histo = ROOT.TH2F(self.test, self.test, int(self.dut.n_rocs/self.divider*self.dut.roc(0).n_cols), 0., float(self.dut.n_rocs/self.divider*self.dut.roc(0).n_cols), int(self.divider*self.dut.roc(0).n_rows), 0., float(self.divider*self.dut.roc(0).n_rows))
+
+
+    def fill_histo(self):
+        for roc in self.dut.rocs():
+            for pixel in roc.pixels():
+                if roc.number < 8:
+                    tmpCol = int(8*roc.n_cols-(roc.number*roc.n_cols+pixel.col))
+                    tmpRow = int(self.divider*roc.n_rows-pixel.row)
+                else:
+                    tmpCol = int(roc.number%8*roc.n_cols+pixel.col)+1
+                    tmpRow = int(pixel.row+1)
+                data1 = roc.data[pixel.col][pixel.row]
+                if data1 > 0:
+                    self._dut_histo.SetBinContent(tmpCol, tmpRow, data1)
 
     def go(self, config):
         '''Called for every test, does prepare, run and cleanup.'''
@@ -58,6 +77,8 @@ class Test(object):
             th1 = Plotter.create_th1(roc.data,self.test+'_Distribution_ROC_%s' %(roc.number), 'Projection of test', '# pixels')
             self._histos.append(th1)
         self._histos.extend(plot.histos)
+        self.fill_histo()
+        self._histos.append(self._dut_histo)
 
     def restore(self):
         '''restore saved dac parameters'''

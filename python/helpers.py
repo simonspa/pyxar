@@ -35,18 +35,18 @@ def decode_full(n_rocs, n_cols, n_rows, address, a_list):
     for i in range(n_rocs):
         datas.append(np.zeros(s))
     datas = np.array(datas)
-    for i, adr in enumerate(address):
+    for i in xrange(len(address)):
+        adr = address[i]
         row = adr & 0xff
         col = (adr >> 8) & 0xff
         roc = (adr >> 16) & 0xff
         tbm = (adr >> 24) & 0xff
         roc += tbm*8
-        if ( (col >= n_cols or col < 0) or (row >= n_rows or row < 0) or (roc < 0 or roc >= n_rocs)):
-            #raise Exception("Adress: %s decoded (col,row) (%s,%s)"%(adr,col,row))
-            print "Adress: %s decoded channel roc(col,row) %s %s(%s,%s)"%(hex(adr),tbm,roc,col,row)
-            col = 0
-            row = 0
-        else:
-            #print roc, col, row
+        #if ( (col >= n_cols) or (row >= n_rows) or (roc >= n_rocs)):
+        #if ( (col >= n_cols or col < 0) or (row >= n_rows or row < 0) or (roc < 0 or roc >= n_rocs)):
+        #    print "Adress: %s decoded channel roc(col,row) %s %s(%s,%s)"%(hex(adr),tbm,roc,col,row)
+        try:
             datas[roc][col][row] += a_list[i]
+        except:
+            print "Adress: %s decoded channel roc(col,row) %s %s(%s,%s)"%(hex(adr),tbm,roc,col,row)
     return datas

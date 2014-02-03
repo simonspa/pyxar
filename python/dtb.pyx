@@ -3,6 +3,7 @@ from libcpp.vector cimport vector
 from libc.stdint cimport uint8_t, int8_t, uint16_t, int16_t, int32_t, uint32_t
 from libc.stdlib cimport malloc, free
 from libcpp.string cimport string
+import numpy as np
 
 
 cdef extern from "pixel_dtb.h":
@@ -78,6 +79,7 @@ cdef extern from "pixel_dtb.h":
 
 
 cdef class PyDTB: 
+
     cdef CTestboard *thisptr
     def __cinit__(self): 
         self.thisptr = new CTestboard()
@@ -86,6 +88,8 @@ cdef class PyDTB:
         self.PG_RESR = PG_RESR
         self.PG_CAL = PG_CAL
         self.PG_SYNC = PG_SYNC
+        self.dut = None
+
 
     def __dealloc__(self): 
         del self.thisptr
@@ -317,20 +321,34 @@ cdef class PyDTB:
             addr.append(adr[i]) 
         return return_value
     
-    def calibrate_parallel(self,n_triggers, num_hits, ph, addr, roc_list):
+    def calibrate_parallel(self,n_triggers, roc_list):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
         cdef vector[uint32_t] adr
         cdef vector[int16_t] rocs
+        #ToDo
+        s = (self.dut.roc(0).n_cols,self.dut.roc(0).n_rows)
+        hits = []
+        phs = []
         for roc in roc_list:
             rocs.push_back(roc)
+        for i in range(self.dut.n_rocs):
+            hits.append(np.zeros(s))
+            phs.append(np.zeros(s))
         return_value = self.thisptr.CalibrateMap_Par(n_triggers, n_hits, ph_sum, adr, rocs)
-        #return_value = self.thisptr.CalibrateMap(n_triggers, n_hits, ph_sum, adr)
         for i in xrange(len(n_hits)):
-            num_hits.append(n_hits[i]) 
-            ph.append(ph_sum[i]) 
-            addr.append(adr[i]) 
-        return return_value
+            address = adr[i]
+            row = address & 0xff
+            col = (address >> 8) & 0xff
+            roc = (address >> 16) & 0xff
+            tbm = (address >> 24) & 0xff
+            roc += tbm*8
+            try:
+                hits[roc][col][row] += n_hits[i]
+                phs[roc][col][row] += ph_sum[i]
+            except:
+                pass
+        return hits, phs
 
     def daq_read_decoded(self, n_hits, ph, addr):
         cdef vector[uint16_t] _n_hits
