@@ -124,7 +124,8 @@ class Roc(object):
         self._n_cols = int(config.get('ROC','cols'))
         self._n_pixels = self._n_rows*self._n_cols
         self.number = number
-        self._data = None
+        shape = (self._n_cols, self._n_rows)
+        self._data = numpy.zeros(shape)
         self._work_dir = config.get('General','work_dir')
 
         try:
@@ -331,7 +332,6 @@ class DUT(object):
         self._n_tbms = int(config.get('Module','tbms'))
         self._work_dir = config.get('General','work_dir')
 
-        self.data = None
         #define collections
         self._roc_list = []
         self._tbm_list = []
@@ -366,7 +366,7 @@ class DUT(object):
             self.MaskFile.close()
     
     @property
-    def roc_data(self):
+    def data(self):
         return numpy.array([roc.data for roc in self.rocs()])
 
     @property

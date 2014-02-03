@@ -7,3 +7,4 @@ class PHMap(test.Test):
 
     def run(self, config):
         self.tb.get_ph(self.n_triggers)
+
