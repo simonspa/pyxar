@@ -5,7 +5,7 @@ class HRMap(hrtest.HRTest):
     def prepare(self, config):
         self.data_taking_time = int(config.get('HR','data_taking_time'))
         ttk = int(config.get('HR','ttk'))
-        period = int(config.get('HR','period'))
+        self.period = int(config.get('HR','period'))
         for roc in self.dut.rocs():
             self.tb.select_roc(roc)
             for col in range(roc.n_cols):
@@ -24,4 +24,6 @@ class HRMap(hrtest.HRTest):
         else:
             self.tb.pg_setcmd(0, self.tb.PG_TRG  + ttk)
             self.tb.pg_setcmd(1, self.tb.PG_TOK)
-        self.tb.pg_loop(period)
+        self.tb.pg_loop(self.period)
+        
+

@@ -10,8 +10,8 @@ class HRTest(test.Test):
         super(HRTest, self).__init__(tb, config)
         self.window = window
         self.start_data = 0
-        self.dut.data = []
         self.data_taking_time = 5
+        self.period = 1288
         if self.window:
             self.window.histos.extend([self._dut_histo])
 
@@ -53,9 +53,12 @@ class HRTest(test.Test):
             self._results.append(plot_dict)
         plot = Plotter(self.config, self)
         self._histos.extend(plot.histos)
+        #calculating results
+        hits = numpy.sum(self.dut.data)
+        trigger_rate = 1.0e6/(40.0*self.period)
+        self.logger.info('Number of hits    %i' %hits)
+        self.logger.info('Trigger rate      %i kHz' %trigger_rate)
         self._histos.extend([self._dut_histo])
-        hits = plot->GetEntries()
-        self.logger.info('Number of hits %i' %hits) )
         if self.window:
             self.window.histos.pop()
 
