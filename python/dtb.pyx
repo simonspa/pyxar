@@ -347,7 +347,7 @@ cdef class PyDTB:
                 hits[roc][col][row] += n_hits[i]
                 phs[roc][col][row] += ph_sum[i]
             except:
-                pass
+                self.logger.debug('address decoding error')
         return hits, phs
 
     def daq_read_decoded(self, n_hits, ph, addr):
