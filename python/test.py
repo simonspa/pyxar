@@ -23,20 +23,19 @@ class Test(object):
         self.y_title = 'Row'
         self._results = []
         self._histos = []
-        self.divider = float(self.dut.n_rocs/8)
-        if self.divider < 1:
-            self.divider = 1
+        self.divider = 1
+        if float(self.dut.n_rocs/8) > 1:
+            self.divider = 2
         self._dut_histo = ROOT.TH2F(self.test, self.test, int(self.dut.n_rocs/self.divider*self.dut.roc(0).n_cols), 0., float(self.dut.n_rocs/self.divider*self.dut.roc(0).n_cols), int(self.divider*self.dut.roc(0).n_rows), 0., float(self.divider*self.dut.roc(0).n_rows))
-
 
     def fill_histo(self):
         for roc in self.dut.rocs():
             for pixel in roc.pixels():
                 if roc.number < 8:
-                    tmpCol = int(8*roc.n_cols-(roc.number*roc.n_cols+pixel.col))
+                    tmpCol = int(self.dut.n_rocs/self.divider*roc.n_cols-(roc.number*roc.n_cols+pixel.col))
                     tmpRow = int(self.divider*roc.n_rows-pixel.row)
                 else:
-                    tmpCol = int(roc.number%8*roc.n_cols+pixel.col)+1
+                    tmpCol = int(roc.number%(self.dut.n_rocs/self.divider)*roc.n_cols+pixel.col)+1
                     tmpRow = int(pixel.row+1)
                 data1 = roc.data[pixel.col][pixel.row]
                 if data1 > 0:
