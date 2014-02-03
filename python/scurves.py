@@ -46,7 +46,7 @@ class SCurves(test.Test):
         for dac_value in xrange(self.min_thr_dac, self.max_thr_dac): 
             self.tb.set_dac(self.dac, dac_value)
             self.tb.get_calibrate(self.n_triggers)
-            self._scurve_data[dac_value] = numpy.copy(self.dut.roc_data)
+            self._scurve_data[dac_value] = numpy.copy(self.dut.data)
 
     def dump(self):
         super(SCurves, self).dump()

@@ -40,7 +40,7 @@ class PHCalibration(test.Test):
     def get_point(self, point):
         self.tb.set_dac(self.dac, int(point))
         self.tb.get_ph(self.n_triggers)
-        self._ph_data.append(numpy.copy(self.dut.roc_data))
+        self._ph_data.append(numpy.copy(self.dut.data))
 
     def dump(self):
         super(PHCalibration, self).dump()

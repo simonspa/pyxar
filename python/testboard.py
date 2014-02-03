@@ -269,7 +269,7 @@ class Testboard(dtb.PyDTB):
             self.chip_threshold(start, step, thr_level, n_triggers, roc.dac(dac).number , xtalk, cals, trim, result)
             self.set_dac_roc(roc,dac,roc.dac(dac).value)
             roc.data = list_to_matrix(roc.n_cols, roc.n_rows, result)
-        return self.dut.roc_data
+        return self.dut.data
             
     def arm(self, pixel):
         if not pixel.mask:
