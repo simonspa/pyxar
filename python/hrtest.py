@@ -75,6 +75,8 @@ class HRTest(test.Test):
         plot = Plotter(self.config, self)
         self._histos.extend(plot.histos)
         self._histos.extend([self._dut_histo])
+        hits = plot->GetEntries()
+        self.logger.info('Number of hits %i' %hits) )
         if self.window:
             self.window.histos.pop()
 
