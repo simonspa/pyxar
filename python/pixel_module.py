@@ -368,6 +368,11 @@ class DUT(object):
     @property
     def data(self):
         return numpy.array([roc.data for roc in self.rocs()])
+    
+    @data.setter
+    def data(self, set_data):
+        for roc in self.rocs():
+            roc.data = set_data[roc.number]
 
     @property
     def pixel_data(self):
