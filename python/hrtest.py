@@ -44,7 +44,7 @@ class HRTest(test.Test):
             self.logger.info('Test is running for another %.0f seconds' %(time_left) )
         self.dut.data += self.tb.get_data()
         self.update_histo()
-    
+           
     def cleanup(self, config):
         '''Convert test result data into histograms for display.'''
         self.fill_histo()
@@ -54,13 +54,29 @@ class HRTest(test.Test):
         plot = Plotter(self.config, self)
         self._histos.extend(plot.histos)
         #calculating results
+        for roc in self.dut.rocs():
+            ia = self.tb.get_ia()
+            self.logger.info('%s: ia = %.2f' %(roc, ia))
+            id = self.tb.get_id()
+            self.logger.info('%s: id = %.2f' %(roc, id))
+        self._n_rocs = int(config.get('Module','rocs'))
+        sensor_area = self._n_rocs * 52 * 80 * 0.01 * 0.015 #in cm^2
+        self.logger.debug('number of rocs %s' %self._n_rocs)
+        self.logger.debug('sensor area %s' %round(sensor_area,2))
         hits = numpy.sum(self.dut.data)
-        trigger_rate = 1.0e6/(40.0*self.period)
-        self.logger.info('Number of hits    %i' %hits)
-        self.logger.info('Trigger rate      %i kHz' %trigger_rate)
+        trigger_rate = 1.0e6 / (40.0 * self.period)
+        rate = hits / (self.data_taking_time * trigger_rate * 1e3 * 25e-9 * self.scc * 1.0e6 * sensor_area)    
+
+        self.logger.info('data aquisition time    %i' %self.data_taking_time)
+        self.logger.info('number of hits          %i' %hits)
+        self.logger.info('trigger rate            %s kHz' %round(trigger_rate,1))
+        self.logger.info('hit rate                %s MHz/cm^2' %round(rate,6))
+        self.logger.info('scc                     %i ' %self.scc)
+        
         self._histos.extend([self._dut_histo])
         if self.window:
             self.window.histos.pop()
+        #TODO call HRAnalizer
 
     def restore(self):
         '''restore saved dac parameters'''

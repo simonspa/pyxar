@@ -6,6 +6,7 @@ class HRMap(hrtest.HRTest):
         self.data_taking_time = int(config.get('HR','data_taking_time'))
         ttk = int(config.get('HR','ttk'))
         self.period = int(config.get('HR','period'))
+        self.scc = int(config.get('HR','scc'))
         for roc in self.dut.rocs():
             self.tb.select_roc(roc)
             for col in range(roc.n_cols):
