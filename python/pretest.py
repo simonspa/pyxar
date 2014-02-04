@@ -7,16 +7,9 @@ class Pretest(test.Test):
         self.dac1 = 'VthrComp'
         self.dac2 = 'CalDel'
         self.n_triggers = 10
-        self._init_vthr = [roc.dac('VthrComp').value for roc in self.dut.rocs()]
-        self._init_cal_del = [roc.dac('CalDel').value for roc in self.dut.rocs()]
         self._init_vsf = [roc.dac('Vsf').value for roc in self.dut.rocs()]
         self._init_vana = [roc.dac('Vana').value for roc in self.dut.rocs()]
-        self._init_viref_adc = [roc.dac('VIref_ADC').value for roc in self.dut.rocs()]
-        self._init_voffsetro = [roc.dac('VOffsetR0').value for roc in self.dut.rocs()]
         self.roc_PH_map = []
-
-
-
         self.set_current_vana = 24.1
         self.minimal_diff = 1.
     
@@ -126,17 +119,16 @@ class Pretest(test.Test):
         safety_margin = 10
         ADC_max = 255
         self.n_triggers = 1
-        self.roc_Vcal_map = []
         self.dac = 'Vcal'
         self.xtalk = 0
         self.cals = 0
         self.reverse = False
 
+        self.roc_Vcal_map = self.tb.get_threshold(5, self.dac, self.xtalk, self.cals, self.reverse)
         #loop over ROCs to adjust VIref_ADC and VoffsetRO for each ROC  
         for roc in self.dut.rocs():
             #measure Vcal map to determine minimal Vcal for which all pixels respond
-            self.roc_Vcal_map.append(self.tb.get_threshold(10, self.dac, self.xtalk, self.cals, self.reverse))
-            Vcal_min = numpy.amax(numpy.ma.masked_greater_equal(self.roc_Vcal_map,256))
+            Vcal_min = numpy.amax(numpy.ma.masked_greater_equal(self.roc_Vcal_map[roc.number],256))
             self.logger.info('Minimal Vcal required for all pixels to respond is %s' %(Vcal_min))
             #make sure that no pixel has PH outside dynamic range of the ADC
             self.logger.info('Limiting PH to dynamic range of ADC for %s' %(roc))
