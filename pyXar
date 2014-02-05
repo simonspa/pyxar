@@ -60,6 +60,7 @@ class Pyxar(PyCmd):
             for k, v in dict(self.config.items(line)).items():
                 text += '%s: %s\n' %(k, v)
         return text
+
     
 if __name__ == '__main__':
     parser = optparse.OptionParser()
@@ -74,4 +75,8 @@ if __name__ == '__main__':
         pyxar.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
     #TODO remove
     pyxar.do_init('')
+    try:
+        __version__ = open('%s/logo' %(options.work_dir)).read()
+    except:
+        pass
     pyxar.cmdloop(__version__)
