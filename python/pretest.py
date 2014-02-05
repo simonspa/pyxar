@@ -58,21 +58,8 @@ class Pretest(test.Test):
         for roc in self.dut.rocs():
             set_current += self.set_current_vana
             self.logger.info('Set current ia = %.2f' %set_current)
-            low = 0
-            high = roc.dac('Vana').range -1
-            #Binary search to find value
-            while low<high:
-                vana = (high+low)//2
-                self.tb.set_dac_roc(roc,'Vana', vana)
-                self.tb.m_delay(200)
-                ia = self.tb.get_ia()
-                self.logger.debug('Ia = %.2f'%ia)
-                if ia > set_current:
-                    high = vana-1
-                elif ia < set_current:
-                    low = vana+1
-                else:
-                    break
+            #Binary search in vana until get_ia = set_current
+            vana = self.tb.binary_search(roc, 'Vana', set_current, False, 'get_ia')
             self.tb.set_dac_roc(roc, 'Vana', vana)
             self.tb.set_dac_roc(roc, 'Vsf', self._init_vsf[roc.number])
             self.logger.info('ROC %s found Vana: %s' %(roc.number, vana))

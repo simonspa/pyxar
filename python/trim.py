@@ -21,7 +21,6 @@ class Trim(test.Test):
         self.trim_dists = []
 
     def run(self, config): 
-        pass
         self.logger.info('Running trimming to Vcal %s' %self.vcal)
         #Determine min vthr
         self.get_vthr()
@@ -143,12 +142,6 @@ class Trim(test.Test):
             #noise_min = numpy.amin(numpy.ma.masked_less_equal(self.dut_Noise_map[roc.number],0)) 
             noise_min = -1
             dut_vthr_min = int(minimum)
-            #if minimum > noise_min -10:
-            #    dut_vthr_min = max(1,int(noise_min -10))
-            #determine limit 4 standard deviations away from mean 
-            #if dut_vthr_min == 0:
-            #if minimum < int((mean -4*std_dev)):
-            #    dut_vthr_min = int((mean -4*std_dev))
             self.logger.debug('VthrComp %s mean: %.2f sigma: %.2f min: %s noise_min %s set: %s' %(roc, mean, std_dev, minimum, noise_min, dut_vthr_min))
             self.vthr.append(dut_vthr_min)
             #reset Vcal to initial value
@@ -175,19 +168,8 @@ class Trim(test.Test):
             self.tb.select_roc(roc)
             self.tb.arm_pixel(col,row)
             found = False
-            low =0
-            high=255
-            while low<high:
-                vtrim = (high+low)//2
-                self.tb.set_dac_roc(roc,'Vtrim', vtrim)
-                thr = self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0)
-                self.logger.debug('threshold = %s'%thr)
-                if thr < self.vcal:
-                    high = vtrim-1
-                elif thr > self.vcal:
-                    low = vtrim+1
-                else:
-                    break
+            #Binary search in Vtrim until threshold = self.vcal
+            vtrim = self.tb.binary_search(roc, 'Vtrim', self.vcal, True, 'pixel_threshold', self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0)
             self.tb.disarm_pixel(col,row)
             self.logger.info('Found Vtrim %s'%vtrim)
             self.vtrim.append(vtrim)

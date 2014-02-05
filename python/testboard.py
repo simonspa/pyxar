@@ -283,3 +283,27 @@ class Testboard(dtb.PyDTB):
     
     def id(self):
         self.logger.info('ID: %.2f mA' %self.get_id())
+
+    def binary_search(self, roc, dac, set_value, inverted, function_name, *args):
+        '''Runs a binary search on roc, dac'''
+        low = 1
+        high = roc.dac(dac).range -1
+        #Binary search to find value
+        while low<high:
+            average_dac = (high+low)//2
+            self.set_dac_roc(roc, dac, average_dac)
+            value = getattr(self, function_name)(*args)
+            self.logger.debug('%s = %s, value = %s'%(dac, average_dac, value))
+            if value > set_value:
+                if inverted:
+                    low = average_dac+1
+                else:
+                    high = average_dac-1
+            elif value < set_value:
+                if inverted:
+                    high = average_dac-1
+                else:
+                    low = average_dac+1
+            else:
+                break
+        return average_dac
