@@ -9,8 +9,8 @@ class Pixel(object):
     def __init__(self, col, row, trim = 15, mask = False):
         self._col = col
         self._row = row
-        self.trim = trim
         self.mask = mask
+        self.trim = trim
         self.active = False
         self._data = None
 
@@ -24,7 +24,10 @@ class Pixel(object):
 
     @property
     def trim(self):
-        return copy.copy(self._trim)
+        if self.mask:
+            return -1
+        else:
+            return copy.copy(self._trim)
 
     @trim.setter
     def trim(self,value):
@@ -40,6 +43,8 @@ class Pixel(object):
                 raise Exception("Trim Value must be integer in [0,15]")
             assert trim_value < 16
             self._trim = trim_value
+        if self.mask:
+            self._trim = -1
         return self._trim
     
     @property
