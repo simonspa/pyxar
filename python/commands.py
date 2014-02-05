@@ -28,8 +28,8 @@ class shell_cmd(exit_cmd, object):
 class CmdTB(shell_cmd, object):
     def __init__(self):
         super(CmdTB, self).__init__()
-        self.TB = ['ia','id','init_dut','set_dac']
-        self.DUT = []
+        self.TB = ['ia','id','init_dut','set_dac','mask','unmask']
+        self.DUT = ['activate_pixel', 'deactivate_pixel']
         #TODO, get rid of this, needed on OSX109
         if 'libedit' in readline.__doc__:
             readline.parse_and_bind("bind ^I rl_complete")
@@ -47,16 +47,12 @@ class CmdTB(shell_cmd, object):
         return completions
     
     def do_tb(self, line):
-        args = line.split()
-        for arg in args[1:]:
-            try: 
-                arg = int(arg)
-            except ValueError:
-                pass
+        args = self.get_list(line)
         try:
             getattr(self.tb, args[0])(*args[1:])
-        except:
+        except Exception, e:
             print 'wrong command'
+            print e
 
     def complete_dut(self, text, line, begidx, endidx):
         if not text:
@@ -69,18 +65,23 @@ class CmdTB(shell_cmd, object):
         return completions
     
     def do_dut(self, line):
-        args = line.split()
-        for arg in args[1:]:
-            try: 
-                arg = int(arg)
-            except ValueError:
-                pass
+        args = self.get_list(line)
         try:
             getattr(self.tb.dut, args[0])(*args[1:])
-        except:
+        except Exception, e:
             print 'wrong command'
+            print e
 
-
+    @staticmethod
+    def get_list(line):
+        args = line.split()
+        for i,arg in enumerate(args):
+            try: 
+                args[i] = int(arg)
+            except ValueError:
+                pass
+        return args
+            
 class PyCmd(CmdTB, object):
     """Simple command processor example."""
     def __init__(self):
@@ -88,7 +89,7 @@ class PyCmd(CmdTB, object):
         self.prompt = 'pyXar > '
         self.directory = 'data'
 
-        tests = ['Calibrate', 'PHMap', 'Threshold', 'BondMap', 'Trim', 'TrimBits', 'Pretest', 'SCurves', 'PHCalibration', 'HRMap', 'MaskTest']
+        tests = ['Calibrate', 'PHMap', 'Threshold', 'BondMap', 'Trim', 'TrimBits', 'Pretest', 'SCurves', 'PHCalibration', 'HRMap', 'MaskTest', 'DacDac', 'PHScan']
 
         # dinamicaly generate the help and do class methods for the tests
         for test in tests:
@@ -109,19 +110,6 @@ class PyCmd(CmdTB, object):
 
     def help_init(self):
         print "Initialize DUT and TB as specified in module and tb config."
-
-    def do_DacDac(self, line):
-        #TODO Expose to cui
-        self.dut.roc(0).pixel(5,5).active = True
-        #self.dut.roc(1).pixel(5,5).active = True
-        self.run_test('DacDac')
-    
-    def do_PHScan(self, line):
-        #TODO Expose to cui
-        self.dut.roc(0).pixel(5,5).active = True
-        #self.dut.roc(0).pixel(15,15).active = True
-        #self.dut.roc(1).pixel(5,5).active = True
-        self.run_test('PHScan')
 
     def do_FullTest(self, line):
         self.run_test('Calibrate')

@@ -32,6 +32,7 @@ class Pyxar(PyCmd):
         self.config.read(configs)
         self.config.set('General', 'work_dir', self.directory)
         self.dut = DUT(self.config)
+        self.dut.activate_pixel(0,5,5)
         self.tb = Testboard(self.config, self.dut)
         self.logger.info('Initialzed DTB.')
         self.tb.ia()

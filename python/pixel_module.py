@@ -41,11 +41,10 @@ class Pixel(object):
                 trim_value = int(value)
             except ValueError:
                 raise Exception("Trim Value must be integer in [0,15]")
-            assert trim_value < 16
-            self._trim = trim_value
-        if self.mask:
-            self._trim = -1
-        return self._trim
+            # make sure it's not a mask information (-1)
+            if not trim_value == -1:
+                assert trim_value < 16
+                self._trim = trim_value
     
     @property
     def data(self):
@@ -208,8 +207,8 @@ class Roc(object):
     def trim(self, trim_bits):
         for pix in self.pixels():
             pix.trim = trim_bits[pix.col][pix.row]
-            if (pix.col == 0 and pix.row == 2):
-                self.logger.debug('%s %s' %(pix, pix.trim))
+            #if (pix.col == 0 and pix.row == 2):
+            #    self.logger.debug('%s %s' %(pix, pix.trim))
 
     def save_trim(self, file_name, directory = None):
         if not directory:
@@ -376,7 +375,18 @@ class DUT(object):
                             pix.mask = True
 
             self.MaskFile.close()
-    
+
+    def _activate_pixel(self, val, *args):
+        if len(args) == 3:
+            roc,col,row = args
+            self.pixel(roc,col,row).active = bool(val)
+
+    def activate_pixel(self, *args):
+        self._activate_pixel(True, *args)
+
+    def deactivate_pixel(self, *args):
+        self._activate_pixel(False, *args)
+
     @property
     def data(self):
         return numpy.array([roc.data for roc in self.rocs()])
