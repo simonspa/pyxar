@@ -2,10 +2,11 @@ import numpy
 import test
 
 class SCurves(test.Test):
+    '''Write SCurveData for self.n_triggers scanning self.dac'''
 
     def prepare(self, config):
-        self.n_triggers = int(config.get('SCurve','n_triggers'))
-        self.dac = config.get('SCurve','dac')
+        self.n_triggers = int(config.get('SCurves','n_triggers'))
+        self.dac = config.get('SCurves','dac')
         self.xtalk = 0
         self.reverse = False
         self.cals = 0
@@ -30,8 +31,7 @@ class SCurves(test.Test):
                     self.logger.warning('No valid data for %s %s, filling 0' %(roc, pixel))
                     format_list = [0]*32
                 outfile.write('%2.0f\t%3.0f\t'%(self.scan_range, rough_thr)+'\t'.join("%2.0f" % x for x in format_list)+'\n')
-            outfile.close()
-        
+            outfile.close()    
 
     def run(self, config):
         #Measure map to determine rough threshold
