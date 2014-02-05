@@ -168,6 +168,18 @@ class Testboard(dtb.PyDTB):
             self.trim_chip(roc.trim_for_tb)
             self.m_delay(100)
 
+    def _mask(self, mask, *args):
+        if len(args) == 3:
+            roc, col, row = args
+        self.dut.pixel(roc,col,row).mask = bool(mask)
+        self.trim(self.dut.trim)
+
+    def mask(self, *args):
+        self._mask(True, *args)
+    
+    def unmask(self, *args):
+        self._mask(False, *args)
+
     def get_data(self):
         n_hits = []
         ph = []
