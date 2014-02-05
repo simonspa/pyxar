@@ -80,12 +80,32 @@ class CmdTB(shell_cmd, object):
         except:
             print 'wrong command'
 
+
 class PyCmd(CmdTB, object):
     """Simple command processor example."""
     def __init__(self):
         super(PyCmd, self).__init__()
         self.prompt = 'pyXar > '
         self.directory = 'data'
+
+        tests = ['Calibrate', 'PHMap', 'Threshold', 'BondMap', 'Trim', 'TrimBits', 'Pretest', 'SCurves', 'PHCalibration', 'HRMap']
+
+        # dinamicaly generate the help and do class methods for the tests
+        for test in tests:
+            self._do_factory(test)
+            self._help_factory(test)
+
+    def _do_factory(self, test):
+        def _do_test(self, line):
+            self.run_test(test)
+        _do_test.__name__ = 'do_%s'%test
+        setattr(self.__class__,_do_test.__name__,_do_test)
+
+    def _help_factory(self, test):
+        def _help_test(self):
+            print self.get_help(test)
+        _help_test.__name__ = 'help_%s'%test
+        setattr(self.__class__,_help_test.__name__,_help_test)
 
     def help_init(self):
         print "Initialize DUT and TB as specified in module and tb config."
@@ -102,54 +122,6 @@ class PyCmd(CmdTB, object):
         #self.dut.roc(0).pixel(15,15).active = True
         #self.dut.roc(1).pixel(5,5).active = True
         self.run_test('PHScan')
-
-    def help_DacDac(self):
-        print "Run a DacDac scan using the DACs from test.cfg"
-    
-    def do_Threshold(self, line):
-        self.run_test('Threshold')
-    
-    def help_Threshold(self):
-        print "Run a Threshold scan using the DACs from test.cfg"
-        
-    def do_Calibrate(self, line):
-        self.run_test('Calibrate')
-    
-    def help_Calibrate(self):
-        print "Send calibrates to the DUT, n_triggers specified test.cfg"
-    
-    def do_BondMap(self, line):
-        self.run_test('BondMap')
-    
-    def help_BondMap(self):
-        print "Run a bond map"
-    
-    def do_Trim(self, line):
-        self.run_test('Trim')
-    
-    def help_Trim(self):
-        print "Trim the DUT to values specified in test.cfg"
-    
-    def do_TrimBits(self, line):
-        self.run_test('TrimBits')
-    
-    def help_TrimBits(self):
-        print "Test if the trim bits are working on the DUT via running threshold maps using test parameters specified in test.cfg under [TrimBits]"
-    
-    def do_Pretest(self, line):
-        self.run_test('Pretest')
-    
-    def do_SCurves(self, line):
-        self.run_test('SCurves')
-    
-    def do_PHCalibration(self, line):
-        self.run_test('PHCalibration')
-    
-    def do_PHMap(self, line):
-        self.run_test('PHMap')
-    
-    def do_HRMap(self, line):
-        self.run_test('HRMap')
 
     def do_FullTest(self, line):
         self.run_test('Calibrate')

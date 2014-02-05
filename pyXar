@@ -52,6 +52,9 @@ class Pyxar(PyCmd):
         if self.window:
             self.window.histos.extend(a_test.histos)
             self.window.update()
+
+    def get_help(self, line):
+       return globals()[line].__doc__
     
 if __name__ == '__main__':
     parser = optparse.OptionParser()
