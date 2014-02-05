@@ -4,6 +4,7 @@ import ROOT
 from plotter import Plotter
 
 class TrimBits(test.Test):
+    ''' test individual trimbits (4) for each pixel by calculating difference in threshold for bit turned on and off '''
     
     def prepare(self, config): 
         self.vcal = int(config.get('TrimBits','Vcal'))

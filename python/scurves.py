@@ -2,7 +2,7 @@ import numpy
 import test
 
 class SCurves(test.Test):
-    '''Write SCurveData for self.n_triggers scanning self.dac'''
+    '''Write SCurveData (efficiency of Pixels for different Vcal values) for self.n_triggers scanning self.dac'''
 
     def prepare(self, config):
         self.n_triggers = int(config.get('SCurves','n_triggers'))

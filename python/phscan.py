@@ -2,6 +2,7 @@ import test
 from plotter import Plotter
 
 class PHScan(test.Test):
+    ''' scan through a DAC vs. resulting pulseheight for n injected calibrates '''
 
     def prepare(self, config):
         self.dac = config.get('PHScan','dac')

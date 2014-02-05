@@ -2,6 +2,7 @@ import numpy
 import test
 
 class PHCalibration(test.Test):
+    ''' get average pulsheight for n triggers at several Vcal values and write to file '''
 
     def prepare(self, config):
         self.n_triggers = int(config.get('PHCalibration','n_triggers'))
