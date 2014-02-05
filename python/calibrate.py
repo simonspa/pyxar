@@ -2,6 +2,7 @@ import test
 import ROOT
 
 class Calibrate(test.Test):
+    ''' send n calibrates to each pixels and get readout with address '''
 
     def prepare(self, config):
         self.n_triggers = int(config.get('Calibrate','n_triggers'))

@@ -1,7 +1,9 @@
 import test
 
 class BondMap(test.Test):
-    
+    ''' inject Vcal in high range through the Sensor and determin Threshold. Lower Thresholds (i.e. higher VcThr DAC value) indicate a worse connection of the Sensor Pixel to the ROC PUC '''
+
+
     def prepare(self, config): 
         self.cals = int(True)
         self.xtalk = int(False)

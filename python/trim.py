@@ -4,6 +4,7 @@ import ROOT
 from plotter import Plotter
 
 class Trim(test.Test):
+    ''' setting Thr, Vtrim and TrimBits for ROCs to get a uniform Vcal threshold of the desired value. '''
 
     def prepare(self, config):
         self.vcal = int(config.get('Trim','Vcal'))
