@@ -54,7 +54,12 @@ class Pyxar(PyCmd):
             self.window.update()
 
     def get_help(self, line):
-       return globals()[line].__doc__
+        text = globals()[line].__doc__
+        if self.config.has_section(line):
+            text += '\n'
+            for k, v in dict(self.config.items(line)).items():
+                text += '%s: %s\n' %(k, v)
+        return text
     
 if __name__ == '__main__':
     parser = optparse.OptionParser()
