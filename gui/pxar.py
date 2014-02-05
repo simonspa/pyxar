@@ -21,13 +21,13 @@ class PxarGui( ROOT.TGMainFrame ):
        self.ButtonsFrame.AddFrame( self.DrawButton, ROOT.TGLayoutHints() )
 
        #self.ComboFrame.AddFrame( self.ButtonsFrame, ROOT.TGLayoutHints() )
-       self.combo = ROOT.TGComboBox(self.ButtonsFrame)
-       l = ['a','b']
-       for i in range(len(l)):
-          self.combo.AddEntry(l[i],i+1)
-       self.combo.Select(1)
-       self.ButtonsFrame.AddFrame( self.combo, ROOT.TGLayoutHints() )
-       self.combo.Resize(100,20)
+       #self.combo = ROOT.TGComboBox(self.ButtonsFrame)
+       #l = ['a','b']
+       #for i in range(len(l)):
+       #   self.combo.AddEntry(l[i],i+1)
+       #self.combo.Select(1)
+       #self.ButtonsFrame.AddFrame( self.combo, ROOT.TGLayoutHints() )
+       #self.combo.Resize(100,20)
 
        self.AddFrame(self.ButtonsFrame, ROOT.TGLayoutHints() )
 
