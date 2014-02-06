@@ -277,8 +277,7 @@ class Testboard(dtb.PyDTB):
             self.logger.info('Start: %s, step: %s, thr_level: %s, n_triggers: %s, dac: %s, num: %s, xtalk: %s, cals: %s' %(start, step, thr_level, n_triggers, dac, roc.dac(dac).number, xtalk, cals))
             result = [0] * roc.n_pixels
             #TODO remove trimming, they will go away with new CTestboard
-            trim = roc.trim_for_tb 
-            self.chip_threshold(start, step, thr_level, n_triggers, roc.dac(dac).number , xtalk, cals, trim, result)
+            self.chip_threshold(start, step, thr_level, n_triggers, roc.dac(dac).number , xtalk, cals, result)
             self.set_dac_roc(roc,dac,roc.dac(dac).value)
             roc.data = list_to_matrix(roc.n_cols, roc.n_rows, result)
         return self.dut.data

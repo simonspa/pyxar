@@ -509,7 +509,7 @@ void CTestboard::SetChip(int iChip)
 // == Thresholds ===================================================
 
 
-void CTestboard::ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[])
+void CTestboard::ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t res[])
 {
   int32_t thr, startValue;
   //uint16_t daq_read_size = 32768;
@@ -524,7 +524,7 @@ void CTestboard::ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrL
 			if (startValue < 0) startValue = 0;
 			else if (startValue > 255) startValue = 255;
 			
-			thr = PixelThreshold(col, row, startValue, step, thrLevel, nTrig, dacReg, xtalk, cals, trim[col*ROC_NUMROWS + row]);
+			thr = PixelThreshold(col, row, startValue, step, thrLevel, nTrig, dacReg, xtalk, cals);
 			res[col*ROC_NUMROWS + row] = thr;
             //printf("   Pixel %1u %1u %3u\n", col, row, thr); 
 
@@ -562,7 +562,7 @@ void CTestboard::Init_PG()
     Flush();
 }
 
-int32_t CTestboard::ChipThreshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[])
+int32_t CTestboard::ChipThreshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t res[])
 {
   int startValue;
   int32_t roughThr[ROC_NUMROWS * ROC_NUMCOLS], roughStep;
@@ -577,12 +577,8 @@ int32_t CTestboard::ChipThreshold(int32_t start, int32_t step, int32_t thrLevel,
   	roughStep = 4;
   }
 
-  vector<int16_t> trimV(trim, trim + sizeof trim / sizeof trim[0]);
- 
   for (int i = 0; i < ROC_NUMROWS * ROC_NUMCOLS; i++) roughThr[i] = startValue;
-  TrimChip(trimV);
-  ChipThresholdIntern(roughThr, roughStep, 0, 1, dacReg, xtalk, cals, trim, roughThr);
-  TrimChip(trimV);
-  ChipThresholdIntern(roughThr, step, thrLevel, nTrig, dacReg, xtalk, cals, trim, res);  
+  ChipThresholdIntern(roughThr, roughStep, 0, 1, dacReg, xtalk, cals, roughThr);
+  ChipThresholdIntern(roughThr, step, thrLevel, nTrig, dacReg, xtalk, cals, res);  
   return 1;
 }

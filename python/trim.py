@@ -34,9 +34,10 @@ class Trim(test.Test):
             self.tb.set_dac_roc(roc,'Vtrim', self.vtrim[i])
         #Get trim bits and set them to half the max range
         trim_bits = self.dut.trim
-        numpy.clip(trim_bits, self._max_trim_bit/2, self._max_trim_bit/2, out=trim_bits)
-        self.tb.trim(trim_bits)
-        self.trim_dists.append(trim_bits)
+        #numpy.clip(trim_bits, self._max_trim_bit/2, self._max_trim_bit/2, out=trim_bits)
+        trim_bits_7 = numpy.ones_like(trim_bits)*7
+        self.tb.trim(trim_bits_7)
+        self.trim_dists.append(trim_bits_7)
         #Measure initial DUT with trim bits 7
         self.vcal_dists.append(self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse))
         #Run binary search
@@ -184,7 +185,11 @@ class Trim(test.Test):
             self.tb.arm_pixel(col,row)
             found = False
             #Binary search in Vtrim until pixel_threshold = self.vcal, threshold falls for increasing Vtrim => inverted
-            vtrim = self.tb.binary_search(roc, 'Vtrim', self.vcal, lambda: self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0), True)
+            #trim chip 0
+            trim_bits = self.dut.trim
+            trim_bits_0 = numpy.zeros_like(trim_bits)
+            self.tb.trim(trim_bits_0)
+            vtrim = self.tb.binary_search(roc, 'Vtrim', self.vcal, lambda: self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False),True)
             self.tb.disarm_pixel(col,row)
             self.logger.info('Found Vtrim %s'%vtrim)
             self.vtrim.append(vtrim)
