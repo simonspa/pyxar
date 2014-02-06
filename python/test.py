@@ -4,6 +4,7 @@ import os
 import ROOT
 from plotter import Plotter
 import copy
+from colorer import ColorFormatter
 
 class Test(object):
 
@@ -16,7 +17,9 @@ class Test(object):
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
         self.logger = logging.getLogger(self.name)
-        test_logger = logging.FileHandler('%s/test.log' %self.directory)
+        test_logger = logging.FileHandler('%s/test.log' %self.directory, mode='w')
+        formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt='[%H:%M:%S]')
+        test_logger.setFormatter(formatter)
         self.logger.addHandler(test_logger)
         self.test = str(self.__class__.__name__)
         self.x_title = 'Column'

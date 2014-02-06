@@ -2,21 +2,19 @@ import numpy
 import test
 
 class Pretest(test.Test):
+    '''Test functionality of the DUT and adjust settings to obtain a valid readout.
+    Programming of ROCs is tested and Vana is adjusted such that each ROC draws 24.1 mA.
+    VthrComp and CalDel are adjusted such that they match a working point in the DacDac scan.
+    PH gain and threshold are adjusted to get a PH in the valid range.
+    '''
     
     def prepare(self, config):
         self.dac1 = 'VthrComp'
         self.dac2 = 'CalDel'
         self.n_triggers = 10
-        self._init_vthr = [roc.dac('VthrComp').value for roc in self.dut.rocs()]
-        self._init_cal_del = [roc.dac('CalDel').value for roc in self.dut.rocs()]
         self._init_vsf = [roc.dac('Vsf').value for roc in self.dut.rocs()]
         self._init_vana = [roc.dac('Vana').value for roc in self.dut.rocs()]
-        self._init_viref_adc = [roc.dac('VIref_ADC').value for roc in self.dut.rocs()]
-        self._init_voffsetro = [roc.dac('VOffsetR0').value for roc in self.dut.rocs()]
         self.roc_PH_map = []
-
-
-
         self.set_current_vana = 24.1
         self.minimal_diff = 1.
     
@@ -31,10 +29,13 @@ class Pretest(test.Test):
         pass
 
     def restore(self):
+        #Don't restore the default settings
         pass
 
     def rocs_programmable(self):
-        '''Sets Vana to 0 and max DAC range and measures current, if difference is larger than 0.1 mA, ROC is programmable'''
+        '''Loops over all rocs and tests if ROC is programmable.
+        Sets Vana to 0 and max DAC range and measures current, 
+        if difference is larger than self.minimal_diff mA, ROC is programmable'''
         self.logger.info('Testing if ROCs are programmable')
         for roc in self.dut.rocs():
             self.tb.set_dac_roc(roc,'Vana', roc.dac('Vana').range-1)
@@ -50,10 +51,13 @@ class Pretest(test.Test):
             self.tb.set_dac_roc(roc, 'Vana', self._init_vana[roc.number])
 
     def adjust_vana(self):
+        '''Adjusts vana for all ROCs until ia = self.set_current_vana (24.1) mA'''
         self.logger.info('Adjusting Vana')
+        #Turn of DUT
         self.tb.set_dac('Vana', 0)
         self.tb.set_dac('Vsf', 0)
         self.tb.m_delay(200)
+        #Measure zero current using three measurements
         zero_current = 0
         n_meas = 3
         for i in range(n_meas):
@@ -62,29 +66,20 @@ class Pretest(test.Test):
         zero_current /= float(n_meas)
         self.logger.info('Measured zero current ia = %.2f' %zero_current)
         set_current = zero_current
+        #Loop over ROCs and adjust vana
         for roc in self.dut.rocs():
             set_current += self.set_current_vana
             self.logger.info('Set current ia = %.2f' %set_current)
-            low = 0
-            high = roc.dac('Vana').range -1
-            #Binary search to find value
-            while low<high:
-                vana = (high+low)//2
-                self.tb.set_dac_roc(roc,'Vana', vana)
-                self.tb.m_delay(200)
-                ia = self.tb.get_ia()
-                self.logger.debug('Ia = %.2f'%ia)
-                if ia > set_current:
-                    high = vana-1
-                elif ia < set_current:
-                    low = vana+1
-                else:
-                    break
+            #Binary search in vana until self.tb.get_ia() = set_current
+            vana = self.tb.binary_search(roc, 'Vana', set_current, lambda: self.tb.get_ia() )
             self.tb.set_dac_roc(roc, 'Vana', vana)
             self.tb.set_dac_roc(roc, 'Vsf', self._init_vsf[roc.number])
             self.logger.info('ROC %s found Vana: %s' %(roc.number, vana))
 
     def find_VthrComp_CalDel(self):
+        '''Perform a DacDac scan in VthrComp and CalDel to find a working point.
+        VthrComp is adjusted to half the noise cutoff. 
+        CalDel is centered in the working range.'''
         #TODO remove hardcoding of 5,5
         self.logger.info('Adjusting %s and %s' %(self.dac1, self.dac2))
         for roc in self.dut.rocs():
@@ -117,26 +112,21 @@ class Pretest(test.Test):
 
 
     def adjust_PH_range(self):
-        #TODO complete
         self.logger.info('Adjusting PH DACs')
 
-        ph_max = 255
-        ph_min = 0
-        stepwidth = 5
         safety_margin = 10
         ADC_max = 255
         self.n_triggers = 1
-        self.roc_Vcal_map = []
         self.dac = 'Vcal'
         self.xtalk = 0
         self.cals = 0
         self.reverse = False
 
+        self.roc_Vcal_map = self.tb.get_threshold(5, self.dac, self.xtalk, self.cals, self.reverse)
         #loop over ROCs to adjust VIref_ADC and VoffsetRO for each ROC  
         for roc in self.dut.rocs():
             #measure Vcal map to determine minimal Vcal for which all pixels respond
-            self.roc_Vcal_map.append(self.tb.get_threshold(10, self.dac, self.xtalk, self.cals, self.reverse))
-            Vcal_min = numpy.amax(numpy.ma.masked_greater_equal(self.roc_Vcal_map,256))
+            Vcal_min = numpy.amax(numpy.ma.masked_greater_equal(self.roc_Vcal_map[roc.number],256))
             self.logger.info('Minimal Vcal required for all pixels to respond is %s' %(Vcal_min))
             #make sure that no pixel has PH outside dynamic range of the ADC
             self.logger.info('Limiting PH to dynamic range of ADC for %s' %(roc))
@@ -154,46 +144,27 @@ class Pretest(test.Test):
             viref_adc = roc.dac('VIref_ADC').value
             self.logger.info('Original  VIref_ADC = %s' %(viref_adc))
             #Reduce PH of all pixels to upper limit of ADC range by increasing VIref_ADC
-            while ph_max > (ADC_max - safety_margin):
-                if viref_adc + stepwidth > 255:
-                    self.logger.warning('Cannot increase VIref_ADC to compress PH range')
-                    break #TODO: implement smoother exception handling
-                else:
-                    viref_adc += stepwidth
-                    self.tb.set_dac_roc(roc, 'VIref_ADC', viref_adc)
-                    self.logger.debug('Increased VIref_ADC to %s, to compress PH range (at upper edge' %(viref_adc))
-                    self.tb.get_ph_roc(self.n_triggers, roc)
-                    self.roc_PH_map = roc.data
-                    ph_max = numpy.amax(numpy.ma.masked_greater_equal(self.roc_PH_map,256))
-                    self.logger.debug('ph_max = %s' %(ph_max))
-                    col,row =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(self.roc_PH_map,ph_max)),numpy.shape(self.roc_PH_map))
+            viref_adc = self.tb.binary_search(roc, 'VIref_ADC', (ADC_max - safety_margin), 
+                    lambda: numpy.amax(numpy.ma.masked_greater_equal(self.tb.get_ph_roc(self.n_triggers, roc),256)), True)
+            col,row =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_max)),numpy.shape(roc.data))
             self.logger.debug('Pixel with highest PH for Vcal 255 high range: %s,%s' %(col, row))
+            self.tb.set_dac_roc(roc, 'VIref_ADC', viref_adc)
             
             #Reduce PH of all pixels to lower limit of ADC range by increasing VIref_ADC, use Vcal_min found in Vcal map ti make sure all (untrimmed) pixels respond
             self.tb.set_dac_roc(roc, 'Vcal', Vcal_min)
             self.tb.set_dac_roc(roc, 'CtrlReg', 0)
+            self.tb.m_delay(200)
             self.tb.get_ph_roc(self.n_triggers, roc)
-            self.roc_PH_map = roc.data
-            ph_min = numpy.amin(numpy.ma.masked_less_equal(self.roc_PH_map,0))
+            ph_min = numpy.amin(numpy.ma.masked_less_equal(roc.data,0))
             self.logger.debug('ph_min = %s' %(ph_min))
-            col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(self.roc_PH_map,ph_min)),numpy.shape(self.roc_PH_map))
+            col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_min)),numpy.shape(roc.data))
             self.logger.debug('Pixel with lowest PH for low Vcal: %s,%s' %(col_min, row_min))
-            while ph_min < safety_margin:
-                if roc.dac('VIref_ADC').value + stepwidth > 255:
-                    self.logger.warning('Cannot increase VIref_ADC to compress PH range')
-                    break #TODO: implement smoother exception handling
-                else:           
-                    viref_adc = roc.dac('VIref_ADC').value + stepwidth
-                    self.tb.set_dac_roc(roc, 'VIref_ADC', viref_adc)
-                    self.logger.debug('Increased %s, to compress PH range (at lower edge)' %(viref_adc))
-                    self.tb.get_ph_roc(self.n_triggers, roc)
-                    self.roc_PH_map = roc.data
-                    ph_min= numpy.amin(numpy.ma.masked_less_equal(self.roc_PH_map,0))
-                    self.logger.debug('ph_min = %s' %(ph_min))
-                    col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(self.roc_PH_map,ph_min)),numpy.shape(self.roc_PH_map))
+            if ph_min < safety_margin:
+                viref_adc = self.tb.binary_search(roc, 'VIref_ADC', safety_margin, 
+                    lambda: numpy.amin(numpy.ma.masked_less_equal(self.tb.get_ph_roc(self.n_triggers, roc), 0)), True)
+            col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_min)),numpy.shape(roc.data))
             self.logger.debug('Pixel with lowest PH for small Vcal: %s,%s' %(col_min, row_min))
             self.logger.info('VIref_ADC after compressing PH: %s' %(viref_adc))
-        
 
             #Center PH in ADC range
             self.logger.info('Centering PH in ADC range for %s' %(roc))
@@ -222,26 +193,13 @@ class Pretest(test.Test):
             #Determine target margin for centered PH
             z = 0.5 * (upper_margin + lower_margin)
             self.logger.debug('z = %s' %(z))
-            voffsetro = roc.dac('VOffsetR0').value
             #Adjust VOffsetRO to center PH in ADC range
             #If PH is to high, shift downwards (increase VOffsetRO)
-            while upper_margin < z-5 and voffsetro <= 255-stepwidth:
-                voffsetro += stepwidth
-                self.tb.set_dac_roc(roc, 'VOffsetR0', voffsetro)
-                self.logger.debug('Increased VOffsetRO to %s, to center PH' %(voffsetro))
-                self.tb.get_ph_dac(self.n_triggers, 'Vcal')
-                ph_max = numpy.amax(numpy.ma.masked_greater_equal(pixel_high.data,256))
-                upper_margin = ADC_max - ph_max
-                self.logger.debug('upper_margin = %s' %(upper_margin))
-            #If PH is to low, shift upwards (decrease VOffsetRO)
-            while upper_margin > z+5 and voffsetro >= stepwidth:
-                voffsetro -= stepwidth
-                self.tb.set_dac_roc(roc, 'VOffsetR0', voffsetro)
-                self.logger.debug('Decreased VoffsetRO to %s, to center PH' %(voffsetro))
-                self.tb.get_ph_dac(self.n_triggers, 'Vcal')
-                ph_max = numpy.amax(numpy.ma.masked_greater_equal(pixel_high.data,256))
-                upper_margin = ADC_max - ph_max
-                self.logger.debug('upper_margin = %s' %(upper_margin))
+            def find_max_PH(n_triggers, pixel_high):
+                self.tb.get_ph_dac(n_triggers, 'Vcal')
+                return numpy.amax(numpy.ma.masked_greater_equal(pixel_high.data,256) )
+            max_ph = find_max_PH(self.n_triggers, pixel_high)
+            voffsetro = self.tb.binary_search(roc, 'VOffsetR0', z, lambda: ADC_max-find_max_PH(self.n_triggers, pixel_high))  
             self.logger.info('VoffsetRO after centering PH for selected pixel: %s' %(voffsetro))
             pixel_high.active = False
             #Measure minimal PH after centering (maximal PH already measured)
@@ -255,23 +213,15 @@ class Pretest(test.Test):
             
             #Stretch PH over full ADC range by decreasing VIref_ADC (using pixel with highest PH)
             pixel_high.active = True
+            self.tb.set_dac_roc(roc, 'CtrlReg', 4)
             self.logger.info('Stretching PH over full ADC range for ROC %s' %(roc))
-            while ph_max < (ADC_max - safety_margin):
-                self.tb.set_dac_roc(roc, 'CtrlReg', 4)
-                viref_adc = roc.dac('VIref_ADC').value - stepwidth
-                self.tb.set_dac_roc(roc, 'VIref_ADC', viref_adc)
-                self.tb.get_ph_dac(self.n_triggers, 'Vcal')
-                ph_max = numpy.amax(numpy.ma.masked_greater_equal(pixel_high.data,256))
-                self.logger.debug('Decreased VIref_ADC to %s, to stretch PH over full ADC range' %(voffsetro))
-                self.logger.debug('ph_max for selected pixel= %s' %(ph_max))  
+            viref_adc = self.tb.binary_search(roc, 'VIref_ADC', (ADC_max - safety_margin), lambda: find_max_PH(self.n_triggers, pixel_high), True)  
+            self.logger.debug('Decreased VIref_ADC to %s, to stretch PH over full ADC range' %(viref_adc))
+            self.logger.debug('ph_max for selected pixel= %s' %(ph_max))  
             pixel_high.active = False
             
             #Set control register back to low range 
             self.tb.set_dac_roc(roc, 'CtrlReg', roc.dac('CtrlReg').stored_value)
             self.tb.set_dac_roc(roc, 'Vcal', roc.dac('Vcal').stored_value)
             #Print out optimized PH Dacs
-            self.logger.info('++++++++++++++++++++++++++++++++++++++++++')
             self.logger.info('Found VIref_ADC = %s and VOffsetRO = %s for %s' %(viref_adc, voffsetro, roc))
-
-
-

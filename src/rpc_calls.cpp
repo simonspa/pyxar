@@ -105,7 +105,7 @@ const char *CTestboard::rpc_cmdName[] =
 	/*    91 */ "CountReadouts$iii",
 	/*    92 */ "CountReadouts$iiii",
 	/*    93 */ "PH$iiiis",
-	/*    94 */ "PixelThreshold$iiiiiiiibbi",
+	/*    94 */ "PixelThreshold$iiiiiiiibb",
 	/*    95 */ "test_pixel_address$bii",
 	/*    96 */ "CalibratePixel$csss0s0i",
 	/*    97 */ "CalibrateDacScan$cssssss2s2i",
@@ -1540,7 +1540,7 @@ int32_t CTestboard::PH(int32_t rpc_par1, int32_t rpc_par2, int32_t rpc_par3, int
 	return rpc_par0;
 }
 
-int32_t CTestboard::PixelThreshold(int32_t rpc_par1, int32_t rpc_par2, int32_t rpc_par3, int32_t rpc_par4, int32_t rpc_par5, int32_t rpc_par6, int32_t rpc_par7, bool rpc_par8, bool rpc_par9, int32_t rpc_par10)
+int32_t CTestboard::PixelThreshold(int32_t rpc_par1, int32_t rpc_par2, int32_t rpc_par3, int32_t rpc_par4, int32_t rpc_par5, int32_t rpc_par6, int32_t rpc_par7, bool rpc_par8, bool rpc_par9)
 { RPC_PROFILING
 	int32_t rpc_par0;
 	try {
@@ -1557,7 +1557,6 @@ int32_t CTestboard::PixelThreshold(int32_t rpc_par1, int32_t rpc_par2, int32_t r
 	msg.Put_INT32(rpc_par7);
 	msg.Put_BOOL(rpc_par8);
 	msg.Put_BOOL(rpc_par9);
-	msg.Put_INT32(rpc_par10);
 	msg.Send(*rpc_io);
 	rpc_io->Flush();
 	msg.Receive(*rpc_io);

@@ -62,8 +62,8 @@ cdef extern from "pixel_dtb.h":
         int16_t TrimChip(vector[int16_t] &) except + 
         int8_t TrimChip_Sof(vector[int16_t] &)
         int32_t MaskTest(int16_t, int16_t*) 
-        int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *, int32_t *)
-        int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, bool xtalk, bool cals, int32_t trim)
+        int32_t ChipThreshold(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t *)
+        int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, bool xtalk, bool cals)
         int8_t CalibrateMap_Sof(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &) 
         int8_t CalibrateMap_Par(int16_t, vector[int16_t] &, vector[int32_t] &, vector[uint32_t] &, vector[int16_t] &) 
         int8_t CalibrateDacDacScan_Sof(int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, vector[int16_t] &, vector[int32_t] &) 
@@ -285,20 +285,14 @@ cdef class PyDTB:
     def disarm_pixel(self, col, row):
         self.thisptr.DisarmPixel(col, row)
         
-    def chip_threshold(self, start, step, thr_level, n_triggers, dac_reg, xtalk, cals, trim, result):
+    def chip_threshold(self, start, step, thr_level, n_triggers, dac_reg, xtalk, cals, result):
         cdef int32_t *data
-        cdef int32_t *trim_bits
         n = len(result) 
-        n_trim = len(trim) 
         data = <int32_t *>malloc(n*sizeof(int))
-        trim_bits = <int32_t *>malloc(n_trim*sizeof(int))
-        for i in xrange(n_trim):
-            trim_bits[i] = trim[i]
-        return_value = self.thisptr.ChipThreshold(start, step, thr_level, n_triggers, dac_reg, xtalk, cals, trim_bits, data)
+        return_value = self.thisptr.ChipThreshold(start, step, thr_level, n_triggers, dac_reg, xtalk, cals, data)
         for i in xrange(n):
             result[i] = data[i] 
         free(data)
-        free(trim_bits)
         return return_value
     
     def trim_chip(self, trim):
@@ -380,6 +374,6 @@ cdef class PyDTB:
             ph.append(ph_sum[i]) 
         return return_value
 
-    def pixel_threshold(self, n_triggers, col, row, start, step, thrLevel, dacReg, xtalk, cals, trim):
-        return_value = self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals, trim)
+    def pixel_threshold(self, n_triggers, col, row, start, step, thrLevel, dacReg, xtalk, cals):
+        return_value = self.thisptr.PixelThreshold(col ,row, start, step, thrLevel, n_triggers, dacReg, xtalk, cals)
         return return_value

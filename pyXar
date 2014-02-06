@@ -8,7 +8,7 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from python import Testboard
 from python import DUT
-from python import DacDac, Calibrate, Threshold, Trim, TrimBits, Pretest, BondMap, SCurves, PHCalibration, PHMap, PHScan
+from python import DacDac, Calibrate, Threshold, Trim, TrimBits, Pretest, BondMap, SCurves, PHCalibration, PHMap, PHScan, MaskTest
 from python import HRMap
 from python import BetterConfigParser
 from gui import PxarGui
@@ -32,6 +32,7 @@ class Pyxar(PyCmd):
         self.config.read(configs)
         self.config.set('General', 'work_dir', self.directory)
         self.dut = DUT(self.config)
+        self.dut.activate_pixel(0,5,5)
         self.tb = Testboard(self.config, self.dut)
         self.logger.info('Initialzed DTB.')
         self.tb.ia()
@@ -41,6 +42,9 @@ class Pyxar(PyCmd):
         if self.window:
             return
         self.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
+
+    def help_gui(self):
+        print 'open result browser'
 
     @staticmethod
     def str_to_class(str):
@@ -52,6 +56,21 @@ class Pyxar(PyCmd):
         if self.window:
             self.window.histos.extend(a_test.histos)
             self.window.update()
+
+    def get_help(self, line):
+        text = '\x1b[1m\x1b[4m\n'
+        text += line
+        text += ':\x1b[0m\n'
+        text += str(globals()[line].__doc__)
+        text += '\n\x1b[34m'
+        if self.config.has_section(line):
+            text += '\x1b[4m\n\tSettings:\n\x1b[24m'
+            for k, v in dict(self.config.items(line)).items():
+                text += '\t%-25s%s\n' %(k, v)
+                #text += '\t%s:\t%s\n' %(k, v)
+        text += '\x1b[0m'
+        return text
+
     
 if __name__ == '__main__':
     parser = optparse.OptionParser()
@@ -66,4 +85,8 @@ if __name__ == '__main__':
         pyxar.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
     #TODO remove
     pyxar.do_init('')
+    try:
+        __version__ = open('%s/logo' %(options.work_dir)).read()
+    except:
+        pass
     pyxar.cmdloop(__version__)

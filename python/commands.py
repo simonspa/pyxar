@@ -28,8 +28,8 @@ class shell_cmd(exit_cmd, object):
 class CmdTB(shell_cmd, object):
     def __init__(self):
         super(CmdTB, self).__init__()
-        self.TB = ['ia','id','init_dut','set_dac']
-        self.DUT = []
+        self.TB = ['ia','id','init_dut','set_dac','mask','unmask']
+        self.DUT = ['activate_pixel', 'deactivate_pixel']
         #TODO, get rid of this, needed on OSX109
         if 'libedit' in readline.__doc__:
             readline.parse_and_bind("bind ^I rl_complete")
@@ -47,16 +47,15 @@ class CmdTB(shell_cmd, object):
         return completions
     
     def do_tb(self, line):
-        args = line.split()
-        for arg in args[1:]:
-            try: 
-                arg = int(arg)
-            except ValueError:
-                pass
+        args = self.get_list(line)
         try:
             getattr(self.tb, args[0])(*args[1:])
-        except:
+        except Exception, e:
             print 'wrong command'
+            print e
+
+    def help_tb(self):
+        print 'call testboards methods with arguments'
 
     def complete_dut(self, text, line, begidx, endidx):
         if not text:
@@ -69,17 +68,29 @@ class CmdTB(shell_cmd, object):
         return completions
     
     def do_dut(self, line):
-        args = line.split()
-        for arg in args[1:]:
-            try: 
-                arg = int(arg)
-            except ValueError:
-                pass
+        args = self.get_list(line)
         try:
             getattr(self.tb.dut, args[0])(*args[1:])
-        except:
+        except Exception, e:
             print 'wrong command'
+            print e
 
+    def help_dut(self):
+        print 'call DUT methods with arguments'
+
+    def help_help(self):
+        print 'display the help message'
+
+    @staticmethod
+    def get_list(line):
+        args = line.split()
+        for i,arg in enumerate(args):
+            try: 
+                args[i] = int(arg)
+            except ValueError:
+                pass
+        return args
+            
 class PyCmd(CmdTB, object):
     """Simple command processor example."""
     def __init__(self):
@@ -87,73 +98,33 @@ class PyCmd(CmdTB, object):
         self.prompt = 'pyXar > '
         self.directory = 'data'
 
+        tests = ['Calibrate', 'PHMap', 'Threshold', 'BondMap', 'Trim', 'TrimBits', 'Pretest', 'SCurves', 'PHCalibration', 'HRMap', 'MaskTest', 'DacDac', 'PHScan']
+        fulltest = ['Pretest', 'Calibrate', 'MaskTest', 'SCurves', 'TrimTest', 'BondMap', 'Trim', 'PHCalibration']
+
+        # dinamicaly generate the help and do class methods for the tests
+        for test in tests:
+            self._do_factory(test)
+            self._help_factory(test)
+
+    def _do_factory(self, test):
+        def _do_test(self, line):
+            self.run_test(test)
+        _do_test.__name__ = 'do_%s'%test
+        setattr(self.__class__,_do_test.__name__,_do_test)
+
+    def _help_factory(self, test):
+        def _help_test(self):
+            print self.get_help(test)
+        _help_test.__name__ = 'help_%s'%test
+        setattr(self.__class__,_help_test.__name__,_help_test)
+
     def help_init(self):
         print "Initialize DUT and TB as specified in module and tb config."
 
-    def do_DacDac(self, line):
-        #TODO Expose to cui
-        self.dut.roc(0).pixel(5,5).active = True
-        #self.dut.roc(1).pixel(5,5).active = True
-        self.run_test('DacDac')
-    
-    def do_PHScan(self, line):
-        #TODO Expose to cui
-        self.dut.roc(0).pixel(5,5).active = True
-        #self.dut.roc(0).pixel(15,15).active = True
-        #self.dut.roc(1).pixel(5,5).active = True
-        self.run_test('PHScan')
-
-    def help_DacDac(self):
-        print "Run a DacDac scan using the DACs from test.cfg"
-    
-    def do_Threshold(self, line):
-        self.run_test('Threshold')
-    
-    def help_Threshold(self):
-        print "Run a Threshold scan using the DACs from test.cfg"
-        
-    def do_Calibrate(self, line):
-        self.run_test('Calibrate')
-    
-    def help_Calibrate(self):
-        print "Send calibrates to the DUT, n_triggers specified test.cfg"
-    
-    def do_BondMap(self, line):
-        self.run_test('BondMap')
-    
-    def help_BondMap(self):
-        print "Run a bond map"
-    
-    def do_Trim(self, line):
-        self.run_test('Trim')
-    
-    def help_Trim(self):
-        print "Trim the DUT to values specified in test.cfg"
-    
-    def do_TrimBits(self, line):
-        self.run_test('TrimBits')
-    
-    def help_TrimBits(self):
-        print "Test if the trim bits are working on the DUT via running threshold maps using test parameters specified in test.cfg under [TrimBits]"
-    
-    def do_Pretest(self, line):
-        self.run_test('Pretest')
-    
-    def do_SCurves(self, line):
-        self.run_test('SCurves')
-    
-    def do_PHCalibration(self, line):
-        self.run_test('PHCalibration')
-    
-    def do_PHMap(self, line):
-        self.run_test('PHMap')
-    
-    def do_HRMap(self, line):
-        self.run_test('HRMap')
-
     def do_FullTest(self, line):
-        self.run_test('Calibrate')
-        self.run_test('BondMap')
-        self.run_test('SCurves')
-        self.run_test('PHCalibration')
-        self.run_test('Trim')
+        for test in fulltest:
+            self.run_test(test)
+
+    def help_FullTest(self):
+        print 'execute the following list of tests:'
+        print ', '.join(fulltest)

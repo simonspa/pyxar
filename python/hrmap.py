@@ -1,12 +1,16 @@
 import hrtest
 
 class HRMap(hrtest.HRTest):
+    '''Take a high rate pixel map for data_taking_time in seconds, 
+period is the trigger frequency, trigger-token-delay (ttc) 
+and clock stretch factor (ssc) are additional parameters.'''
+
 
     def prepare(self, config):
-        self.data_taking_time = int(config.get('HR','data_taking_time'))
-        ttk = int(config.get('HR','ttk'))
-        self.period = int(config.get('HR','period'))
-        self.scc = int(config.get('HR','scc'))
+        self.data_taking_time = int(config.get('HRMap','data_taking_time'))
+        ttk = int(config.get('HRMap','ttk'))
+        self.period = int(config.get('HRMap','period'))
+        self.scc = int(config.get('HRMap','scc'))
         for roc in self.dut.rocs():
             self.tb.select_roc(roc)
             for col in range(roc.n_cols):

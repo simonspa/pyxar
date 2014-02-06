@@ -168,6 +168,18 @@ class Testboard(dtb.PyDTB):
             self.trim_chip(roc.trim_for_tb)
             self.m_delay(100)
 
+    def _mask(self, mask, *args):
+        if len(args) == 3:
+            roc, col, row = args
+        self.dut.pixel(roc,col,row).mask = bool(mask)
+        self.trim(self.dut.trim)
+
+    def mask(self, *args):
+        self._mask(True, *args)
+    
+    def unmask(self, *args):
+        self._mask(False, *args)
+
     def get_data(self):
         n_hits = []
         ph = []
@@ -216,6 +228,7 @@ class Testboard(dtb.PyDTB):
         old_err_state = numpy.seterr(divide='raise')
         ignored_states = numpy.seterr(**old_err_state)
         roc.data = numpy.nan_to_num(numpy.divide(phs, cals))
+        return roc.data
 
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
@@ -237,7 +250,6 @@ class Testboard(dtb.PyDTB):
     def get_ph_dac(self, n_triggers, dac):
         for roc in self.dut.rocs():
             self.select_roc(roc)
-            #TODO TB function has too long vector by one unit
             dac_range = roc.dac(dac).range
             for pixel in roc.active_pixels():
                 n_hits = []
@@ -265,12 +277,11 @@ class Testboard(dtb.PyDTB):
             self.logger.info('Start: %s, step: %s, thr_level: %s, n_triggers: %s, dac: %s, num: %s, xtalk: %s, cals: %s' %(start, step, thr_level, n_triggers, dac, roc.dac(dac).number, xtalk, cals))
             result = [0] * roc.n_pixels
             #TODO remove trimming, they will go away with new CTestboard
-            trim = roc.trim_for_tb 
-            self.chip_threshold(start, step, thr_level, n_triggers, roc.dac(dac).number , xtalk, cals, trim, result)
+            self.chip_threshold(start, step, thr_level, n_triggers, roc.dac(dac).number , xtalk, cals, result)
             self.set_dac_roc(roc,dac,roc.dac(dac).value)
             roc.data = list_to_matrix(roc.n_cols, roc.n_rows, result)
         return self.dut.data
-            
+    
     def arm(self, pixel):
         if not pixel.mask:
             self.arm_pixel(pixel.col, pixel.row)
@@ -283,3 +294,29 @@ class Testboard(dtb.PyDTB):
     
     def id(self):
         self.logger.info('ID: %.2f mA' %self.get_id())
+
+    def binary_search(self, roc, dac, set_value, function, inverted = False):
+        '''Runs a binary search on roc changing a dac until function = set_value. 
+        Inverted controls if function rises with increasing dac.'''
+        self.logger.info('%s Running binary search in dac %s until %s = %s, reverted = %s' %(roc, dac, set_value, function.__name__, inverted))
+        low = 1
+        high = roc.dac(dac).range -1
+        #Binary search to find value
+        while low<high:
+            average_dac = (high+low)//2
+            self.set_dac_roc(roc, dac, average_dac)
+            value = function()
+            self.logger.debug('%s = %s, value = %s'%(dac, average_dac, value))
+            if value > set_value:
+                if inverted:
+                    low = average_dac+1
+                else:
+                    high = average_dac-1
+            elif value < set_value:
+                if inverted:
+                    high = average_dac-1
+                else:
+                    low = average_dac+1
+            else:
+                break
+        return average_dac
