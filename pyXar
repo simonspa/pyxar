@@ -64,9 +64,9 @@ class Pyxar(PyCmd):
         text += str(globals()[line].__doc__)
         text += '\n\x1b[34m'
         if self.config.has_section(line):
-            text += '\x1b[4m\n\tSettings:\n\x1b[24m'
+            text += '\n    \x1b[4mSettings:\n\x1b[24m'
             for k, v in dict(self.config.items(line)).items():
-                text += '\t%-25s%s\n' %(k, v)
+                text += '    %-25s%s\n' %(k, v)
                 #text += '\t%s:\t%s\n' %(k, v)
         text += '\x1b[0m'
         return text
