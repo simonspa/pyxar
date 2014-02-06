@@ -455,6 +455,10 @@ class DUT(object):
         for roc in self.rocs():
             roc.store_dacs()
 
+    def get_roc_shape(self):
+        roc = self._roc_list[0]
+        return (roc.n_cols,roc.n_rows)
+
 if __name__=='__main__':
     from BetterConfigParser import BetterConfigParser
     config = BetterConfigParser()

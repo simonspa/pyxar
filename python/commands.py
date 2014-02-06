@@ -77,6 +77,7 @@ class CmdTB(shell_cmd, object):
 
     def help_dut(self):
         print 'call DUT methods with arguments'
+        print 'activate pixels by:\ndut activate_pixel roc col row\n deactivate with:\ndeactivate_pixel roc col row'
 
     def help_help(self):
         print 'display the help message'
@@ -99,7 +100,7 @@ class PyCmd(CmdTB, object):
         self.directory = 'data'
 
         tests = ['Calibrate', 'PHMap', 'Threshold', 'BondMap', 'Trim', 'TrimBits', 'Pretest', 'SCurves', 'PHCalibration', 'HRMap', 'MaskTest', 'DacDac', 'PHScan']
-        fulltest = ['Pretest', 'Calibrate', 'MaskTest', 'SCurves', 'TrimTest', 'BondMap', 'Trim', 'PHCalibration']
+        self.fulltest = ['Pretest', 'Calibrate', 'MaskTest', 'SCurves', 'TrimTest', 'BondMap', 'Trim', 'PHCalibration']
 
         # dinamicaly generate the help and do class methods for the tests
         for test in tests:
@@ -122,9 +123,9 @@ class PyCmd(CmdTB, object):
         print "Initialize DUT and TB as specified in module and tb config."
 
     def do_FullTest(self, line):
-        for test in fulltest:
+        for test in self.fulltest:
             self.run_test(test)
 
     def help_FullTest(self):
         print 'execute the following list of tests:'
-        print ', '.join(fulltest)
+        print ', '.join(self.fulltest)
