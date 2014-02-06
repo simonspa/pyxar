@@ -355,7 +355,8 @@ cdef class PyDTB:
         cdef vector[uint16_t] _ph
         cdef vector[uint32_t] _addr
         return_value = self.thisptr.Daq_Read_Decoded(_n_hits, _ph, _addr)
-        return self.decoding(_n_hits, _ph, _addr), numpy.array(_ph)
+        nh, av_ph = self.decoding(_n_hits, _ph, _addr)
+        return nh, av_ph, numpy.array(_ph)
 
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
         cdef vector[int16_t] n_hits
