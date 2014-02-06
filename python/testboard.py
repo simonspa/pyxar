@@ -184,36 +184,20 @@ class Testboard(dtb.PyDTB):
 
     def get_calibrate(self, n_triggers):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
-        datas,_ = self.calibrate_parallel(n_triggers, [roc.number for roc in self.dut.rocs()])
-        self.logger.debug('DAQ done')
-        for roc in self.dut.rocs():
-            roc.data = datas[roc.number]
+        nhits, average_ph = self.calibrate_parallel(n_triggers, [roc.number for roc in self.dut.rocs()])
+        self.dut.data = nhits
 
     def get_ph(self, n_triggers):
         self.logger.debug('PH %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
-        cals, phs = self.calibrate_parallel(n_triggers, [roc.number for roc in self.dut.rocs()])
-        # allow division by 0
-        old_err_state = numpy.seterr(divide='raise')
-        ignored_states = numpy.seterr(**old_err_state)
-        data = numpy.nan_to_num(numpy.divide(phs, cals))
-        for roc in self.dut.rocs():
-            roc.data = data[roc.number]
+        nhits, average_ph = self.calibrate_parallel(n_triggers, [roc.number for roc in self.dut.rocs()])
+        self.dut.data = average_ph
 
     def get_ph_roc(self, n_triggers, roc):
         self.select_roc(roc)
-        n_hits = []
-        ph_sum = []
-        address = []
         self.logger.debug('PH %s , n_triggers: %s' %(roc, n_triggers) )
-        self.calibrate(n_triggers, n_hits, ph_sum, address)
-        cals = decode(roc.n_cols, roc.n_rows, address, n_hits)
-        phs = decode(roc.n_cols, roc.n_rows, address, ph_sum)
-        # allow division by 0
-        old_err_state = numpy.seterr(divide='raise')
-        ignored_states = numpy.seterr(**old_err_state)
-        roc.data = numpy.nan_to_num(numpy.divide(phs, cals))
+        nhits, average_ph = self.calibrate_parallel(n_triggers, [roc.number])
+        roc.data = average_ph[roc.number]
         return roc.data
-
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
         for roc in self.dut.rocs():

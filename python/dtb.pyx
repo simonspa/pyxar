@@ -3,7 +3,7 @@ from libcpp.vector cimport vector
 from libc.stdint cimport uint8_t, int8_t, uint16_t, int16_t, int32_t, uint32_t
 from libc.stdlib cimport malloc, free
 from libcpp.string cimport string
-import numpy as np
+import numpy
 
 
 cdef extern from "pixel_dtb.h":
@@ -330,8 +330,8 @@ cdef class PyDTB:
         hits = []
         phs = []
         for i in range(self.dut.n_rocs):
-            hits.append(np.zeros(s))
-            phs.append(np.zeros(s))
+            hits.append(numpy.zeros(s))
+            phs.append(numpy.zeros(s))
         for i in xrange(len(addr)):
             address = addr[i]
             row = address & 0xff
@@ -344,14 +344,18 @@ cdef class PyDTB:
                 phs[roc][col][row] += ph[i]
             except:
                 self.logger.debug('address decoding error')
-        return np.array(hits), np.array(phs)
+        # allow division by 0
+        old_err_state = numpy.seterr(divide='raise')
+        ignored_states = numpy.seterr(**old_err_state)
+        phs = numpy.nan_to_num(numpy.divide(phs, hits))
+        return numpy.array(hits), numpy.array(phs)
 
     def daq_read_decoded(self):
         cdef vector[uint16_t] _n_hits
         cdef vector[uint16_t] _ph
         cdef vector[uint32_t] _addr
         return_value = self.thisptr.Daq_Read_Decoded(_n_hits, _ph, _addr)
-        return self.decoding(_n_hits, _ph, _addr)
+        return self.decoding(_n_hits, _ph, _addr), numpy.array(_ph)
 
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
         cdef vector[int16_t] n_hits
