@@ -22,6 +22,7 @@ class Trim(test.Test):
         self.trim_dists = []
 
     def run(self, config): 
+        '''Run the trimming algorithm.'''
         self.logger.info('Running trimming to Vcal %s' %self.vcal)
         #Determine min vthr
         self.get_vthr()
@@ -78,6 +79,11 @@ class Trim(test.Test):
             self._histos.append(vcal_stack)
 
     def trim_correction(self, step, orig_trim, trim_high):
+        '''Determine new trim bits depending on values in trim_high.
+        For all with True in trim_high the bit needs to be increased.
+        Data structure is always a numpy array representing the DUT.
+        Depending on the step, the trim bit is changed by decreasing 
+        correction.'''
         #If larger apply trim lower, else trim higher
         correction = self.n_steps - step
         trim_bits = numpy.copy(orig_trim)
@@ -96,6 +102,10 @@ class Trim(test.Test):
         return numpy.copy(new_trim)
 
     def trim_step(self, step):
+        '''Each trim step measures a Vcal threshold map. Depending on the difference of the
+        threshold to self.vcal, the corrections are applied. If a value closer to self.vcal
+        is found, the trim bit is kept. The maps for trim_bits and vcal threshold are stored
+        in self.trim_dists and self.vcal_dists.'''
         self.logger.info('Running trim step %s / 4' %(1+step))
         self.logger.debug('Trim of ROC0 Pix(0,2) %s VcalThr %s' %(self.dut.pixel(0,0,2).trim, self.vcal_dists[step][0][0][2]))
         #Get trim bits from DUT
@@ -124,6 +134,7 @@ class Trim(test.Test):
         self.logger.debug('Trim of ROC0 Pix(0,2) %s VcalThr %s' %(self.dut.pixel(0,0,2).trim, self.vcal_dists[step+1][0][0][2]))
     
     def get_vthr(self):
+        '''Find minimal VthrComp threshold for each ROC with Vcal = self.vcal'''
         if self.vthr > 0:
             thr = self.vthr
             self.vthr = []
@@ -134,7 +145,8 @@ class Trim(test.Test):
         #Set vcal to expected value
         self.tb.set_dac('Vcal', self.vcal)
         self.dut_VthrComp_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, self.reverse)
-        self.dut_Noise_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, True)
+        #TODO not used at the moment
+        #self.dut_Noise_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, True)
         self.vthr = []
         for i, roc in enumerate(self.dut.rocs()):
             mean = numpy.mean(self.dut_VthrComp_map[roc.number])
@@ -149,6 +161,8 @@ class Trim(test.Test):
             self.tb.set_dac_roc(roc,'Vcal', roc.dac('Vcal').stored_value)
 
     def get_vtrim(self):
+        '''Adjust vtrim for each ROC until pixel threshold of the pixel with
+        highest Vcal threshold matches self.vcal'''
         if self.vtrim > 0:
             vtrim = self.vtrim
             self.vtrim = []
@@ -169,8 +183,8 @@ class Trim(test.Test):
             self.tb.select_roc(roc)
             self.tb.arm_pixel(col,row)
             found = False
-            #Binary search in Vtrim until threshold = self.vcal
-            vtrim = self.tb.binary_search(roc, 'Vtrim', self.vcal, True, 'pixel_threshold', self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0)
+            #Binary search in Vtrim until pixel_threshold = self.vcal, threshold falls for increasing Vtrim => inverted
+            vtrim = self.tb.binary_search(roc, 'Vtrim', self.vcal, lambda: self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False, 0), True)
             self.tb.disarm_pixel(col,row)
             self.logger.info('Found Vtrim %s'%vtrim)
             self.vtrim.append(vtrim)

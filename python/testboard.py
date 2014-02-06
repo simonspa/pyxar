@@ -282,7 +282,7 @@ class Testboard(dtb.PyDTB):
             self.set_dac_roc(roc,dac,roc.dac(dac).value)
             roc.data = list_to_matrix(roc.n_cols, roc.n_rows, result)
         return self.dut.data
-            
+    
     def arm(self, pixel):
         if not pixel.mask:
             self.arm_pixel(pixel.col, pixel.row)
@@ -296,15 +296,16 @@ class Testboard(dtb.PyDTB):
     def id(self):
         self.logger.info('ID: %.2f mA' %self.get_id())
 
-    def binary_search(self, roc, dac, set_value, inverted, function_name, *args):
-        '''Runs a binary search on roc, dac'''
+    def binary_search(self, roc, dac, set_value, function, inverted = False):
+        '''Runs a binary search on roc changing a dac until function = set_value. 
+        Inverted controls if function rises with increasing dac.'''
         low = 1
         high = roc.dac(dac).range -1
         #Binary search to find value
         while low<high:
             average_dac = (high+low)//2
             self.set_dac_roc(roc, dac, average_dac)
-            value = getattr(self, function_name)(*args)
+            value = function()
             self.logger.debug('%s = %s, value = %s'%(dac, average_dac, value))
             if value > set_value:
                 if inverted:

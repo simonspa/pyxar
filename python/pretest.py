@@ -24,10 +24,13 @@ class Pretest(test.Test):
         pass
 
     def restore(self):
+        #Don't restore the default settings
         pass
 
     def rocs_programmable(self):
-        '''Sets Vana to 0 and max DAC range and measures current, if difference is larger than 0.1 mA, ROC is programmable'''
+        '''Loops over all rocs and tests if ROC is programmable.
+        Sets Vana to 0 and max DAC range and measures current, 
+        if difference is larger than self.minimal_diff mA, ROC is programmable'''
         self.logger.info('Testing if ROCs are programmable')
         for roc in self.dut.rocs():
             self.tb.set_dac_roc(roc,'Vana', roc.dac('Vana').range-1)
@@ -43,10 +46,13 @@ class Pretest(test.Test):
             self.tb.set_dac_roc(roc, 'Vana', self._init_vana[roc.number])
 
     def adjust_vana(self):
+        '''Adjusts vana for all ROCs until ia = self.set_current_vana (24.1) mA'''
         self.logger.info('Adjusting Vana')
+        #Turn of DUT
         self.tb.set_dac('Vana', 0)
         self.tb.set_dac('Vsf', 0)
         self.tb.m_delay(200)
+        #Measure zero current using three measurements
         zero_current = 0
         n_meas = 3
         for i in range(n_meas):
@@ -55,16 +61,20 @@ class Pretest(test.Test):
         zero_current /= float(n_meas)
         self.logger.info('Measured zero current ia = %.2f' %zero_current)
         set_current = zero_current
+        #Loop over ROCs and adjust vana
         for roc in self.dut.rocs():
             set_current += self.set_current_vana
             self.logger.info('Set current ia = %.2f' %set_current)
-            #Binary search in vana until get_ia = set_current
-            vana = self.tb.binary_search(roc, 'Vana', set_current, False, 'get_ia')
+            #Binary search in vana until self.tb.get_ia() = set_current
+            vana = self.tb.binary_search(roc, 'Vana', set_current, lambda: self.tb.get_ia() )
             self.tb.set_dac_roc(roc, 'Vana', vana)
             self.tb.set_dac_roc(roc, 'Vsf', self._init_vsf[roc.number])
             self.logger.info('ROC %s found Vana: %s' %(roc.number, vana))
 
     def find_VthrComp_CalDel(self):
+        '''Perform a DacDac scan in VthrComp and CalDel to find a working point.
+        VthrComp is adjusted to half the noise cutoff. 
+        CalDel is centered in the working range.'''
         #TODO remove hardcoding of 5,5
         self.logger.info('Adjusting %s and %s' %(self.dac1, self.dac2))
         for roc in self.dut.rocs():
