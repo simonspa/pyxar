@@ -228,6 +228,7 @@ class Testboard(dtb.PyDTB):
         old_err_state = numpy.seterr(divide='raise')
         ignored_states = numpy.seterr(**old_err_state)
         roc.data = numpy.nan_to_num(numpy.divide(phs, cals))
+        return roc.data
 
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
@@ -249,7 +250,6 @@ class Testboard(dtb.PyDTB):
     def get_ph_dac(self, n_triggers, dac):
         for roc in self.dut.rocs():
             self.select_roc(roc)
-            #TODO TB function has too long vector by one unit
             dac_range = roc.dac(dac).range
             for pixel in roc.active_pixels():
                 n_hits = []
@@ -298,6 +298,7 @@ class Testboard(dtb.PyDTB):
     def binary_search(self, roc, dac, set_value, function, inverted = False):
         '''Runs a binary search on roc changing a dac until function = set_value. 
         Inverted controls if function rises with increasing dac.'''
+        self.logger.info('%s Running binary search in dac %s until %s = %s, reverted = %s' %(roc, dac, set_value, function.__name__, inverted))
         low = 1
         high = roc.dac(dac).range -1
         #Binary search to find value
