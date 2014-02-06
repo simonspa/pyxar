@@ -320,18 +320,20 @@ cdef class PyDTB:
         cdef vector[int32_t] ph_sum
         cdef vector[uint32_t] adr
         cdef vector[int16_t] rocs
-        #ToDo
-        s = (self.dut.roc(0).n_cols,self.dut.roc(0).n_rows)
-        hits = []
-        phs = []
         for roc in roc_list:
             rocs.push_back(roc)
+        return_value = self.thisptr.CalibrateMap_Par(n_triggers, n_hits, ph_sum, adr, rocs)
+        return self.decoding(n_hits, ph_sum, adr)
+
+    def decoding(self, n_hits, ph, addr):
+        s = self.dut.get_roc_shape()
+        hits = []
+        phs = []
         for i in range(self.dut.n_rocs):
             hits.append(np.zeros(s))
             phs.append(np.zeros(s))
-        return_value = self.thisptr.CalibrateMap_Par(n_triggers, n_hits, ph_sum, adr, rocs)
-        for i in xrange(len(n_hits)):
-            address = adr[i]
+        for i in xrange(len(addr)):
+            address = addr[i]
             row = address & 0xff
             col = (address >> 8) & 0xff
             roc = (address >> 16) & 0xff
@@ -339,21 +341,17 @@ cdef class PyDTB:
             roc += tbm*8
             try:
                 hits[roc][col][row] += n_hits[i]
-                phs[roc][col][row] += ph_sum[i]
+                phs[roc][col][row] += ph[i]
             except:
                 self.logger.debug('address decoding error')
-        return hits, phs
+        return np.array(hits), np.array(phs)
 
-    def daq_read_decoded(self, n_hits, ph, addr):
+    def daq_read_decoded(self):
         cdef vector[uint16_t] _n_hits
         cdef vector[uint16_t] _ph
         cdef vector[uint32_t] _addr
         return_value = self.thisptr.Daq_Read_Decoded(_n_hits, _ph, _addr)
-        for i in xrange(len(_n_hits)):
-            n_hits.append(_n_hits[i]) 
-            ph.append(_ph[i]) 
-            addr.append(_addr[i]) 
-        return return_value
+        return self.decoding(_n_hits, _ph, _addr)
 
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
         cdef vector[int16_t] n_hits

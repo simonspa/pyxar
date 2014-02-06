@@ -3,7 +3,6 @@ import logging
 import numpy
 import sys
 from helpers import list_to_matrix
-from helpers import decode, decode_full
 
 class Testboard(dtb.PyDTB):
     
@@ -181,22 +180,7 @@ class Testboard(dtb.PyDTB):
         self._mask(False, *args)
 
     def get_data(self):
-        n_hits = []
-        ph = []
-        address = []
-        self.daq_read_decoded(n_hits, ph, address)
-        return decode_full(self.dut.n_rocs, self.dut.roc(0).n_cols, self.dut.roc(0).n_rows, address, n_hits)
-
-    #def get_calibrate(self, n_triggers):
-    #    n_hits = []
-    #    ph_sum = []
-    #    address = []
-    #    self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
-    #    self.calibrate_parallel(n_triggers, n_hits, ph_sum, address, [roc.number for roc in self.dut.rocs()])
-    #    self.logger.debug('DAQ done')
-    #    data = decode_full(self.dut.n_rocs,self.dut.roc(0).n_cols, self.dut.roc(0).n_rows, address, n_hits)
-    #    for roc in self.dut.rocs():
-    #        roc.data = data[roc.number]
+        return self.daq_read_decoded()
 
     def get_calibrate(self, n_triggers):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )

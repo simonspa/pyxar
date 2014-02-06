@@ -2,7 +2,6 @@ import sys
 import copy
 import logging 
 import numpy
-from helpers import list_to_matrix
 
 class Pixel(object):
 
