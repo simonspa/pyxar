@@ -1,6 +1,14 @@
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
+import os, shutil
+
+files = ['dtb.so','python/dtb.so','python/dtb.cpp']
+
+#clean up
+for file in files:
+    if os.path.exists(file):
+        os.remove(file)
 
 setup(
     cmdclass = {'build_ext': build_ext},
@@ -12,3 +20,8 @@ setup(
                   libraries=["ftd2xx"] 
         ),
 ])
+
+try:
+    shutil.copy('dtb.so','python/dtb.so')
+except:
+    print 'Error: no shared object was generated!'

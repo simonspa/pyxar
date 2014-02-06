@@ -15,7 +15,7 @@ LIBFTDI2XX
 http://www.ftdichip.com/Drivers/D2XX.htm
 
 To compile the library run:
-./runit.sh
+python setup.py build_ext
 
 To start pyxar, run:
 ./pyXar
