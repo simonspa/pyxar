@@ -42,7 +42,8 @@ class HRTest(test.Test):
         #TODO implement progress bar
         if round(time_left%5.,1) < 0.1 or round(time_left%5.,1) > 4.9:
             self.logger.info('Test is running for another %.0f seconds' %(time_left) )
-        self.dut.data += self.tb.get_data()
+        n_hits, average_ph, ph_vector = self.tb.get_data()
+        self.dut.data += n_hits
         self.update_histo()
            
     def cleanup(self, config):
