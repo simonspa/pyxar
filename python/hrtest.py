@@ -3,6 +3,7 @@ import numpy
 import ROOT
 import test
 from plotter import Plotter
+from hranalizer import HRAnalizer
 
 class HRTest(test.Test):
 
@@ -50,7 +51,7 @@ class HRTest(test.Test):
         self.fill_histo()
         for roc in self.dut.rocs():
             plot_dict = {'title':self.test+'_ROC_%s' %roc.number, 'x_title': self.x_title, 'y_title': self.y_title, 'data': self.dut.data[roc.number]}
-            self._results.append(plot_dict)
+        self._results.append(plot_dict)
         plot = Plotter(self.config, self)
         self._histos.extend(plot.histos)
         #calculating results
@@ -77,6 +78,10 @@ class HRTest(test.Test):
         if self.window:
             self.window.histos.pop()
         #TODO call HRAnalizer
+        #analize = HRAnalizer()
+        #core_hits = analize.fiducial_volume(self.dut.data)
+        #self.logger.info('core hits               %i ' %core_hits)
+
 
     def restore(self):
         '''restore saved dac parameters'''
