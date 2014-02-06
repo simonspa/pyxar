@@ -1,22 +1,20 @@
-pyxar
-=======
+# pyXar
 
 Python wrapper to run single ROC and module tests using a DTB.
 
-For compilation and running cython, numpy and libftdi2xx
+### dependencies:
+- python2.7
+- cython (http://cython.org/)
+- numpy (http://www.numpy.org)
+- pyROOT (http://root.cern.ch/drupal/content/pyroot)
+- usb driver libftdi2xx (http://www.ftdichip.com/Drivers/D2XX.htm)
 
-CYTHON
-easy_install cython
-
-NUMPY
-http://www.numpy.org/
-
-LIBFTDI2XX
-http://www.ftdichip.com/Drivers/D2XX.htm
+### usage:
 
 To compile the library run:
-./runit.sh
+
+    python setup.py build_ext
 
 To start pyxar, run:
-./pyXar
 
+    ./pyXar

@@ -55,7 +55,7 @@ class CmdTB(shell_cmd, object):
             print e
 
     def help_tb(self):
-        print 'call testboards methods with arguments'
+        print 'call testboards methods with arguments\n\ttb set_dac DAC VALUE\n\ttb ia\n\ttd id\n\tmask ROC COL ROW\n\tunmask ROC COL ROW'
 
     def complete_dut(self, text, line, begidx, endidx):
         if not text:
@@ -77,7 +77,7 @@ class CmdTB(shell_cmd, object):
 
     def help_dut(self):
         print 'call DUT methods with arguments'
-        print 'activate pixels by:\ndut activate_pixel roc col row\n deactivate with:\ndeactivate_pixel roc col row'
+        print '\tdut activate_pixel ROC COL ROW\n\tdut deactivate_pixel ROC COL ROW'
 
     def help_help(self):
         print 'display the help message'
