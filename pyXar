@@ -43,6 +43,9 @@ class Pyxar(PyCmd):
             return
         self.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
 
+    def help_gui(self):
+        print 'open result browser'
+
     @staticmethod
     def str_to_class(str):
         return reduce(getattr, str.split("."), sys.modules[__name__])
@@ -55,11 +58,17 @@ class Pyxar(PyCmd):
             self.window.update()
 
     def get_help(self, line):
-        text = globals()[line].__doc__
+        text = '\x1b[1m\x1b[4m\n'
+        text += line
+        text += ':\x1b[0m\n'
+        text += str(globals()[line].__doc__)
+        text += '\n\x1b[34m'
         if self.config.has_section(line):
-            text += '\n'
+            text += '\x1b[4m\n\tSettings:\n\x1b[24m'
             for k, v in dict(self.config.items(line)).items():
-                text += '%s: %s\n' %(k, v)
+                text += '\t%-25s%s\n' %(k, v)
+                #text += '\t%s:\t%s\n' %(k, v)
+        text += '\x1b[0m'
         return text
 
     

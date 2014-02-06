@@ -54,6 +54,9 @@ class CmdTB(shell_cmd, object):
             print 'wrong command'
             print e
 
+    def help_tb(self):
+        print 'call testboards methods with arguments'
+
     def complete_dut(self, text, line, begidx, endidx):
         if not text:
             completions = self.DUT[:]
@@ -71,6 +74,12 @@ class CmdTB(shell_cmd, object):
         except Exception, e:
             print 'wrong command'
             print e
+
+    def help_dut(self):
+        print 'call DUT methods with arguments'
+
+    def help_help(self):
+        print 'display the help message'
 
     @staticmethod
     def get_list(line):
@@ -90,6 +99,7 @@ class PyCmd(CmdTB, object):
         self.directory = 'data'
 
         tests = ['Calibrate', 'PHMap', 'Threshold', 'BondMap', 'Trim', 'TrimBits', 'Pretest', 'SCurves', 'PHCalibration', 'HRMap', 'MaskTest', 'DacDac', 'PHScan']
+        fulltest = ['Pretest', 'Calibrate', 'MaskTest', 'SCurves', 'TrimTest', 'BondMap', 'Trim', 'PHCalibration']
 
         # dinamicaly generate the help and do class methods for the tests
         for test in tests:
@@ -112,8 +122,9 @@ class PyCmd(CmdTB, object):
         print "Initialize DUT and TB as specified in module and tb config."
 
     def do_FullTest(self, line):
-        self.run_test('Calibrate')
-        self.run_test('BondMap')
-        self.run_test('SCurves')
-        self.run_test('PHCalibration')
-        self.run_test('Trim')
+        for test in fulltest:
+            self.run_test(test)
+
+    def help_FullTest(self):
+        print 'execute the following list of tests:'
+        print ', '.join(fulltest)
