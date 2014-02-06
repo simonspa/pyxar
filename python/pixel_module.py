@@ -2,7 +2,6 @@ import sys
 import copy
 import logging 
 import numpy
-from helpers import list_to_matrix
 
 class Pixel(object):
 
@@ -454,6 +453,10 @@ class DUT(object):
     def store_dacs(self):
         for roc in self.rocs():
             roc.store_dacs()
+
+    def get_roc_shape(self):
+        roc = self._roc_list[0]
+        return (roc.n_cols,roc.n_rows)
 
 if __name__=='__main__':
     from BetterConfigParser import BetterConfigParser
