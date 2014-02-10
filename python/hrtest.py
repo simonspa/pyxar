@@ -13,6 +13,7 @@ class HRTest(test.Test):
         self.start_data = 0
         self.data_taking_time = 5
         self.period = 1288
+        self.average_ph = numpy.copy(self.dut.data)
         if self.window:
             self.window.histos.extend([self._dut_histo])
 
@@ -43,8 +44,9 @@ class HRTest(test.Test):
         #TODO implement progress bar
         if round(time_left%5.,1) < 0.1 or round(time_left%5.,1) > 4.9:
             self.logger.info('Test is running for another %.0f seconds' %(time_left) )
-        n_hits, average_ph, ph_vector = self.tb.get_data()
+        n_hits, average_ph, nhits_vector, ph_vector, addr_vector = self.tb.get_data()
         self.dut.data += n_hits
+        self
         self.update_histo()
            
     def cleanup(self, config):
