@@ -25,6 +25,7 @@ class Pyxar(PyCmd):
         self.directory = a_workdir
         self.logger = logging.getLogger(self.__class__.__name__)
         self.window = None
+        self.api = False
     
     def do_init(self, line):
         configs = ['%s/general' %(self.directory),'%s/module' %(self.directory),'%s/tb' %(self.directory),'%s/test.cfg' %(self.directory)]
@@ -33,7 +34,12 @@ class Pyxar(PyCmd):
         self.config.set('General', 'work_dir', self.directory)
         self.dut = DUT(self.config)
         self.dut.activate_pixel(0,5,5)
-        self.tb = Testboard(self.config, self.dut)
+        if self.api:
+            from python import api
+            self.tb = api.api(self.config.get('Testboard','id'), "WARNING")
+            self.tb.startup(self.config, self.dut)
+        else:
+            self.tb = Testboard(self.config, self.dut)
         self.logger.info('Initialzed DTB.')
         self.tb.ia()
         self.tb.id()
@@ -70,7 +76,6 @@ class Pyxar(PyCmd):
                 #text += '\t%s:\t%s\n' %(k, v)
         text += '\x1b[0m'
         return text
-
     
 if __name__ == '__main__':
     parser = optparse.OptionParser()
@@ -78,9 +83,12 @@ if __name__ == '__main__':
                   help="Folder with DUT/DTB settings.", metavar="DIR")
     parser.add_option("-n", "--nogui", dest="gui", default=True, action="store_false",
                   help="Run without gui.")
+    parser.add_option("-a", "--api", dest="api", default=False, action="store_true",
+                  help="Use api as underlying core.")
     (options, args) = parser.parse_args()
     a_workdir = os.path.abspath(options.work_dir)
     pyxar = Pyxar(a_workdir)
+    pyxar.api = options.api
     if options.gui:
         pyxar.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
     #TODO remove

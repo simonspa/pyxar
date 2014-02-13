@@ -189,7 +189,7 @@ class Trim(test.Test):
             trim_bits = self.dut.trim
             trim_bits_0 = numpy.zeros_like(trim_bits)
             self.tb.trim(trim_bits_0)
-            vtrim = self.tb.binary_search(roc, 'Vtrim', self.vcal, lambda: self.tb.pixel_threshold(self.n_triggers, col, row, 0, 1, self.n_triggers/2, 25, False, False),True)
+            vtrim = self.tb.binary_search(roc, 'Vtrim', self.vcal, lambda: self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'Vcal', False, False, False),True)
             self.tb.disarm_pixel(col,row)
             self.logger.info('Found Vtrim %s'%vtrim)
             self.vtrim.append(vtrim)
