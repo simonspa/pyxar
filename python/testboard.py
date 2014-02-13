@@ -249,6 +249,14 @@ class Testboard(dtb.PyDTB):
             self.set_dac_roc(roc,dac,roc.dac(dac).value)
             roc.data = list_to_matrix(roc.n_cols, roc.n_rows, result)
         return self.dut.data
+
+    def get_pixel_threshold(self, roc, col, row, n_triggers, dac, xtalk, cals, reverse):
+        #TODO Don't hardcode pars, they will go away with new CTestboard
+        start = 0
+        step = 1
+        if reverse: 
+            step = -1
+        return self.pixel_threshold(n_triggers, col, row, start, step, n_triggers/2, roc.dac(dac).number, xtalk, cals)
     
     def arm(self, pixel):
         if not pixel.mask:
