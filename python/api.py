@@ -139,12 +139,15 @@ class api(PyPxarCore.PyPxarCore):
         self.programDUT()
         self.logger.info(self.status())
 
-    def get_flag(self, xtalk, cals):
+    def get_flag(self, xtalk, cals, reverse = False):
         flag = 0x0000
         if cals:
             flag += 0x0002
         if xtalk:
             flag += 0x0004
+        if reverse:
+            flag += 0x0008
+        return flag
     
     def trim(self, trim_bits):
         self.dut.trim = trim_bits
