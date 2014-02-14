@@ -14,14 +14,17 @@ class api(PyPxarCore.PyPxarCore):
         self.tbm_dacs = []
         self.roc_pixels = list()
         self.roc_dacs = list()
+        self.PG_TOK = 0x0100
+        self.PG_TRG = 0x0200
+        self.PG_CAL = 0x0400
+        self.PG_RESR = 0x0800
+        self.PG_SYNC = 0x2000
 
     def startup(self, config, dut):
         self.config = config
         self.dut = dut
         self._set_max_vals(config)
-        #TODO
-        #self.adjust_sig_level(15)
-        self.set_mhz(4)
+        self.set_delays(config)
         self.init_pg(config)
         self.Pon()
         if eval(config.get('Testboard','hv_on')):
@@ -34,14 +37,15 @@ class api(PyPxarCore.PyPxarCore):
             sys.exit(-1)
         self.init_dut(config)
 
-    def set_mhz(self, value):
-        #TODO move to config
+    def set_delays(self, config):
         self.sig_delays = {
-        "clk":value,
-        "ctr":value,
-        "sda":value+15,
-        "tin":value+5,
-        "deser160phase":4}
+        "clk":int(config.get('Testboard','clk')),
+        "ctr":int(config.get('Testboard','ctr')),
+        "sda":int(config.get('Testboard','sda')),
+        "tin":int(config.get('Testboard','tin')),
+        "deser160phase":int(config.get('Testboard','deser160phase'))}
+        self.logger.info("Delay settings:\n %s" %self.sig_delays)
+
 
     def _set_max_vals(self, config):
         max_ia = int(config.get('Testboard','max_ia'))
@@ -70,21 +74,22 @@ class api(PyPxarCore.PyPxarCore):
         trg_delay = int(config.get('Testboard','pg_trg'))
         #Module
         if self.dut.n_tbms > 0:
-            #TODO adapt as below
-            self.pg_setcmd(0, self.PG_RESR + resr_delay)
-            self.pg_setcmd(1, self.PG_CAL  + cal_delay + tct_wbc)
-            self.pg_setcmd(2, self.PG_SYNC + self.PG_TRG)
-            self.pg_setcmd(3, self.PG_CAL  + cal_delay + tct_wbc)
-            self.pg_setcmd(4, self.PG_TRG  + trg_delay)
-            self.pg_setcmd(5, self.PG_CAL  + cal_delay + tct_wbc)
-            self.pg_setcmd(6, self.PG_TRG  )
+            self.pg_setup = {
+            self.PG_RESR: resr_delay,
+            self.PG_CAL: cal_delay + tct_wbc,
+            self.PG_TRG+self.PG_SYNC: 0,
+            self.PG_CAL: cal_delay + tct_wbc,
+            self.PG_TRG: trg_delay,
+            self.PG_CAL: cal_delay + tct_wbc,
+            self.PG_TRG: 0}
         #Single roc
         else:
             self.pg_setup = {
-            0x0800:resr_delay,    # PG_RESR
-            0x0400:cal_delay + tct_wbc, # PG_CAL
-            0x0200:trg_delay,    # PG_TRG
-            0x0100:0}
+            self.PG_RESR:resr_delay,    # PG_RESR
+            self.PG_CAL:cal_delay + tct_wbc, # PG_CAL
+            self.PG_TRG:trg_delay,    # PG_TRG
+            self.PG_TOK:0}
+        self.logger.info("Default PG setup:\n %s" %self.pg_setup)
 
     def init_tbm(self, config):
         #TODO move to config
@@ -130,8 +135,7 @@ class api(PyPxarCore.PyPxarCore):
             self.init_tbm(config)
         for roc in self.dut.rocs():
             self.init_roc(roc)
-        #TODO add ROC type to config
-        self.initDUT("tbm08",self.tbm_dacs,"psi46digv2",self.roc_dacs,self.roc_pixels)
+        self.initDUT(config.get('ROC','type'),self.tbm_dacs,config.get('ROC','type'),self.roc_dacs,self.roc_pixels)
         self.programDUT()
         self.logger.info(self.status())
 
