@@ -31,7 +31,6 @@ cdef extern from "pixel_dtb.h":
         double GetVD() except +
         double GetIA() except +
         double GetID() except +
-        void SetMHz(int) except +
         void Pg_SetCmd(uint16_t addr, uint16_t cmd) except +
         void Pg_Stop() except +
         void Pg_Single() except +
@@ -49,6 +48,7 @@ cdef extern from "pixel_dtb.h":
         void Daq_Start(uint8_t channel) except +
         void Daq_Stop(uint8_t channel) except +
         void Sig_SetLevel(uint8_t signal, uint8_t level) except +
+        void Sig_SetDelay(uint8_t signal, uint8_t delay) except +
         void tbm_Enable(bool on) except +
         void mod_Addr(uint8_t hub) except +
         void tbm_Set(uint8_t reg, uint8_t value) except +
@@ -88,8 +88,12 @@ cdef class PyDTB:
         self.PG_RESR = PG_RESR
         self.PG_CAL = PG_CAL
         self.PG_SYNC = PG_SYNC
+        self.PG_TOK = PG_TOK
+        self.SIG_SDA = SIG_SDA
+        self.SIG_CTR = SIG_CTR
+        self.SIG_CLK = SIG_CLK
+        self.SIG_TIN = SIG_TIN
         self.dut = None
-
 
     def __dealloc__(self): 
         del self.thisptr
@@ -161,6 +165,13 @@ cdef class PyDTB:
         self.thisptr.Sig_SetLevel(SIG_CLK, _level)
         self.thisptr.Sig_SetLevel(SIG_TIN, _level)
     
+    def sig_setdelay(self, int sig, int delay):
+        cdef uint8_t _sig
+        cdef uint8_t _delay
+        _sig = sig
+        _delay = delay
+        self.thisptr.Sig_SetDelay(_sig, _delay)
+    
     def tbm_set_DAC(self, int reg, int value):
         cdef uint8_t _reg
         cdef uint8_t _value
@@ -193,11 +204,6 @@ cdef class PyDTB:
         self.thisptr.Daq_Stop(1)
         self.thisptr.Daq_Close(0)
         self.thisptr.Daq_Close(1)
-    
-    def set_mhz(self, int value):
-        cdef int _value
-        _value = value
-        self.thisptr.SetMHz(_value)
     
     def pg_setcmd(self, addr, cmd):
         cdef uint16_t _addr

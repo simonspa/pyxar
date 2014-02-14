@@ -12,12 +12,10 @@ class Testboard(dtb.PyDTB):
         self.dut = dut
         self.start_dtb(config)
         self._set_max_vals(config)
-        #TODO expose timing to config
         self.adjust_sig_level(15)
-        self.set_mhz(4)
+        self.set_delays(config)
         self.init_pg(config)
         self.init_deser()
-        #END TODO
         self.pon()
         self.m_delay(400)
         self.reset_off()
@@ -57,6 +55,19 @@ class Testboard(dtb.PyDTB):
         self.poff()
         self.cleanup()
 
+    def set_delays(self, config):
+        self.sig_delays = {
+        "clk":int(config.get('Testboard','clk')),
+        "ctr":int(config.get('Testboard','ctr')),
+        "sda":int(config.get('Testboard','sda')),
+        "tin":int(config.get('Testboard','tin')),
+        "deser160phase":int(config.get('Testboard','deser160phase'))}
+        self.logger.info("Delay settings:\n %s" %self.sig_delays)
+        self.sig_setdelay(self.SIG_CLK, self.sig_delays["clk"])
+        self.sig_setdelay(self.SIG_CTR, self.sig_delays["ctr"])
+        self.sig_setdelay(self.SIG_SDA, self.sig_delays["sda"])
+        self.sig_setdelay(self.SIG_TIN, self.sig_delays["tin"])
+
     def init_pg(self, config):
         cal_delay = int(config.get('Testboard','pg_cal'))
         tct_wbc = int(config.get('Testboard','tct_wbc'))
@@ -80,7 +91,7 @@ class Testboard(dtb.PyDTB):
         self.m_delay(200)
 
     def init_deser(self):
-        deser_phase = 4
+        deser_phase = self.sig_delays["deser160phase"] 
         if self.dut.n_tbms > 0:
             self.logger.info('Selecting DESER400 for module readout')
             self.daq_select_deser400()
