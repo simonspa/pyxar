@@ -121,7 +121,7 @@ class api(PyPxarCore.PyPxarCore):
         self.logger.info('Initializing ROC: %s' %roc.number)
         pixels = list()
         for pixel in roc.pixels():
-            p = PyPxarCore.PixelConfig(pixel.col,pixel.row, pixel.trim)
+            p = PyPxarCore.PixelConfig(pixel.col,pixel.row, max(0,pixel.trim))
             pixels.append(p)
         self.roc_pixels.append(pixels)
         dacs = {}
@@ -135,7 +135,15 @@ class api(PyPxarCore.PyPxarCore):
         for roc in self.dut.rocs():
             self.init_roc(roc)
         self.initDUT(config.get('ROC','type'),self.tbm_dacs,config.get('ROC','type'),self.roc_dacs,self.roc_pixels)
+        self.mask_dut()
         self.logger.info(self.status())
+
+    def mask_dut(self):
+        self.maskAllPixels(False)
+        for roc in self.dut.rocs():
+            for pixel in roc.pixels():
+                if pixel.trim == -1:
+                    self.maskPixel(pixel.col, pixel.row, True, roc.number)
 
     def get_flag(self, xtalk, cals, reverse = False):
         flag = 0x0000
@@ -152,7 +160,7 @@ class api(PyPxarCore.PyPxarCore):
         for roc in self.dut.rocs():
             trimming = list()
             for pixel in roc.pixels():
-                p = PyPxarCore.PixelConfig(pixel.col,pixel.row, pixel.trim)
+                p = PyPxarCore.PixelConfig(pixel.col,pixel.row, max(0, pixel.trim))
                 trimming.append(p)
             self.updateTrimBits(trimming, roc.number);
 
