@@ -26,9 +26,6 @@ class api(PyPxarCore.PyPxarCore):
         self._set_max_vals(config)
         self.set_delays(config)
         self.init_pg(config)
-        self.Pon()
-        if eval(config.get('Testboard','hv_on')):
-            self.HVon()
         if not self.initTestboard(pg_setup = self.pg_setup, 
                          power_settings = self.power_settings, 
                          sig_delays = self.sig_delays):
@@ -36,6 +33,8 @@ class api(PyPxarCore.PyPxarCore):
             self.logger.warning("Please check if a new FW version is available, exiting...")
             sys.exit(-1)
         self.init_dut(config)
+        if eval(config.get('Testboard','hv_on')):
+            self.HVon()
 
     def set_delays(self, config):
         self.sig_delays = {
@@ -136,7 +135,6 @@ class api(PyPxarCore.PyPxarCore):
         for roc in self.dut.rocs():
             self.init_roc(roc)
         self.initDUT(config.get('ROC','type'),self.tbm_dacs,config.get('ROC','type'),self.roc_dacs,self.roc_pixels)
-        self.programDUT()
         self.logger.info(self.status())
 
     def get_flag(self, xtalk, cals, reverse = False):
