@@ -34,7 +34,12 @@ class Test(object):
     def fill_histo(self):
         for roc in self.dut.rocs():
             for pixel in roc.pixels():
-                if roc.number < 8:
+                #Single ROC
+                if self.dut.n_tbms == 0:
+                    tmpCol = pixel.col+1
+                    tmpRow = pixel.row+1
+                #Module
+                elif roc.number < 8:
                     tmpCol = int(self.dut.n_rocs/self.divider*roc.n_cols-(roc.number*roc.n_cols+pixel.col))
                     tmpRow = int(self.divider*roc.n_rows-pixel.row)
                 else:
