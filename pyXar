@@ -21,14 +21,14 @@ class Pyxar(PyCmd):
     def __init__(self, a_workdir):
         super(Pyxar, self).__init__()
         logging.ColorFormatter = ColorFormatter
-        logging.config.fileConfig('%s/logging.conf' %a_workdir)
+        logging.config.fileConfig('config/logging.conf')
         self.directory = a_workdir
         self.logger = logging.getLogger(self.__class__.__name__)
         self.window = None
         self.api = False
     
     def do_init(self, line):
-        configs = ['%s/general' %(self.directory),'%s/module' %(self.directory),'%s/tb' %(self.directory),'%s/test.cfg' %(self.directory)]
+        configs = ['config/general','%s/module' %(self.directory),'%s/tb' %(self.directory),'%s/test.cfg' %(self.directory)]
         self.config = BetterConfigParser()
         self.config.read(configs)
         self.config.set('General', 'work_dir', self.directory)
@@ -88,13 +88,14 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     a_workdir = os.path.abspath(options.work_dir)
     pyxar = Pyxar(a_workdir)
+    pyxar.logger.info('using working dir %s'%a_workdir)
     pyxar.api = options.api
     if options.gui:
         pyxar.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
     #TODO remove
     pyxar.do_init('')
     try:
-        __version__ = open('%s/logo' %(options.work_dir)).read()
+        __version__ = open('config/logo').read()
     except:
         pass
     pyxar.cmdloop(__version__)
