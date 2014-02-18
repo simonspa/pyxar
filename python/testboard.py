@@ -181,7 +181,11 @@ class Testboard(dtb.PyDTB):
     def _mask(self, mask, *args):
         if len(args) == 3:
             roc, col, row = args
-        self.dut.pixel(roc,col,row).mask = bool(mask)
+            self.dut.pixel(roc,col,row).mask = bool(mask)
+        #mask whole chip
+        if len(args) == 1:
+            roc = args[0]
+            self.dut.roc(roc).mask(bool(mask))
         self.trim(self.dut.trim)
 
     def mask(self, *args):
@@ -217,7 +221,9 @@ class Testboard(dtb.PyDTB):
             dac_range1 = roc.dac(dac1).range-1
             dac_range2 = roc.dac(dac2).range-1
             n_results = dac_range1*dac_range2
+            self.mask(roc.number)
             for pixel in roc.active_pixels():
+                self.unmask(roc.number,pixel.col,pixel.row)
                 n_hits = []
                 ph_sum = []
                 self.logger.debug('DacDac pix(%s,%s), nTrig: %s, dac1: %s, 0, %s, dac2: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac1, dac_range1, dac2, dac_range2) )
@@ -225,6 +231,8 @@ class Testboard(dtb.PyDTB):
                 self.set_dac_roc(roc,dac1,roc.dac(dac1).value)
                 self.set_dac_roc(roc,dac2,roc.dac(dac2).value)
                 pixel.data = numpy.transpose(list_to_matrix(dac_range1, dac_range2, n_hits))
+                self.mask(roc.number,pixel.col,pixel.row)
+            self.unmask(roc.number)
 
     def get_ph_dac(self, n_triggers, dac):
         for roc in self.dut.rocs():

@@ -317,6 +317,10 @@ class Roc(object):
         for dac in self.dacs():
             dac.store()
 
+    def mask(self,maskbit):
+        for pixel in self.pixels():
+            pixel.mask = maskbit
+
     def __repr__(self):
         return "ROC %s"%self.number
 
