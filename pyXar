@@ -8,7 +8,7 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from python import Testboard
 from python import DUT
-from python import DacDac, Calibrate, Threshold, Trim, TrimBits, Pretest, BondMap, SCurves, PHCalibration, PHMap, PHScan, MaskTest
+from python import DacDac, Calibrate, Threshold, Trim, TrimBits, Pretest, BondMap, SCurves, PHCalibration, PHMap, PHScan, MaskTest, CurrentScan
 from python import HRMap
 from python import BetterConfigParser
 from gui import PxarGui

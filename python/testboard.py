@@ -276,7 +276,7 @@ class Testboard(dtb.PyDTB):
         if reverse: 
             step = -1
         return self.pixel_threshold(n_triggers, col, row, start, step, n_triggers/2, roc.dac(dac).number, xtalk, cals)
-    
+
     def arm(self, pixel):
         if not pixel.mask:
             self.arm_pixel(pixel.col, pixel.row)

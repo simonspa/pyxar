@@ -37,9 +37,13 @@ class Plotter(object):
         gr = ROOT.TGraph(len(x),x,y)
         #gr.SetDirectory(0)
         gr.SetTitle(name)
+        gr.SetLineColor(4)
+        gr.SetMarkerColor(4)
+        gr.SetMarkerSize(0.5)
+        gr.SetMarkerStyle(21)
         gr.GetXaxis().SetTitle(x_title)
         gr.GetYaxis().SetTitle(y_title)
-        gr.SetDrawOption('AL*')
+        gr.SetDrawOption('Acp')
         gr.SetLineWidth(2)
         return gr
 

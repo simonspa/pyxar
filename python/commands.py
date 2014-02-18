@@ -99,7 +99,7 @@ class PyCmd(CmdTB, object):
         self.prompt = 'pyXar > '
         self.directory = 'data'
 
-        tests = ['Calibrate', 'PHMap', 'Threshold', 'BondMap', 'Trim', 'TrimBits', 'Pretest', 'SCurves', 'PHCalibration', 'HRMap', 'MaskTest', 'DacDac', 'PHScan']
+        tests = ['Calibrate', 'PHMap', 'Threshold', 'BondMap', 'Trim', 'TrimBits', 'Pretest', 'SCurves', 'PHCalibration', 'HRMap', 'MaskTest', 'DacDac', 'PHScan','CurrentScan']
         self.fulltest = ['Pretest', 'Calibrate', 'MaskTest', 'SCurves', 'TrimTest', 'BondMap', 'Trim', 'PHCalibration']
 
         # dinamicaly generate the help and do class methods for the tests
