@@ -28,7 +28,7 @@ class shell_cmd(exit_cmd, object):
 class CmdTB(shell_cmd, object):
     def __init__(self):
         super(CmdTB, self).__init__()
-        self.TB = ['ia','id','init_dut','set_dac','mask','unmask']
+        self.TB = ['ia','id','init_dut','mask','unmask']
         self.DUT = ['activate_pixel', 'deactivate_pixel']
         #TODO, get rid of this, needed on OSX109
         if 'libedit' in readline.__doc__:
@@ -41,9 +41,9 @@ class CmdTB(shell_cmd, object):
             completions = self.TB[:]
         else:
             completions = [ f
-                            for f in self.TB
-                            if f.startswith(text)
-                            ]
+                        for f in self.TB
+                        if f.startswith(text)
+                        ]
         return completions
     
     def do_tb(self, line):
@@ -56,6 +56,29 @@ class CmdTB(shell_cmd, object):
 
     def help_tb(self):
         print 'call testboards methods with arguments\n\ttb set_dac DAC VALUE\n\ttb ia\n\ttd id\n\tmask ROC COL ROW\n\tunmask ROC COL ROW'
+
+    def complete_set_dac(self, text, line, begidx, endidx):
+        DACS = [dac.name for dac in list(self.tb.dut.dacs())]
+        if not text:
+            completions = DACS[:]
+        else:
+            completions = [ f
+                        for f in DACS
+                        if f.startswith(text)
+                        ]
+        return completions
+
+    def do_set_dac(self,line):
+        args = self.get_list(line)
+        try:
+            self.tb.set_dac(*args)
+        except Exception, e:
+            print 'wrong command'
+            print e
+
+    def help_set_dac(self):
+        print 'set dac register'
+
 
     def complete_dut(self, text, line, begidx, endidx):
         if not text:
