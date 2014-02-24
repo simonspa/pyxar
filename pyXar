@@ -20,17 +20,19 @@ class Pyxar(PyCmd):
 
     def __init__(self, a_workdir):
         super(Pyxar, self).__init__()
+        self.workdir = os.path.dirname(os.path.realpath(sys.argv[0]))
         logging.ColorFormatter = ColorFormatter
-        logging.config.fileConfig('config/logging.conf')
+        logging.config.fileConfig('%s/config/logging.conf'%self.workdir)
         self.directory = a_workdir
         self.logger = logging.getLogger(self.__class__.__name__)
         self.window = None
         self.api = False
     
     def do_init(self, line):
-        configs = ['config/general','%s/module' %(self.directory),'%s/tb' %(self.directory),'%s/test.cfg' %(self.directory)]
+        configs = ['%s/module'%(self.directory), '%s/tb'%(self.directory), '%s/test.cfg'%(self.directory)]
         self.config = BetterConfigParser()
         self.config.read(configs)
+        self.config.add_section('General')
         self.config.set('General', 'work_dir', self.directory)
         self.dut = DUT(self.config)
         self.dut.activate_pixel(0,5,5)
