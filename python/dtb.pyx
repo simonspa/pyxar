@@ -349,7 +349,7 @@ cdef class PyDTB:
                 hits[roc][col][row] += n_hits[i]
                 phs[roc][col][row] += ph[i]
             except:
-                self.logger.debug('address decoding error')
+                self.logger.debug('address decoding problem - wrong address out of bounds')
         # allow division by 0
         old_err_state = numpy.seterr(divide='raise')
         ignored_states = numpy.seterr(**old_err_state)

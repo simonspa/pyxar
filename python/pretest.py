@@ -144,8 +144,9 @@ class Pretest(test.Test):
             viref_adc = roc.dac('VIref_ADC').value
             self.logger.info('Original  VIref_ADC = %s' %(viref_adc))
             #Reduce PH of all pixels to upper limit of ADC range by increasing VIref_ADC
-            viref_adc = self.tb.binary_search(roc, 'VIref_ADC', (ADC_max - safety_margin), 
-                    lambda: numpy.amax(numpy.ma.masked_greater_equal(self.tb.get_ph_roc(self.n_triggers, roc),256)), True)
+            if ph_max > ADC_max - safety_margin:
+                viref_adc = self.tb.binary_search(roc, 'VIref_ADC', (ADC_max - safety_margin), 
+                        lambda: numpy.amax(numpy.ma.masked_greater_equal(self.tb.get_ph_roc(self.n_triggers, roc),256)), True)
             col,row =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_max)),numpy.shape(roc.data))
             self.logger.debug('Pixel with highest PH for Vcal 255 high range: %s,%s' %(col, row))
             self.tb.set_dac_roc(roc, 'VIref_ADC', viref_adc)
@@ -161,7 +162,7 @@ class Pretest(test.Test):
             self.logger.debug('Pixel with lowest PH for low Vcal: %s,%s' %(col_min, row_min))
             if ph_min < safety_margin:
                 viref_adc = self.tb.binary_search(roc, 'VIref_ADC', safety_margin, 
-                    lambda: numpy.amin(numpy.ma.masked_less_equal(self.tb.get_ph_roc(self.n_triggers, roc), 0)), True)
+                    lambda: numpy.amin(numpy.ma.masked_less_equal(self.tb.get_ph_roc(self.n_triggers, roc), 0)), False)
             col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_min)),numpy.shape(roc.data))
             self.logger.debug('Pixel with lowest PH for small Vcal: %s,%s' %(col_min, row_min))
             self.logger.info('VIref_ADC after compressing PH: %s' %(viref_adc))
@@ -199,7 +200,10 @@ class Pretest(test.Test):
                 self.tb.get_ph_dac(n_triggers, 'Vcal')
                 return numpy.amax(numpy.ma.masked_greater_equal(pixel_high.data,256) )
             max_ph = find_max_PH(self.n_triggers, pixel_high)
-            voffsetro = self.tb.binary_search(roc, 'VOffsetR0', z, lambda: ADC_max-find_max_PH(self.n_triggers, pixel_high))  
+            if 'v2.1' in self.config.get('ROC','type'):
+                voffsetro = self.tb.binary_search(roc, 'VOffsetR0', z, lambda: ADC_max-find_max_PH(self.n_triggers, pixel_high), True)  
+            else:
+                voffsetro = self.tb.binary_search(roc, 'VOffsetR0', z, lambda: ADC_max-find_max_PH(self.n_triggers, pixel_high))  
             self.logger.info('VoffsetRO after centering PH for selected pixel: %s' %(voffsetro))
             pixel_high.active = False
             #Measure minimal PH after centering (maximal PH already measured)
