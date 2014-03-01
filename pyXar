@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python2.7
 import sys
 import os
 import logging
@@ -6,19 +6,18 @@ import logging.config
 import optparse
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from python import Testboard
-from python import DUT
-from python import DacDac, Calibrate, Threshold, Trim, TrimBits, Pretest, BondMap, SCurves, PHCalibration, PHMap, PHScan, MaskTest, CurrentScan
-from python import HRMap
-from python import BetterConfigParser
+from python import *
 from gui import PxarGui
-from python import PyCmd
-from python import ColorFormatter
+import inspect
+
 __version__ = "pyXar: 0.2"
 
 class Pyxar(PyCmd):
 
     def __init__(self, a_workdir):
+        # dinamicaly generate list of cls inhertiting from Test base cls
+        self.tests = [e[0].__name__ for e in [inspect.getmro(eval(a[0])) for a in inspect.getmembers(sys.modules[__name__], inspect.isclass)] if e[1].__name__=='Test' and not e[0].__name__=='HRTest']
+        self.tests.extend([e[0].__name__ for e in [inspect.getmro(eval(a[0])) for a in inspect.getmembers(sys.modules[__name__], inspect.isclass)] if e[1].__name__=='HRTest'])
         super(Pyxar, self).__init__()
         self.workdir = os.path.dirname(os.path.realpath(sys.argv[0]))
         logging.ColorFormatter = ColorFormatter
