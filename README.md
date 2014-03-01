@@ -18,6 +18,10 @@ To compile the library run:
 To start pyxar, run:
 
     ./pyXar
+    
+Specify the input directory with:
+
+    ./pyXar --dir PATH
 
 
 ### pyXar also provides a way to run with the API (currently as beta version)
