@@ -8,6 +8,7 @@ Python wrapper to run single ROC and module tests using a DTB.
 - numpy (http://www.numpy.org)
 - pyROOT (http://root.cern.ch/drupal/content/pyroot)
 - usb driver libftdi2xx (http://www.ftdichip.com/Drivers/D2XX.htm)
+- libusb
 
 ### usage:
 
