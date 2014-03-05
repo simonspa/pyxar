@@ -12,12 +12,10 @@ class Testboard(dtb.PyDTB):
         self.dut = dut
         self.start_dtb(config)
         self._set_max_vals(config)
-        #TODO expose timing to config
         self.adjust_sig_level(15)
-        self.set_mhz(4)
+        self.set_delays(config)
         self.init_pg(config)
         self.init_deser()
-        #END TODO
         self.pon()
         self.m_delay(400)
         self.reset_off()
@@ -57,6 +55,19 @@ class Testboard(dtb.PyDTB):
         self.poff()
         self.cleanup()
 
+    def set_delays(self, config):
+        self.sig_delays = {
+        "clk":int(config.get('Testboard','clk')),
+        "ctr":int(config.get('Testboard','ctr')),
+        "sda":int(config.get('Testboard','sda')),
+        "tin":int(config.get('Testboard','tin')),
+        "deser160phase":int(config.get('Testboard','deser160phase'))}
+        self.logger.info("Delay settings:\n %s" %self.sig_delays)
+        self.sig_setdelay(self.SIG_CLK, self.sig_delays["clk"])
+        self.sig_setdelay(self.SIG_CTR, self.sig_delays["ctr"])
+        self.sig_setdelay(self.SIG_SDA, self.sig_delays["sda"])
+        self.sig_setdelay(self.SIG_TIN, self.sig_delays["tin"])
+
     def init_pg(self, config):
         cal_delay = int(config.get('Testboard','pg_cal'))
         tct_wbc = int(config.get('Testboard','tct_wbc'))
@@ -80,7 +91,7 @@ class Testboard(dtb.PyDTB):
         self.m_delay(200)
 
     def init_deser(self):
-        deser_phase = 4
+        deser_phase = self.sig_delays["deser160phase"] 
         if self.dut.n_tbms > 0:
             self.logger.info('Selecting DESER400 for module readout')
             self.daq_select_deser400()
@@ -170,7 +181,11 @@ class Testboard(dtb.PyDTB):
     def _mask(self, mask, *args):
         if len(args) == 3:
             roc, col, row = args
-        self.dut.pixel(roc,col,row).mask = bool(mask)
+            self.dut.pixel(roc,col,row).mask = bool(mask)
+        #mask whole chip
+        if len(args) == 1:
+            roc = args[0]
+            self.dut.roc(roc).mask(bool(mask))
         self.trim(self.dut.trim)
 
     def mask(self, *args):
@@ -206,7 +221,9 @@ class Testboard(dtb.PyDTB):
             dac_range1 = roc.dac(dac1).range-1
             dac_range2 = roc.dac(dac2).range-1
             n_results = dac_range1*dac_range2
+            self.mask(roc.number)
             for pixel in roc.active_pixels():
+                self.unmask(roc.number,pixel.col,pixel.row)
                 n_hits = []
                 ph_sum = []
                 self.logger.debug('DacDac pix(%s,%s), nTrig: %s, dac1: %s, 0, %s, dac2: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac1, dac_range1, dac2, dac_range2) )
@@ -214,6 +231,8 @@ class Testboard(dtb.PyDTB):
                 self.set_dac_roc(roc,dac1,roc.dac(dac1).value)
                 self.set_dac_roc(roc,dac2,roc.dac(dac2).value)
                 pixel.data = numpy.transpose(list_to_matrix(dac_range1, dac_range2, n_hits))
+                self.mask(roc.number,pixel.col,pixel.row)
+            self.unmask(roc.number)
 
     def get_ph_dac(self, n_triggers, dac):
         for roc in self.dut.rocs():
@@ -257,7 +276,7 @@ class Testboard(dtb.PyDTB):
         if reverse: 
             step = -1
         return self.pixel_threshold(n_triggers, col, row, start, step, n_triggers/2, roc.dac(dac).number, xtalk, cals)
-    
+
     def arm(self, pixel):
         if not pixel.mask:
             self.arm_pixel(pixel.col, pixel.row)

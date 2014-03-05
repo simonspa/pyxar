@@ -8,6 +8,7 @@ Python wrapper to run single ROC and module tests using a DTB.
 - numpy (http://www.numpy.org)
 - pyROOT (http://root.cern.ch/drupal/content/pyroot)
 - usb driver libftdi2xx (http://www.ftdichip.com/Drivers/D2XX.htm)
+- libusb (http://www.libusb.org/)
 
 ### usage:
 
@@ -18,6 +19,10 @@ To compile the library run:
 To start pyxar, run:
 
     ./pyXar
+    
+Specify the input directory with:
+
+    ./pyXar --dir PATH
 
 
 ### pyXar also provides a way to run with the API (currently as beta version)

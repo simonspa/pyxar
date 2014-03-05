@@ -10,3 +10,12 @@ pg_cal = 101
 pg_trg = 16
 pg_resr = 25
 tct_wbc = 5
+
+clk = 4
+#clk
+ctr = 4
+#clk+15
+sda = 19
+#clk+5
+tin = 9
+deser160phase = 4

@@ -317,6 +317,10 @@ class Roc(object):
         for dac in self.dacs():
             dac.store()
 
+    def mask(self,maskbit):
+        for pixel in self.pixels():
+            pixel.mask = maskbit
+
     def __repr__(self):
         return "ROC %s"%self.number
 
@@ -457,6 +461,17 @@ class DUT(object):
     def get_roc_shape(self):
         roc = self._roc_list[0]
         return (roc.n_cols,roc.n_rows)
+
+    @property
+    def n_cols(self):
+        return self._roc_list[0].n_cols
+
+    @property
+    def n_rows(self):
+        return self._roc_list[0].n_rows
+
+    def dacs(self):
+        return self._roc_list[0].dacs()
 
 if __name__=='__main__':
     from BetterConfigParser import BetterConfigParser
