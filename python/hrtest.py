@@ -46,7 +46,6 @@ class HRTest(test.Test):
             self.logger.info('Test is running for another %.0f seconds' %(time_left) )
         n_hits, average_ph, nhits_vector, ph_vector, addr_vector = self.tb.get_data()
         self.dut.data += n_hits
-        self
         self.update_histo()
            
     def cleanup(self, config):
@@ -76,7 +75,10 @@ class HRTest(test.Test):
         self.logger.info('trigger rate            %s kHz' %round(trigger_rate,1))
         self.logger.info('hit rate                %s MHz/cm^2' %round(rate,6))
         self.logger.info('scc                     %i ' %self.scc)
-        
+       
+        #create histogram
+        ph_spectrum = Plotter.create_th1(ph_vector, 'ADC spectrum', 'ADC channels', 'entries', 0, 255)
+
         self._histos.extend([self._dut_histo])
         if self.window:
             self.window.histos.pop()
