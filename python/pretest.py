@@ -25,8 +25,8 @@ class Pretest(test.Test):
         self.find_VthrComp_CalDel()
         self.adjust_PH_range()
 
-    def cleanup(self, config):
-        pass
+    #def cleanup(self, config):
+    #    pass
 
     def restore(self):
         #Don't restore the default settings
@@ -106,6 +106,8 @@ class Pretest(test.Test):
             self.logger.debug('Found noise cutoff: %s = %s' %(self.dac1, noise_cut))
             #Set vthr_comp as half the noise
             vthr_comp = noise_cut/2
+            # set it 20 DAC units below noise
+            #vthr_comp = noise_cut - 20
             vthr_comps.append(vthr_comp)
             #Find CalDel working point in half the working range
             cal_dels_fixed_vthr = numpy.where(a_data.T[vthr_comp] > self.n_triggers/2)
