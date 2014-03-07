@@ -3,7 +3,6 @@ import numpy
 import ROOT
 import test
 from plotter import Plotter
-from hranalizer import HRAnalizer
 
 class HRTest(test.Test):
 
