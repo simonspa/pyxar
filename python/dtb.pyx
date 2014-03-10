@@ -10,7 +10,7 @@ cdef extern from "pixel_dtb.h":
     cdef cppclass CTestboard:
         CTestboard()
         bool FindDTB(string &usbId) except +
-        bool Open(string &usbId) except +
+        bool Open(string &usbId, bool init) except +
         void GetInfo(string &usbId) except +
         void Close() except +
         void Welcome() except +
@@ -106,16 +106,19 @@ cdef class PyDTB:
         
     def open(self, usbId):
         try:
-            return_value = self.thisptr.Open(usbId)
+            return_value = self.thisptr.Open(usbId, True)
         except RuntimeError:
             return False
         return return_value
 
     def get_info(self):
         cdef string dtb_info
-        self.thisptr.Init()
+        #self.thisptr.Init()
         self.thisptr.GetInfo(dtb_info)
         return dtb_info
+
+    def remote_init(self):
+        self.thisptr.Init()
     
     def cleanup(self):
         self.thisptr.Close()
@@ -144,6 +147,7 @@ cdef class PyDTB:
         _reg = reg
         _value = value
         self.thisptr.roc_SetDAC(_reg, _value)
+        self.thisptr.Flush()
 
     def roc_clr_cal(self):
         self.thisptr.roc_ClrCal()
@@ -226,15 +230,19 @@ cdef class PyDTB:
     
     def pon(self):
         self.thisptr.Pon()
+        self.thisptr.Flush()
 
     def poff(self):
         self.thisptr.Poff()
+        self.thisptr.Flush()
     
     def hv_on(self):
         self.thisptr.HVon()
+        self.thisptr.Flush()
 
     def hv_off(self):
         self.thisptr.HVoff()
+        self.thisptr.Flush()
     
     def set_id(self, int value):
         cdef uint16_t _value

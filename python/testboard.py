@@ -25,23 +25,9 @@ class Testboard(dtb.PyDTB):
         self.init_dut(config)
         self.config = config
 
-    def init(self):
-        self.hv_off()
-        self.poff
-        self.cleanup()
-        self.flush()
-        self.init_deser()
-        self.start_dtb(self.config)
-        self._set_max_vals(self.config)
-        self.adjust_sig_level(15)
-        self.set_delays(self.config)
-        self.init_pg(self.config)
+    def reset_dut(self):
         self.pon()
-        self.m_delay(400)
-        self.reset_off()
         self.m_delay(200)
-        if eval(self.config.get('Testboard','hv_on')):
-            self.hv_on()
         self.init_dut(self.config)
 
     def start_dtb(self, config):
@@ -52,6 +38,7 @@ class Testboard(dtb.PyDTB):
         if not self.open(usb_id):
             self.logger.error('No DTB %s found, no DTB connected, exiting...' %usb_id)
             sys.exit(-1)
+        self.flush()
         info_dtb = self.get_info()
         self.logger.info('Using testboard id: %s\n%s' %(usb_id,info_dtb.strip()))
 
@@ -73,7 +60,6 @@ class Testboard(dtb.PyDTB):
         self.logger.info("Deleting testboard")
         self.hv_off()
         self.poff()
-        self.flush()
         self.cleanup()
 
     def set_delays(self, config):
@@ -146,7 +132,8 @@ class Testboard(dtb.PyDTB):
         for dac in roc.dacs():
             self.logger.debug('Setting dac: %s' %dac)
             self.roc_set_DAC(dac.number, dac.value)
-        self.flush()
+            #self.m_delay(20)
+            self.flush()
     
     def set_dac(self, reg, value):
         for roc in self.dut.rocs():
@@ -169,12 +156,14 @@ class Testboard(dtb.PyDTB):
         self.logger.info('Initializing ROC: %s' %roc.number)
         self.select_roc(roc)
         self.set_dacs(roc)
-        self.m_delay(100)
+        self.m_delay(200)
+        self.roc_clr_cal()
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
-        self.m_delay(300)
+        self.m_delay(500)
         self.roc_clr_cal()
+        self.flush()
 
     def init_dut(self, config):
         if self.dut.n_tbms > 0:
@@ -220,7 +209,7 @@ class Testboard(dtb.PyDTB):
                 roc.mask(bool(mask))
             self.logger.info('setting DUT maskbits = %s'%(mask))
         self.trim(self.dut.trim)
-        if reset: self.select_roc(roc)
+        if reset: self.select_roc(self.dut.roc(roc))
 
     def mask(self, *args):
         self._mask(True, *args)
