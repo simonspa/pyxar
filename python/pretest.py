@@ -1,5 +1,6 @@
 import numpy
 import test
+from plotter import Plotter
 
 class Pretest(test.Test):
     '''Test functionality of the DUT and adjust settings to obtain a valid readout.
@@ -17,16 +18,21 @@ class Pretest(test.Test):
         self.roc_PH_map = []
         self.set_current_vana = 24.1
         self.minimal_diff = 1.
+        self.y_title = self.dac1
+        self.x_title = self.dac2
+
+
     
     def run(self, config):
         self.logger.info('Running pretest')
         self.rocs_programmable()
-        self.adjust_vana()
+        #self.adjust_vana()
         self.find_VthrComp_CalDel()
         self.adjust_PH_range()
 
-    #def cleanup(self, config):
-    #    pass
+    def cleanup(self, config):
+        plot = Plotter(self.config, self)
+        self._histos.extend(plot.histos)
 
     def restore(self):
         #Don't restore the default settings
@@ -94,6 +100,10 @@ class Pretest(test.Test):
         cal_dels = []
         vthr_comps = []
         for roc in self.dut.rocs():
+            # keep the tornados
+            plot_dict = {'title':'ROC_%s_Pix_(%s,%s)' %(roc.number,5,5),
+                                'x_title': self.x_title, 'y_title': self.y_title, 'data': roc.pixel(5,5).data}
+            self._results.append(plot_dict)
             roc.pixel(5,5).active = False
             a_data = numpy.copy(roc.pixel(5,5).data)
             #Mask everything below half n_triggers as noise
