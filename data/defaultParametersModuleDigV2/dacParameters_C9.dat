@@ -1,3 +1,23 @@
+<<<<<<< HEAD:data/dacParameters_C0.dat
+  1       Vdig   6
+  2       Vana  78
+  3        Vsf  30
+  4      Vcomp  12
+  7     VwllPr 150
+  9     VwllSh 150
+ 10    VhldDel 250
+ 11      Vtrim  29
+ 12   VthrComp  62
+ 13 VIBias_Bus  30
+ 17  VOffsetR0 170
+ 19  VIbias_PH  50
+ 20  VIref_ADC 130
+ 22    VIColOr  10
+ 25       Vcal 199
+ 26     CalDel 117
+253    CtrlReg   0
+254        WBC  99
+=======
   1 Vdig              6
   2 Vana            149
   3 Vsf              40
@@ -20,3 +40,4 @@
  26 CalDel          125
 253 CtrlReg           0
 254 WBC             100
+>>>>>>> 6f18f698debd06ec473be5428d831c900c285377:data/defaultParametersModuleDigV2/dacParameters_C9.dat

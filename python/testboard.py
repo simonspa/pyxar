@@ -23,6 +23,26 @@ class Testboard(dtb.PyDTB):
         if eval(config.get('Testboard','hv_on')):
             self.hv_on()
         self.init_dut(config)
+        self.config = config
+
+    def init(self):
+        self.hv_off()
+        self.poff
+        self.cleanup()
+        self.flush()
+        self.init_deser()
+        self.start_dtb(self.config)
+        self._set_max_vals(self.config)
+        self.adjust_sig_level(15)
+        self.set_delays(self.config)
+        self.init_pg(self.config)
+        self.pon()
+        self.m_delay(400)
+        self.reset_off()
+        self.m_delay(200)
+        if eval(self.config.get('Testboard','hv_on')):
+            self.hv_on()
+        self.init_dut(self.config)
 
     def start_dtb(self, config):
         request_id = config.get('Testboard','id')
@@ -53,6 +73,7 @@ class Testboard(dtb.PyDTB):
         self.logger.info("Deleting testboard")
         self.hv_off()
         self.poff()
+        self.flush()
         self.cleanup()
 
     def set_delays(self, config):
@@ -152,7 +173,7 @@ class Testboard(dtb.PyDTB):
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
-        self.m_delay(100)
+        self.m_delay(300)
         self.roc_clr_cal()
 
     def init_dut(self, config):
@@ -175,18 +196,31 @@ class Testboard(dtb.PyDTB):
         self.dut.trim = trim_bits
         for roc in self.dut.rocs():
             self.select_roc(roc)
-            self.trim_chip(roc.trim_for_tb)
             self.m_delay(100)
+            self.trim_chip(roc.trim_for_tb)
+            self.m_delay(300)
+            self.roc_clr_cal()
 
     def _mask(self, mask, *args):
+        reset = False
         if len(args) == 3:
             roc, col, row = args
+            reset = True
             self.dut.pixel(roc,col,row).mask = bool(mask)
+            self.logger.info('setting pixel %s,%s,%s maskbit = %s'%(roc,col,row,mask))
         #mask whole chip
         if len(args) == 1:
             roc = args[0]
+            reset = True
             self.dut.roc(roc).mask(bool(mask))
+            self.logger.info('setting ROC %s maskbits = %s'%(roc,mask))
+        #whole DUT
+        if len(args) == 0:
+            for roc in self.dut.rocs():
+                roc.mask(bool(mask))
+            self.logger.info('setting DUT maskbits = %s'%(mask))
         self.trim(self.dut.trim)
+        if reset: self.select_roc(roc)
 
     def mask(self, *args):
         self._mask(True, *args)
@@ -215,24 +249,24 @@ class Testboard(dtb.PyDTB):
         return roc.data
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
+        self.mask()
         for roc in self.dut.rocs():
             self.select_roc(roc)
             #TODO TB function has too long vector by one unit
             dac_range1 = roc.dac(dac1).range-1
             dac_range2 = roc.dac(dac2).range-1
-            n_results = dac_range1*dac_range2
-            self.mask(roc.number)
             for pixel in roc.active_pixels():
                 self.unmask(roc.number,pixel.col,pixel.row)
                 n_hits = []
                 ph_sum = []
                 self.logger.debug('DacDac pix(%s,%s), nTrig: %s, dac1: %s, 0, %s, dac2: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac1, dac_range1, dac2, dac_range2) )
                 self.dac_dac(n_triggers, pixel.col, pixel.row, roc.dac(dac1).number, dac_range1, roc.dac(dac2).number, dac_range2, n_hits, ph_sum)
+                #self.roc_clr_cal()
                 self.set_dac_roc(roc,dac1,roc.dac(dac1).value)
                 self.set_dac_roc(roc,dac2,roc.dac(dac2).value)
                 pixel.data = numpy.transpose(list_to_matrix(dac_range1, dac_range2, n_hits))
                 self.mask(roc.number,pixel.col,pixel.row)
-            self.unmask(roc.number)
+        self.unmask()
 
     def get_ph_dac(self, n_triggers, dac):
         for roc in self.dut.rocs():

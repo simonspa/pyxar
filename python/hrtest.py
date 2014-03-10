@@ -12,6 +12,7 @@ class HRTest(test.Test):
         self.start_data = 0
         self.data_taking_time = 5
         self.period = 1288
+        self.average_ph = numpy.copy(self.dut.data)
         if self.window:
             self.window.histos.extend([self._dut_histo])
 
@@ -42,7 +43,7 @@ class HRTest(test.Test):
         #TODO implement progress bar
         if round(time_left%5.,1) < 0.1 or round(time_left%5.,1) > 4.9:
             self.logger.info('Test is running for another %.0f seconds' %(time_left) )
-        n_hits, average_ph, ph_vector = self.tb.get_data()
+        n_hits, average_ph, nhits_vector, ph_vector, addr_vector = self.tb.get_data()
         self.dut.data += n_hits
         self.update_histo()
            
@@ -51,7 +52,7 @@ class HRTest(test.Test):
         self.fill_histo()
         for roc in self.dut.rocs():
             plot_dict = {'title':self.test+'_ROC_%s' %roc.number, 'x_title': self.x_title, 'y_title': self.y_title, 'data': self.dut.data[roc.number]}
-            self._results.append(plot_dict)
+        self._results.append(plot_dict)
         plot = Plotter(self.config, self)
         self._histos.extend(plot.histos)
         #calculating results
@@ -73,11 +74,18 @@ class HRTest(test.Test):
         self.logger.info('trigger rate            %s kHz' %round(trigger_rate,1))
         self.logger.info('hit rate                %s MHz/cm^2' %round(rate,6))
         self.logger.info('scc                     %i ' %self.scc)
-        
+       
+        #create histogram
+        ph_spectrum = Plotter.create_th1(ph_vector, 'ADC spectrum', 'ADC channels', 'entries', 0, 255)
+
         self._histos.extend([self._dut_histo])
         if self.window:
             self.window.histos.pop()
         #TODO call HRAnalizer
+        #analize = HRAnalizer()
+        #core_hits = analize.fiducial_volume(self.dut.data)
+        #self.logger.info('core hits               %i ' %core_hits)
+
 
     def restore(self):
         '''restore saved dac parameters'''
