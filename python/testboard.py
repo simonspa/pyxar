@@ -257,6 +257,18 @@ class Testboard(dtb.PyDTB):
                 self.mask(roc.number,pixel.col,pixel.row)
         self.unmask()
 
+    def get_dac_scan(self, n_triggers, dac):
+        for roc in self.dut.rocs():
+            self.select_roc(roc)
+            dac_range = roc.dac(dac).range
+            for pixel in roc.active_pixels():
+                n_hits = []
+                ph_sum = []
+                self.logger.debug('DacScan pix(%s,%s), nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac, dac_range) )
+                self.dac(n_triggers, pixel.col, pixel.row, roc.dac(dac).number, dac_range,  n_hits, ph_sum)
+                self.set_dac_roc(roc,dac,roc.dac(dac).value)
+                pixel.data = numpy.array(n_hits)
+
     def get_ph_dac(self, n_triggers, dac):
         for roc in self.dut.rocs():
             self.select_roc(roc)

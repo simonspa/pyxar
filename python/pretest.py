@@ -26,8 +26,8 @@ class Pretest(test.Test):
     def run(self, config):
         self.logger.info('Running pretest')
         self.rocs_programmable()
-        #self.adjust_vana()
-        self.find_VthrComp_CalDel()
+        self.adjust_vana()
+        self.find_VthrComp_CalDel_alt()
         self.adjust_PH_range()
 
     def cleanup(self, config):
@@ -87,6 +87,56 @@ class Pretest(test.Test):
             self.tb.set_dac_roc(roc, 'Vana', vana)
             self.tb.set_dac_roc(roc, 'Vsf', self._init_vsf[roc.number])
             self.logger.info('ROC %s found Vana: %s' %(roc.number, vana))
+
+    def find_VthrComp_CalDel_alt(self):
+        ''' Experimental: Find Workinpoint of Vthr and CalDel with the alternative approach using the digital current consumption to find the noise cutoff.'''
+        self.logger.info('Finding Noise cutoffs')
+        self.n_meas = 16
+        self.n_average = 4
+        self.tb.set_dac(self.dac1, 0) 
+        thr = []
+        for roc in self.dut.rocs():
+            currents = []
+            c_av = 0.
+            j = 0
+            high_delta = 0
+            for val in range(0,roc.dac(self.dac1).range):
+                self.tb.set_dac_roc(roc,self.dac1,val)
+                j += 1
+                for i in range(self.n_meas):
+                    c_av+=self.tb.get_id()
+                    self.tb.m_delay(10)
+                if j == self.n_average:
+                    currents.append(c_av/(self.n_meas*self.n_average))
+                    c_av = 0.
+                    j = 0
+                    if len(currents) > 1:
+                        delta = currents[-1]-currents[-2]
+                        print delta
+                        if delta >= 0.6:
+                            high_delta += 1
+                        else:
+                            high_delta = 0
+                        if high_delta == 3:
+                            val -= (5*self.n_average)
+                            self.tb.set_dac_roc(roc,self.dac1,val)
+                            break
+            #calDel
+            roc.pixel(5,5).active = True
+            self.tb.get_dac_scan(10, self.dac2)
+            roc.pixel(5,5).active = False
+            cal_array = roc.pixel(5,5).data
+            sum = 0.
+            n = 0
+            for idx,cal in enumerate(cal_array):
+                if cal > 5:
+                    sum += idx
+                    n += 1
+            cal = sum/n
+            self.logger.info('Found CalDel %s'%cal)
+            self.tb.set_dac_roc(roc,self.dac2,cal) 
+
+
 
     def find_VthrComp_CalDel(self):
         '''Perform a DacDac scan in VthrComp and CalDel to find a working point.
