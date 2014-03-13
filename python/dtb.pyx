@@ -23,10 +23,10 @@ cdef extern from "pixel_dtb.h":
         void ResetOn() except +
         void ResetOff() except +
         void mDelay(uint16_t) except +
-        void SetVA(double) except +
-        void SetVD(double) except +
-        void SetIA(double) except +
-        void SetID(double) except +
+        void _SetVA(uint16_t) except +
+        void _SetVD(uint16_t) except +
+        void _SetIA(uint16_t) except +
+        void _SetID(uint16_t) except +
         double GetVA() except +
         double GetVD() except +
         double GetIA() except +
@@ -247,22 +247,22 @@ cdef class PyDTB:
     def set_id(self, int value):
         cdef uint16_t _value
         _value = value
-        self.thisptr.SetID(_value)
+        self.thisptr._SetID(_value)
 
     def set_vd(self, int value):
         cdef uint16_t _value
         _value = value
-        self.thisptr.SetVD(_value)
+        self.thisptr._SetVD(_value)
     
     def set_ia(self, int value):
         cdef uint16_t _value
         _value = value
-        self.thisptr.SetIA(_value)
+        self.thisptr._SetIA(_value)
 
     def set_va(self, int value):
         cdef uint16_t _value
         _value = value
-        self.thisptr.SetVA(_value)
+        self.thisptr._SetVA(_value)
 
     def get_ia(self):
         return_value = self.thisptr.GetIA()*1000.
