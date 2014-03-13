@@ -118,7 +118,7 @@ class Pretest(test.Test):
                         else:
                             high_delta = 0
                         if high_delta == 3:
-                            val -= (5*self.n_average)
+                            val -= (6*self.n_average)
                             self.tb.set_dac_roc(roc,self.dac1,val)
                             break
             #calDel

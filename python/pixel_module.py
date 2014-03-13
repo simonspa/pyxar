@@ -342,16 +342,24 @@ class DUT(object):
     def __init__(self, config):
         self.logger = logging.getLogger(self.__class__.__name__)
         """Initialize Module"""
-        self._n_rocs = int(config.get('Module','rocs'))
-        self._n_tbms = int(config.get('Module','tbms'))
         self._work_dir = config.get('General','work_dir')
 
         #define collections
         self._roc_list = []
         self._tbm_list = []
+
         # fill collections
-        for roc in range(self._n_rocs):
-            self._roc_list.append(Roc(config,roc))
+        n_rocs = eval(config.get('Module','rocs'))
+        if type(n_rocs) == int:
+            self._n_rocs = n_rocs
+            for roc in range(self._n_rocs):
+                self._roc_list.append(Roc(config,roc))
+        elif type(n_rocs) == list:
+            self._n_rocs = len(n_rocs)
+            for roc in n_rocs:
+                self._roc_list.append(Roc(config,roc))
+
+        self._n_tbms = int(config.get('Module','tbms'))
         for tbm in range(self._n_tbms):
             self._tbm_list.append(TBM(config,tbm))
 
