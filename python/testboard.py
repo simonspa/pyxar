@@ -73,7 +73,8 @@ class Testboard(dtb.PyDTB):
         "sda":int(config.get('Testboard','sda')),
         "tin":int(config.get('Testboard','tin')),
         "deser160phase":int(config.get('Testboard','deser160phase'))}
-        self.logger.info("Delay settings:\n %s" %self.sig_delays)
+        self.logger.info('Delay settings:')
+        self.logger.info('%s' %self.sig_delays)
         self.sig_setdelay(self.SIG_CLK, self.sig_delays["clk"])
         self.sig_setdelay(self.SIG_CTR, self.sig_delays["ctr"])
         self.sig_setdelay(self.SIG_SDA, self.sig_delays["sda"])
@@ -136,7 +137,7 @@ class Testboard(dtb.PyDTB):
         for dac in roc.dacs():
             self.logger.debug('Setting dac: %s' %dac)
             self.roc_set_DAC(dac.number, dac.value)
-            #self.m_delay(20)
+            self.m_delay(20)
             self.flush()
     
     def set_dac(self, reg, value):
@@ -145,6 +146,8 @@ class Testboard(dtb.PyDTB):
         self.flush()
 
     def set_dac_roc(self,roc,reg,value):
+        if type(roc) == int:
+            roc = self.dut.roc(roc)
         self.select_roc(roc)
         roc.dac(reg).value = value
         self.logger.debug('Setting %s %s' %(roc, roc.dac(reg)))
@@ -154,18 +157,18 @@ class Testboard(dtb.PyDTB):
     def select_roc(self, roc):
         #TODO check if roc is already active
         self.i2_c_addr(roc.number)
-        self.m_delay(50)
+        self.m_delay(20)
 
     def init_roc(self, roc):
         self.logger.info('Initializing ROC: %s' %roc.number)
         self.select_roc(roc)
         self.set_dacs(roc)
-        self.m_delay(200)
+        self.m_delay(20)
         self.roc_clr_cal()
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
-        self.m_delay(500)
+        self.m_delay(200)
         self.roc_clr_cal()
         self.flush()
 
@@ -179,7 +182,6 @@ class Testboard(dtb.PyDTB):
             self.tbm_enable(False)
             #Just without TBM
             self.set_roc_addr(0)
-        self.m_delay(200)
         for tbm in self.dut.tbms():
             self.init_tbm(tbm, config)
         for roc in self.dut.rocs():
