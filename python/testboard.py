@@ -23,6 +23,12 @@ class Testboard(dtb.PyDTB):
         if eval(config.get('Testboard','hv_on')):
             self.hv_on()
         self.init_dut(config)
+        self.config = config
+
+    def reset_dut(self):
+        self.pon()
+        self.m_delay(200)
+        self.init_dut(self.config)
 
     def start_dtb(self, config):
         request_id = config.get('Testboard','id')
@@ -32,6 +38,7 @@ class Testboard(dtb.PyDTB):
         if not self.open(usb_id):
             self.logger.error('No DTB %s found, no DTB connected, exiting...' %usb_id)
             sys.exit(-1)
+        self.flush()
         info_dtb = self.get_info()
         self.logger.info('Using testboard id: %s\n%s' %(usb_id,info_dtb.strip()))
 
@@ -41,13 +48,17 @@ class Testboard(dtb.PyDTB):
         max_va = int(config.get('Testboard','max_va'))
         max_vd = int(config.get('Testboard','max_vd'))
         self.logger.info('Max IA: %s' %max_ia)
-        self.set_ia(max_ia)
+        self.set_ia(max_ia*10)
+        self.flush()
         self.logger.info('Max ID: %s' %max_id)
-        self.set_id(max_id)
+        self.set_id(max_id*10)
+        self.flush()
         self.logger.info('Max VA: %s' %max_va)
         self.set_va(max_va)
+        self.flush()
         self.logger.info('Max VD: %s' %max_vd)
         self.set_vd(max_vd)
+        self.flush()
 
     def __del__(self):
         self.logger.info("Deleting testboard")
@@ -62,7 +73,8 @@ class Testboard(dtb.PyDTB):
         "sda":int(config.get('Testboard','sda')),
         "tin":int(config.get('Testboard','tin')),
         "deser160phase":int(config.get('Testboard','deser160phase'))}
-        self.logger.info("Delay settings:\n %s" %self.sig_delays)
+        self.logger.info('Delay settings:')
+        self.logger.info('%s' %self.sig_delays)
         self.sig_setdelay(self.SIG_CLK, self.sig_delays["clk"])
         self.sig_setdelay(self.SIG_CTR, self.sig_delays["ctr"])
         self.sig_setdelay(self.SIG_SDA, self.sig_delays["sda"])
@@ -125,7 +137,8 @@ class Testboard(dtb.PyDTB):
         for dac in roc.dacs():
             self.logger.debug('Setting dac: %s' %dac)
             self.roc_set_DAC(dac.number, dac.value)
-        self.flush()
+            self.m_delay(20)
+            self.flush()
     
     def set_dac(self, reg, value):
         for roc in self.dut.rocs():
@@ -133,6 +146,8 @@ class Testboard(dtb.PyDTB):
         self.flush()
 
     def set_dac_roc(self,roc,reg,value):
+        if type(roc) == int:
+            roc = self.dut.roc(roc)
         self.select_roc(roc)
         roc.dac(reg).value = value
         self.logger.debug('Setting %s %s' %(roc, roc.dac(reg)))
@@ -142,18 +157,20 @@ class Testboard(dtb.PyDTB):
     def select_roc(self, roc):
         #TODO check if roc is already active
         self.i2_c_addr(roc.number)
-        self.m_delay(50)
+        self.m_delay(20)
 
     def init_roc(self, roc):
         self.logger.info('Initializing ROC: %s' %roc.number)
         self.select_roc(roc)
         self.set_dacs(roc)
-        self.m_delay(100)
+        self.m_delay(20)
+        self.roc_clr_cal()
         self.logger.debug('Applying trimming to ROC: %s' %roc)
         #TODO check that the translation to TB is really correct
         self.trim_chip(roc.trim_for_tb)
-        self.m_delay(100)
+        self.m_delay(200)
         self.roc_clr_cal()
+        self.flush()
 
     def init_dut(self, config):
         if self.dut.n_tbms > 0:
@@ -165,7 +182,6 @@ class Testboard(dtb.PyDTB):
             self.tbm_enable(False)
             #Just without TBM
             self.set_roc_addr(0)
-        self.m_delay(200)
         for tbm in self.dut.tbms():
             self.init_tbm(tbm, config)
         for roc in self.dut.rocs():
@@ -175,18 +191,31 @@ class Testboard(dtb.PyDTB):
         self.dut.trim = trim_bits
         for roc in self.dut.rocs():
             self.select_roc(roc)
-            self.trim_chip(roc.trim_for_tb)
             self.m_delay(100)
+            self.trim_chip(roc.trim_for_tb)
+            self.m_delay(300)
+            self.roc_clr_cal()
 
     def _mask(self, mask, *args):
+        reset = False
         if len(args) == 3:
             roc, col, row = args
+            reset = True
             self.dut.pixel(roc,col,row).mask = bool(mask)
+            self.logger.info('setting pixel %s,%s,%s maskbit = %s'%(roc,col,row,mask))
         #mask whole chip
         if len(args) == 1:
             roc = args[0]
+            reset = True
             self.dut.roc(roc).mask(bool(mask))
+            self.logger.info('setting ROC %s maskbits = %s'%(roc,mask))
+        #whole DUT
+        if len(args) == 0:
+            for roc in self.dut.rocs():
+                roc.mask(bool(mask))
+            self.logger.info('setting DUT maskbits = %s'%(mask))
         self.trim(self.dut.trim)
+        if reset: self.select_roc(self.dut.roc(roc))
 
     def mask(self, *args):
         self._mask(True, *args)
@@ -215,24 +244,36 @@ class Testboard(dtb.PyDTB):
         return roc.data
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
+        self.mask()
         for roc in self.dut.rocs():
             self.select_roc(roc)
             #TODO TB function has too long vector by one unit
             dac_range1 = roc.dac(dac1).range-1
             dac_range2 = roc.dac(dac2).range-1
-            n_results = dac_range1*dac_range2
-            self.mask(roc.number)
             for pixel in roc.active_pixels():
                 self.unmask(roc.number,pixel.col,pixel.row)
                 n_hits = []
                 ph_sum = []
                 self.logger.debug('DacDac pix(%s,%s), nTrig: %s, dac1: %s, 0, %s, dac2: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac1, dac_range1, dac2, dac_range2) )
                 self.dac_dac(n_triggers, pixel.col, pixel.row, roc.dac(dac1).number, dac_range1, roc.dac(dac2).number, dac_range2, n_hits, ph_sum)
+                #self.roc_clr_cal()
                 self.set_dac_roc(roc,dac1,roc.dac(dac1).value)
                 self.set_dac_roc(roc,dac2,roc.dac(dac2).value)
                 pixel.data = numpy.transpose(list_to_matrix(dac_range1, dac_range2, n_hits))
                 self.mask(roc.number,pixel.col,pixel.row)
-            self.unmask(roc.number)
+        self.unmask()
+
+    def get_dac_scan(self, n_triggers, dac):
+        for roc in self.dut.rocs():
+            self.select_roc(roc)
+            dac_range = roc.dac(dac).range
+            for pixel in roc.active_pixels():
+                n_hits = []
+                ph_sum = []
+                self.logger.debug('DacScan pix(%s,%s), nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac, dac_range) )
+                self.dac(n_triggers, pixel.col, pixel.row, roc.dac(dac).number, dac_range,  n_hits, ph_sum)
+                self.set_dac_roc(roc,dac,roc.dac(dac).value)
+                pixel.data = numpy.array(n_hits)
 
     def get_ph_dac(self, n_triggers, dac):
         for roc in self.dut.rocs():

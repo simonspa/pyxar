@@ -20,3 +20,4 @@ from colorer import ColorFormatter
 from hrmap import HRMap
 from masktest import MaskTest
 from currentscan import CurrentScan
+from dacscan import DacScan

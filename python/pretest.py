@@ -1,5 +1,6 @@
 import numpy
 import test
+from plotter import Plotter
 
 class Pretest(test.Test):
     '''Test functionality of the DUT and adjust settings to obtain a valid readout.
@@ -17,16 +18,21 @@ class Pretest(test.Test):
         self.roc_PH_map = []
         self.set_current_vana = 24.1
         self.minimal_diff = 1.
+        self.y_title = self.dac1
+        self.x_title = self.dac2
+
+
     
     def run(self, config):
         self.logger.info('Running pretest')
         self.rocs_programmable()
         self.adjust_vana()
-        self.find_VthrComp_CalDel()
+        self.find_VthrComp_CalDel_alt()
         self.adjust_PH_range()
 
     def cleanup(self, config):
-        pass
+        plot = Plotter(self.config, self)
+        self._histos.extend(plot.histos)
 
     def restore(self):
         #Don't restore the default settings
@@ -82,6 +88,56 @@ class Pretest(test.Test):
             self.tb.set_dac_roc(roc, 'Vsf', self._init_vsf[roc.number])
             self.logger.info('ROC %s found Vana: %s' %(roc.number, vana))
 
+    def find_VthrComp_CalDel_alt(self):
+        ''' Experimental: Find Workinpoint of Vthr and CalDel with the alternative approach using the digital current consumption to find the noise cutoff.'''
+        self.logger.info('Finding Noise cutoffs')
+        self.n_meas = 16
+        self.n_average = 4
+        self.tb.set_dac(self.dac1, 0) 
+        thr = []
+        for roc in self.dut.rocs():
+            currents = []
+            c_av = 0.
+            j = 0
+            high_delta = 0
+            for val in range(0,roc.dac(self.dac1).range):
+                self.tb.set_dac_roc(roc,self.dac1,val)
+                j += 1
+                for i in range(self.n_meas):
+                    c_av+=self.tb.get_id()
+                    self.tb.m_delay(10)
+                if j == self.n_average:
+                    currents.append(c_av/(self.n_meas*self.n_average))
+                    c_av = 0.
+                    j = 0
+                    if len(currents) > 1:
+                        delta = currents[-1]-currents[-2]
+                        print delta
+                        if delta >= 0.6:
+                            high_delta += 1
+                        else:
+                            high_delta = 0
+                        if high_delta == 3:
+                            val -= (6*self.n_average)
+                            self.tb.set_dac_roc(roc,self.dac1,val)
+                            break
+            #calDel
+            roc.pixel(5,5).active = True
+            self.tb.get_dac_scan(10, self.dac2)
+            roc.pixel(5,5).active = False
+            cal_array = roc.pixel(5,5).data
+            sum = 0.
+            n = 0
+            for idx,cal in enumerate(cal_array):
+                if cal > 5:
+                    sum += idx
+                    n += 1
+            cal = sum/n
+            self.logger.info('Found CalDel %s'%cal)
+            self.tb.set_dac_roc(roc,self.dac2,cal) 
+
+
+
     def find_VthrComp_CalDel(self):
         '''Perform a DacDac scan in VthrComp and CalDel to find a working point.
         VthrComp is adjusted to half the noise cutoff. 
@@ -94,6 +150,10 @@ class Pretest(test.Test):
         cal_dels = []
         vthr_comps = []
         for roc in self.dut.rocs():
+            # keep the tornados
+            plot_dict = {'title':'ROC_%s_Pix_(%s,%s)' %(roc.number,5,5),
+                                'x_title': self.x_title, 'y_title': self.y_title, 'data': roc.pixel(5,5).data}
+            self._results.append(plot_dict)
             roc.pixel(5,5).active = False
             a_data = numpy.copy(roc.pixel(5,5).data)
             #Mask everything below half n_triggers as noise
@@ -106,6 +166,8 @@ class Pretest(test.Test):
             self.logger.debug('Found noise cutoff: %s = %s' %(self.dac1, noise_cut))
             #Set vthr_comp as half the noise
             vthr_comp = noise_cut/2
+            # set it 20 DAC units below noise
+            #vthr_comp = noise_cut - 20
             vthr_comps.append(vthr_comp)
             #Find CalDel working point in half the working range
             cal_dels_fixed_vthr = numpy.where(a_data.T[vthr_comp] > self.n_triggers/2)

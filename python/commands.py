@@ -28,7 +28,7 @@ class shell_cmd(exit_cmd, object):
 class CmdTB(shell_cmd, object):
     def __init__(self):
         super(CmdTB, self).__init__()
-        self.TB = ['ia','id','init_dut','mask','unmask']
+        self.TB = ['ia','id','reset_dut','mask','unmask','set_dac','set_dac_roc','pon','poff','hv_on','hv_off']
         self.DUT = ['activate_pixel', 'deactivate_pixel']
         #TODO, get rid of this, needed on OSX109
         if 'libedit' in readline.__doc__:
@@ -55,7 +55,19 @@ class CmdTB(shell_cmd, object):
             print e
 
     def help_tb(self):
-        print 'call testboards methods with arguments\n\ttb set_dac DAC VALUE\n\ttb ia\n\ttd id\n\tmask ROC COL ROW\n\tunmask ROC COL ROW'
+        print '''call testboards methods with arguments:
+    -tb set_dac DAC VALUE
+    -tb set_dac_roc ROC DAC VALUE
+    -tb ia (read analog current)
+    -tb id (read digital current)
+    -tb pon (turn on power to DUT)
+    -tb poff (turn off power to DUT)
+    -tb hv_on (turn on HV)
+    -tb hv_off (turn off HV)
+    -tb reset_dut (reload and program TBM and ROC DAC parameters)
+    -tb un/mask ROC COL ROW (un/mask single pixel)
+    -tb un/mask ROC (un/mask entire ROC)
+    -tb un/mask (un/mask entire DUT)'''
 
     def complete_set_dac(self, text, line, begidx, endidx):
         DACS = [dac.name for dac in list(self.tb.dut.dacs())]

@@ -120,7 +120,7 @@ class DAC(object):
 
 class Roc(object):
 
-    def __init__(self, config,number=0):
+    def __init__(self, config,number=0,trimVcal=''):
         self.logger = logging.getLogger(self.__class__.__name__)
         """Initialize ROC (readout chip)."""
         self._n_rows = int(config.get('ROC','rows'))
@@ -132,11 +132,11 @@ class Roc(object):
         self._work_dir = config.get('General','work_dir')
 
         try:
-            self.dacParameterFile = open('%s/dacParameters_C%s.dat'%(self._work_dir, self.number))
+            self.dacParameterFile = open('%s/dacParameters%s_C%s.dat'%(self._work_dir, trimVcal, self.number))
         except IOError:
             self.dacParameterFile = None
             self.logger.warning('could not open dacParameter file for ROC %i:'%self.number)
-            self.logger.warning('%s/dacParameters_C%s.dat'%(self._work_dir, self.number) )
+            self.logger.warning('%s/dacParameters%s_C%s.dat'%(self._work_dir, trimVcal, self.number) )
             try:
                 self.logger.warning('using dacParameters_C0.dat for ROC %s'%self.number)
                 self.dacParameterFile = open('%s/dacParameters_C0.dat'%(self._work_dir))
@@ -147,7 +147,7 @@ class Roc(object):
                 self.logger.error('exiting')
                 sys.exit(-1)
         try:
-            self.trimParameterFile = open('%s/trimParameters_C%s.dat'%(self._work_dir, self.number))
+            self.trimParameterFile = open('%s/trimParameters%s_C%s.dat'%(self._work_dir, trimVcal, self.number))
         except IOError:
             self.trimParameterFile = None
             self.logger.warning('could not open trimParameter file for ROC %i'%self.number)
@@ -339,19 +339,27 @@ class TBM(object):
         return "TBM %s"%self.number
 
 class DUT(object):
-    def __init__(self, config):
+    def __init__(self, config, trimVcal = ''):
         self.logger = logging.getLogger(self.__class__.__name__)
         """Initialize Module"""
-        self._n_rocs = int(config.get('Module','rocs'))
-        self._n_tbms = int(config.get('Module','tbms'))
         self._work_dir = config.get('General','work_dir')
 
         #define collections
         self._roc_list = []
         self._tbm_list = []
+
         # fill collections
-        for roc in range(self._n_rocs):
-            self._roc_list.append(Roc(config,roc))
+        n_rocs = eval(config.get('Module','rocs'))
+        if type(n_rocs) == int:
+            self._n_rocs = n_rocs
+            for roc in range(self._n_rocs):
+                self._roc_list.append(Roc(config,roc,trimVcal))
+        elif type(n_rocs) == list:
+            self._n_rocs = len(n_rocs)
+            for roc in n_rocs:
+                self._roc_list.append(Roc(config,roc,trimVcal))
+
+        self._n_tbms = int(config.get('Module','tbms'))
         for tbm in range(self._n_tbms):
             self._tbm_list.append(TBM(config,tbm))
 

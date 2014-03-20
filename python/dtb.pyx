@@ -10,7 +10,7 @@ cdef extern from "pixel_dtb.h":
     cdef cppclass CTestboard:
         CTestboard()
         bool FindDTB(string &usbId) except +
-        bool Open(string &usbId) except +
+        bool Open(string &usbId, bool init) except +
         void GetInfo(string &usbId) except +
         void Close() except +
         void Welcome() except +
@@ -23,10 +23,10 @@ cdef extern from "pixel_dtb.h":
         void ResetOn() except +
         void ResetOff() except +
         void mDelay(uint16_t) except +
-        void SetVA(double) except +
-        void SetVD(double) except +
-        void SetIA(double) except +
-        void SetID(double) except +
+        void _SetVA(uint16_t) except +
+        void _SetVD(uint16_t) except +
+        void _SetIA(uint16_t) except +
+        void _SetID(uint16_t) except +
         double GetVA() except +
         double GetVD() except +
         double GetIA() except +
@@ -106,16 +106,19 @@ cdef class PyDTB:
         
     def open(self, usbId):
         try:
-            return_value = self.thisptr.Open(usbId)
+            return_value = self.thisptr.Open(usbId, True)
         except RuntimeError:
             return False
         return return_value
 
     def get_info(self):
         cdef string dtb_info
-        self.thisptr.Init()
+        #self.thisptr.Init()
         self.thisptr.GetInfo(dtb_info)
         return dtb_info
+
+    def remote_init(self):
+        self.thisptr.Init()
     
     def cleanup(self):
         self.thisptr.Close()
@@ -144,6 +147,7 @@ cdef class PyDTB:
         _reg = reg
         _value = value
         self.thisptr.roc_SetDAC(_reg, _value)
+        self.thisptr.Flush()
 
     def roc_clr_cal(self):
         self.thisptr.roc_ClrCal()
@@ -226,35 +230,39 @@ cdef class PyDTB:
     
     def pon(self):
         self.thisptr.Pon()
+        self.thisptr.Flush()
 
     def poff(self):
         self.thisptr.Poff()
+        self.thisptr.Flush()
     
     def hv_on(self):
         self.thisptr.HVon()
+        self.thisptr.Flush()
 
     def hv_off(self):
         self.thisptr.HVoff()
+        self.thisptr.Flush()
     
     def set_id(self, int value):
         cdef uint16_t _value
         _value = value
-        self.thisptr.SetID(_value)
+        self.thisptr._SetID(_value)
 
     def set_vd(self, int value):
         cdef uint16_t _value
         _value = value
-        self.thisptr.SetVD(_value)
+        self.thisptr._SetVD(_value)
     
     def set_ia(self, int value):
         cdef uint16_t _value
         _value = value
-        self.thisptr.SetIA(_value)
+        self.thisptr._SetIA(_value)
 
     def set_va(self, int value):
         cdef uint16_t _value
         _value = value
-        self.thisptr.SetVA(_value)
+        self.thisptr._SetVA(_value)
 
     def get_ia(self):
         return_value = self.thisptr.GetIA()*1000.
