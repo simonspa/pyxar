@@ -11,7 +11,7 @@
  17  VOffsetR0 170
  19  VIbias_PH  50
  20  Ibias_DAC 130
- 22    VIColOr  10
+ 22    VIColOr 100
  25       Vcal 200
  26     CalDel  96
 253    CtrlReg   0
