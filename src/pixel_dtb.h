@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "profiler.h"
+
 // #define RPC_MULTITHREADING
 #include "rpc.h"
 
@@ -71,7 +73,7 @@
 #define	WBC         0xFE
 #define	CtrlReg     0xFD
 
-
+template <class T> class HWvector;
 
 
 class CTestboard
@@ -283,12 +285,20 @@ public:
 	RPC_EXPORT void Daq_Stop(uint8_t channel = 0);
 	RPC_EXPORT uint32_t Daq_GetSize(uint8_t channel = 0);
 
-	RPC_EXPORT uint8_t Daq_Read(vectorR<uint16_t> &data,
-			 uint16_t blocksize = 16384, uint8_t channel = 0);
+	// --- Read data from DAQ FIFO
+	// Meaning if return bits
+#define DAQ_FIFO_OVFL 4
+#define DAQ_MEM_OVFL  2
+#define DAQ_STOPPED   1
 
-	RPC_EXPORT uint8_t Daq_Read(vectorR<uint16_t> &data,
-			uint16_t blocksize, uint32_t &availsize, uint8_t channel = 0);
 
+
+
+	RPC_EXPORT uint8_t Daq_Read(vector<uint16_t> &data, uint32_t blocksize = 16384, uint8_t channel = 0);
+
+	RPC_EXPORT uint8_t Daq_Read(vector<uint16_t> &data, uint32_t blocksize, uint32_t &availsize, uint8_t channel = 0);
+
+	void Daq_Read_DeleteData(uint32_t daq_base, int32_t rp);
 
 	RPC_EXPORT void Daq_Select_ADC(uint16_t blocksize, uint8_t source,
 			uint8_t start, uint8_t stop = 0);
@@ -297,6 +307,8 @@ public:
 
 	RPC_EXPORT void Daq_Select_Deser400();
 	RPC_EXPORT void Daq_Deser400_Reset(uint8_t reset = 3);
+
+	RPC_EXPORT void Daq_Select_Datagenerator(uint16_t startvalue);
 
 	RPC_EXPORT void Daq_DeselectAll();
 
@@ -418,6 +430,36 @@ public:
     RPC_EXPORT void SetClockStretch(uint8_t, uint16_t, uint16_t);
     RPC_EXPORT void SetPixelAddressInverted(bool);
 
+
+
+	// ------- Trigger Loop functions for Host-side DAQ ROC/Module testing ------
+	// Not exported internal helper functions:
+	uint8_t GetXtalkRow(uint8_t row, bool xtalk);
+
+	// Exported RPC-Calls for Maps
+	RPC_EXPORT void LoopMultiRocAllPixelsCalibrate(vector<uint8_t> &roc_i2c, uint16_t nTriggers, uint16_t flags);
+	RPC_EXPORT void LoopMultiRocOnePixelCalibrate(vector<uint8_t> &roc_i2c, uint8_t column, uint8_t row, uint16_t nTriggers, uint16_t flags);
+	RPC_EXPORT void LoopSingleRocAllPixelsCalibrate(uint8_t roc_i2c, uint16_t nTriggers, uint16_t flags);
+	RPC_EXPORT void LoopSingleRocOnePixelCalibrate(uint8_t roc_i2c, uint8_t column, uint8_t row, uint16_t nTriggers, uint16_t flags);
+	  
+	// Exported RPC-Calls for 1D DacScans
+	RPC_EXPORT void LoopMultiRocAllPixelsDacScan(vector<uint8_t> &roc_i2c, uint16_t nTriggers, uint16_t flags, uint8_t dac1register, uint8_t dac1low, uint8_t dac1high);
+	RPC_EXPORT void LoopMultiRocOnePixelDacScan(vector<uint8_t> &roc_i2c, uint8_t column, uint8_t row, uint16_t nTriggers, uint16_t flags, uint8_t dac1register, uint8_t dac1low, uint8_t dac1high);
+	RPC_EXPORT void LoopSingleRocAllPixelsDacScan(uint8_t roc_i2c, uint16_t nTriggers, uint16_t flags, uint8_t dac1register, uint8_t dac1low, uint8_t dac1high);
+	RPC_EXPORT void LoopSingleRocOnePixelDacScan(uint8_t roc_i2c, uint8_t column, uint8_t row, uint16_t nTriggers, uint16_t flags, uint8_t dac1register, uint8_t dac1low, uint8_t dac1high);
+
+	// Exported RPC-Calls for 2D DacDacScans
+	RPC_EXPORT void LoopMultiRocAllPixelsDacDacScan(vector<uint8_t> &roc_i2c, uint16_t nTriggers, uint16_t flags, uint8_t dac1register, uint8_t dac1low, uint8_t dac1high, uint8_t dac2register, uint8_t dac2low, uint8_t dac2high);
+	RPC_EXPORT void LoopMultiRocOnePixelDacDacScan(vector<uint8_t> &roc_i2c, uint8_t column, uint8_t row, uint16_t nTriggers, uint16_t flags, uint8_t dac1register, uint8_t dac1low, uint8_t dac1high, uint8_t dac2register, uint8_t dac2low, uint8_t dac2high);
+	RPC_EXPORT void LoopSingleRocAllPixelsDacDacScan(uint8_t roc_i2c, uint16_t nTriggers, uint16_t flags, uint8_t dac1register, uint8_t dac1low, uint8_t dac1high, uint8_t dac2register, uint8_t dac2low, uint8_t dac2high);
+	RPC_EXPORT void LoopSingleRocOnePixelDacDacScan(uint8_t roc_i2c, uint8_t column, uint8_t row, uint16_t nTriggers, uint16_t flags, uint8_t dac1register, uint8_t dac1low, uint8_t dac1high, uint8_t dac2register, uint8_t dac2low, uint8_t dac2high);
+
+	RPC_EXPORT void VectorTest(vector<uint16_t> &in, vectorR<uint16_t> &out);
+
+
+
+
+
     // ----------------------------
 
 private:
@@ -425,3 +467,35 @@ private:
     int nRocs;
     
 };
+
+
+
+extern CTestboard tb;
+
+template <class T>
+class HWvector
+{
+	uint16_t *p1;
+	uint32_t s1;
+	uint16_t *p2;
+	uint32_t s2;
+
+	uint32_t base;
+	uint32_t rp;
+public:
+	HWvector() {}
+	~HWvector() { tb.Daq_Read_DeleteData(base, rp); }
+	void Write(rpcMessage &msg, uint32_t &hdr);
+	friend class CTestboard;
+};
+
+template <class T>
+void HWvector<T>::Write(rpcMessage &msg, uint32_t &hdr)
+{
+	uint32_t size = (s1 + s2)*sizeof(uint16_t);
+	hdr = (size << 8) + RPC_TYPE_DTB_DATA;
+	//\msg.GetIo().Write(&hdr, sizeof(uint32_t));
+	//\if (s1) msg.GetIo().Write(p1, s1*sizeof(uint16_t));
+	//\if (s2)	msg.GetIo().Write(p2, s2*sizeof(uint16_t));
+}
+
