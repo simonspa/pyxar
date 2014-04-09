@@ -22,6 +22,8 @@ class HRTest(test.Test):
         self.store(config)
         self.prepare(config)
         self.start_data = time.time()
+        #load PhCalibration data files, fit, and store fit parameters for PH in ADC to PH in Vcal conversion
+        #TODO
         while time.time() - self.start_data < self.data_taking_time:
             self.take_data(config)
         self.cleanup(config)
@@ -43,8 +45,16 @@ class HRTest(test.Test):
         #TODO implement progress bar
         if round(time_left%5.,1) < 0.1 or round(time_left%5.,1) > 4.9:
             self.logger.info('Test is running for another %.0f seconds' %(time_left) )
-        n_hits, average_ph, nhits_vector, ph_vector, addr_vector = self.tb.get_data()
+        n_hits, average_ph, ph_histogram, nhits_vector, ph_vector, addr_vector = self.tb.get_data()
+        #DEBUG output
+        #print ph_histogram
+        #print self.dut.ph_array
         self.dut.data += n_hits
+        n_rocs = int(config.get('Module','rocs'))
+        for roc in range(n_rocs):
+            self.dut.ph_array[roc].extend(ph_histogram[roc])
+        #Debug output
+        #print self.dut.ph_array        
         self.update_histo()
            
     def cleanup(self, config):
@@ -54,6 +64,13 @@ class HRTest(test.Test):
             plot_dict = {'title':self.test+'_ROC_%s' %roc.number, 'x_title': self.x_title, 'y_title': self.y_title, 'data': self.dut.data[roc.number]}
         self._results.append(plot_dict)
         plot = Plotter(self.config, self)
+        #Create PH histograms for every ROC and whole DUT
+        for roc in self.dut.rocs():
+            ph_adc = numpy.array(self.dut.ph_array[roc.number])
+            PH_ADC = Plotter.create_th1(ph_adc,'PH_ADC_ROC_%s' %roc.number, 'ADC units', '# entries', 0, 255)
+            self._histos.append(PH_ADC)
+
+
         self._histos.extend(plot.histos)
         #calculating results
         for roc in self.dut.rocs():
@@ -75,17 +92,10 @@ class HRTest(test.Test):
         self.logger.info('hit rate                %s MHz/cm^2' %round(rate,6))
         self.logger.info('scc                     %i ' %self.scc)
        
-        #create histogram
-        ph_spectrum = Plotter.create_th1(ph_vector, 'ADC spectrum', 'ADC channels', 'entries', 0, 255)
 
         self._histos.extend([self._dut_histo])
         if self.window:
             self.window.histos.pop()
-        #TODO call HRAnalizer
-        #analize = HRAnalizer()
-        #core_hits = analize.fiducial_volume(self.dut.data)
-        #self.logger.info('core hits               %i ' %core_hits)
-
 
     def restore(self):
         '''restore saved dac parameters'''

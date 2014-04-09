@@ -30,6 +30,7 @@ class Test(object):
         if float(self.dut.n_rocs/8) > 1:
             self.divider = 2
         self._dut_histo = ROOT.TH2F(self.test, self.test, int(self.dut.n_rocs/self.divider*self.dut.roc(0).n_cols), 0., float(self.dut.n_rocs/self.divider*self.dut.roc(0).n_cols), int(self.divider*self.dut.roc(0).n_rows), 0., float(self.divider*self.dut.roc(0).n_rows))
+        #self._dut_histo = ROOT.TH1F(self.test, self.test, 255, 0., 255)
 
     def fill_histo(self):
         for roc in self.dut.rocs():
@@ -46,8 +47,17 @@ class Test(object):
                     tmpCol = int(roc.number%(self.dut.n_rocs/self.divider)*roc.n_cols+pixel.col)+1
                     tmpRow = int(pixel.row+1)
                 data1 = roc.data[pixel.col][pixel.row]
+                #uncomment for ph live view 
                 if data1 > 0:
                     self._dut_histo.SetBinContent(tmpCol, tmpRow, data1)
+            
+            #live view of PH
+            #data_ph = roc.ph_array
+            #print data_ph
+            #self._dut_histo = ROOT.TH1F(self.test, self.test, 255, 0., 255)
+            #for entry in range(len(data_ph)):
+            #    if data_ph[entry] > 0:
+            #        self._dut_histo.Fill(data_ph[entry])
 
     def go(self, config):
         '''Called for every test, does prepare, run and cleanup.'''

@@ -129,6 +129,8 @@ class Roc(object):
         self.number = number
         shape = (self._n_cols, self._n_rows)
         self._data = numpy.zeros(shape)
+        n_rocs = eval(config.get('Module','rocs'))
+        self._ph_array = [0]
         self._work_dir = config.get('General','work_dir')
 
         try:
@@ -248,6 +250,14 @@ class Roc(object):
     @data.setter
     def data(self, set_data):
         self._data = set_data
+    
+    @property
+    def ph_array(self):
+        return self._ph_array
+
+    @ph_array.setter
+    def ph_array(self, set_data):
+        self._ph_array = set_data
     
     @property
     def n_rows(self):
@@ -401,11 +411,25 @@ class DUT(object):
     @property
     def data(self):
         return numpy.array([roc.data for roc in self.rocs()])
-    
+ 
     @data.setter
     def data(self, set_data):
         for roc in self.rocs():
             roc.data = set_data[roc.number]
+
+    @property
+    def ph_array(self):
+        #return numpy.array([roc.ph_array for roc in self.rocs()])
+        ph_array = [roc.ph_array for roc in self.rocs()]
+        return ph_array
+
+
+    @ph_array.setter
+    def ph_array(self, set_data):
+        for roc in self.rocs():
+            roc.ph_array = set_data[roc.number]
+
+
 
     @property
     def pixel_data(self):

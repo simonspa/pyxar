@@ -343,6 +343,8 @@ cdef class PyDTB:
         s = self.dut.get_roc_shape()
         hits = []
         phs = []
+        #a list of ph entries for each of the 16 ROCs 
+        ph_histo = [[0] for x in range(self.dut.n_rocs)]
         for i in range(self.dut.n_rocs):
             hits.append(numpy.zeros(s))
             phs.append(numpy.zeros(s))
@@ -358,19 +360,24 @@ cdef class PyDTB:
                 phs[roc][col][row] += ph[i]
             except:
                 self.logger.debug('address decoding problem - wrong address out of bounds')
-        # allow division by 0
+            #appends entry ph[i]>0 to list of ROC number roc
+            if ph[i]>0:
+                ph_histo[roc].append(ph[i])
+        #DEBUG output
+        #print ph_histo
+     # allow division by 0
         old_err_state = numpy.seterr(divide='raise')
         ignored_states = numpy.seterr(**old_err_state)
         phs = numpy.nan_to_num(numpy.divide(phs, hits))
-        return numpy.array(hits), numpy.array(phs)
+        return numpy.array(hits), numpy.array(phs), ph_histo
 
     def daq_read_decoded(self):
         cdef vector[uint16_t] _n_hits
         cdef vector[uint16_t] _ph
         cdef vector[uint32_t] _addr
         return_value = self.thisptr.Daq_Read_Decoded(_n_hits, _ph, _addr)
-        nh, av_ph = self.decoding(_n_hits, _ph, _addr)
-        return nh, av_ph, numpy.array(_n_hits), numpy.array(_ph), numpy.array(_addr)
+        nh, av_ph, ph_histogram = self.decoding(_n_hits, _ph, _addr)
+        return nh, av_ph, ph_histogram, numpy.array(_n_hits), numpy.array(_ph), numpy.array(_addr)
 
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
         cdef vector[int16_t] n_hits

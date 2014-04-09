@@ -228,7 +228,7 @@ class Testboard(dtb.PyDTB):
 
     def get_calibrate(self, n_triggers):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
-        nhits, average_ph = self.calibrate_parallel(n_triggers, [roc.number for roc in self.dut.rocs()])
+        nhits, average_ph, ph_histo = self.calibrate_parallel(n_triggers, [roc.number for roc in self.dut.rocs()])
         self.dut.data = nhits
 
     def get_ph(self, n_triggers):
@@ -239,7 +239,7 @@ class Testboard(dtb.PyDTB):
     def get_ph_roc(self, n_triggers, roc):
         self.select_roc(roc)
         self.logger.debug('PH %s , n_triggers: %s' %(roc, n_triggers) )
-        nhits, average_ph = self.calibrate_parallel(n_triggers, [roc.number])
+        nhits, average_ph, ph_histo = self.calibrate_parallel(n_triggers, [roc.number])
         roc.data = average_ph[roc.number]
         return roc.data
 
