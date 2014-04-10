@@ -2,6 +2,7 @@ import sys
 import copy
 import logging 
 import numpy
+import ROOT
 
 class Pixel(object):
 
@@ -12,6 +13,8 @@ class Pixel(object):
         self.trim = trim
         self.active = False
         self._data = None
+        self._ph_fit_slope = False
+        self._ph_fit_offset = False
 
     @property
     def col(self):
@@ -67,6 +70,14 @@ class Pixel(object):
 
     def __repr__(self):
         return "Pixel %s, %s"%(self._col,self._row)
+
+    #convert PH in ADC to Vcal units
+    def ADC_to_Vcal(self, ph):
+        if self._ph_fit_slope == False or self._ph_offset == False or self._ph_slope == 0:
+            return 0
+        else:
+            ph_cal = (ph - self._ph_fit_offset)/(self._ph_fit_slope)
+            return ph_cal
 
 
 class DAC(object):
@@ -131,6 +142,7 @@ class Roc(object):
         self._data = numpy.zeros(shape)
         n_rocs = eval(config.get('Module','rocs'))
         self._ph_array = [0]
+        self._ph_cal_array = [0]
         self._work_dir = config.get('General','work_dir')
 
         try:
@@ -258,7 +270,33 @@ class Roc(object):
     @ph_array.setter
     def ph_array(self, set_data):
         self._ph_array = set_data
+ 
+    @property
+    def ph_cal_array(self):
+        return self._ph_cal_array
+
+    @ph_cal_array.setter
+    def ph_cal_array(self, set_data):
+        self._ph_cal_array = set_data
     
+    @property
+    def ph_slope(self):
+        return self._ph_slope
+
+    @ph_slope.setter
+    def ph_slope(self, set_data):
+        self._ph_slope = set_data
+ 
+    @property
+    def ph_offset(self):
+        return self._ph_offset
+
+    @ph_offset.setter
+    def ph_offset(self, set_data):
+        self._ph_offset = set_data
+ 
+
+
     @property
     def n_rows(self):
         """Get number of rows."""
@@ -336,6 +374,58 @@ class Roc(object):
 
     def __str__(self):
         return "ROC %s"%self.number
+
+    #reads in and fits the PhCalibration data and gives back an array of fit parameters for every pixel
+    def PHcal_fit(self):
+        try:
+            self.phCalibrationFile = open('%s/phCalibration_C%s.dat' %(self._work_dir, self.number))
+            shape = (self._n_cols, self._n_rows)
+            slope_array = numpy.zeros(shape)
+            offset_array = numpy.zeros(shape)
+            #skip first 4 lines of PhCalibration data file
+            header1 = self.phCalibrationFile.readline()
+            header2 = self.phCalibrationFile.readline()
+            header3 = self.phCalibrationFile.readline()
+            header4 = self.phCalibrationFile.readline()
+
+            #loop over lines
+            n=5 #keep the first n Vcal points for fitting
+            line_number=0
+            x=[50.,100.,150.,200.,250.]
+            for line in self.phCalibrationFile:
+                line = line.strip()
+                entries = line.split()
+                y = numpy.array(entries[:n])
+                y = y.astype(float)
+                col = entries[11]
+                row = entries[12]
+                lf = ROOT.TLinearFitter(1)
+                lf.SetFormula("pol1")
+                lf.AssignData(n, 1, numpy.array(x), numpy.array(y))
+                return_value = lf.Eval()
+                if return_value != 0:
+                    self.logger.debug('PhCalibration data fit failed in ROC %s pixel (%i,%i)' %self.number,col,row)
+                slope = lf.GetParameter(1)
+                offset = lf.GetParameter(0)
+                #TODO: give warning if chi2 is too large
+                slope_array[col,row] = slope
+                offset_array[col,row] = offset 
+            self.phCalibrationFile.close()
+            return slope_array, offset_array
+
+        except IOError:
+            self.phCalibrationFile = None
+            self.logger.warning('could not open phCalibration file for ROC %i:' %self.number)
+
+    #convert PH in ADC to Vcal units
+    def ADC_to_Vcal(self, col, row, ph, slopes, offsets):
+        self.pixel(col,row)._ph_fit_slope = slopes[col][row]
+        self.pixel(col,row)._ph_fit_offset = offsets[col][row]
+        if self.pixel(col,row)._ph_fit_slope == False or self.pixel(col,row)._ph_fit_offset == False or self.pixel(col,row)._ph_fit_slope == 0:
+            return 0
+        else:
+            ph_cal = (ph - self.pixel(col,row)._ph_fit_offset)/(self.pixel(col,row)._ph_fit_slope)
+            return ph_cal
 
 class TBM(object):
     def __init__(self,config,number=0):
@@ -419,7 +509,6 @@ class DUT(object):
 
     @property
     def ph_array(self):
-        #return numpy.array([roc.ph_array for roc in self.rocs()])
         ph_array = [roc.ph_array for roc in self.rocs()]
         return ph_array
 
@@ -428,6 +517,17 @@ class DUT(object):
     def ph_array(self, set_data):
         for roc in self.rocs():
             roc.ph_array = set_data[roc.number]
+
+    @property
+    def ph_cal_array(self):
+        ph_cal_array = [roc.ph_cal_array for roc in self.rocs()]
+        return ph_cal_array
+
+
+    @ph_cal_array.setter
+    def ph_cal_array(self, set_data):
+        for roc in self.rocs():
+            roc.ph_cal_array = set_data[roc.number]
 
 
 

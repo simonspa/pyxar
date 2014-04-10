@@ -22,15 +22,24 @@ class HRTest(test.Test):
         self.store(config)
         self.prepare(config)
         self.start_data = time.time()
-        #load PhCalibration data files, fit, and store fit parameters for PH in ADC to PH in Vcal conversion
-        #TODO
+        self.length=0
         while time.time() - self.start_data < self.data_taking_time:
             self.take_data(config)
         self.cleanup(config)
         self.dump()
         self.restore()
         stop_time = time.time()
+        #print self.dut.roc(0).ph_slope[14][15]
+        #print self.dut.roc(0).ph_offset[14][15]
+        #print self.dut.roc(0).ph_slope[39][72]
+        #print self.dut.roc(0).ph_offset[39][72]
+        #print self.dut.roc(0).ph_slope[17][21]
+        #print self.dut.roc(0).ph_offset[17][21]
+        #print self.dut.roc(0).ph_array
+        #print self.dut.roc(0).ph_cal_array
+
         delta_t = stop_time - start_time 
+        
         self.logger.info('Test finished after %.1f seconds' %delta_t)
 
     def update_histo(self):
@@ -45,7 +54,7 @@ class HRTest(test.Test):
         #TODO implement progress bar
         if round(time_left%5.,1) < 0.1 or round(time_left%5.,1) > 4.9:
             self.logger.info('Test is running for another %.0f seconds' %(time_left) )
-        n_hits, average_ph, ph_histogram, nhits_vector, ph_vector, addr_vector = self.tb.get_data()
+        n_hits, average_ph, ph_histogram, ph_cal_histogram, nhits_vector, ph_vector, addr_vector = self.tb.get_data()
         #DEBUG output
         #print ph_histogram
         #print self.dut.ph_array
@@ -53,6 +62,7 @@ class HRTest(test.Test):
         n_rocs = int(config.get('Module','rocs'))
         for roc in range(n_rocs):
             self.dut.ph_array[roc].extend(ph_histogram[roc])
+            self.dut.ph_cal_array[roc].extend(ph_cal_histogram[roc])
         #Debug output
         #print self.dut.ph_array        
         self.update_histo()
@@ -67,9 +77,11 @@ class HRTest(test.Test):
         #Create PH histograms for every ROC and whole DUT
         for roc in self.dut.rocs():
             ph_adc = numpy.array(self.dut.ph_array[roc.number])
+            ph_vcal = numpy.array(self.dut.ph_cal_array[roc.number])
             PH_ADC = Plotter.create_th1(ph_adc,'PH_ADC_ROC_%s' %roc.number, 'ADC units', '# entries', 0, 255)
+            PH_VCAL = Plotter.create_th1(ph_vcal,'PH_VCAL_ROC_%s' %roc.number, 'Vcal units', '# entries', 0, 255)
             self._histos.append(PH_ADC)
-
+            self._histos.append(PH_VCAL)
 
         self._histos.extend(plot.histos)
         #calculating results

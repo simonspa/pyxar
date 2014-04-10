@@ -180,9 +180,9 @@ int8_t CTestboard::Daq_Enable2(int32_t block) {
         Daq_Select_Deser160(4);
     }
 	Daq_Open(block, 0);
-    //Daq_Open(block, 1);
+    Daq_Open(block, 1);
 	Daq_Start(0);
-	//Daq_Start(1);
+	Daq_Start(1);
 	return 1;
 }
 // to be renamed after kicking out psi46expert dependency
