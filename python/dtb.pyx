@@ -364,14 +364,14 @@ cdef class PyDTB:
             #appends entry ph[i]>0 to list of ROC number roc
             if ph[i]>0:
                 ph_histo[roc].append(ph[i])
-                ph_cal = self.dut.roc(roc).ADC_to_Vcal(col, row, ph[i], self.dut.roc(roc).ph_slope,self.dut.roc(roc).ph_offset)
+                ph_cal = self.dut.roc(roc).ADC_to_Vcal(col, row, ph[i], self.dut.roc(roc).ph_slope, self.dut.roc(roc).ph_offset)
                 ph_cal_histo[roc].append(ph_cal)
         #DEBUG output
             #if i==5:
             #    self.logger.debug('col %i, row %i, ph %f, ph_cal %f' %(col, row, ph[i], ph_cal))
 
         #print ph_histo
-     # allow division by 0
+        #allow division by 0
         old_err_state = numpy.seterr(divide='raise')
         ignored_states = numpy.seterr(**old_err_state)
         phs = numpy.nan_to_num(numpy.divide(phs, hits))
