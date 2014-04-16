@@ -4,7 +4,7 @@
 
 #include <string>
 #include <list>
-#include "RConfigure.h"
+//#include "config.h"
 
 // MSVC: __FUNCTION__ __FUNCDNAME__ __FUNCSIG__
 // GCC:  __func__     __FUNCTION__  __PRETT_FUNCTION__

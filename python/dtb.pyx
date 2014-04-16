@@ -52,6 +52,7 @@ cdef extern from "pixel_dtb.h":
         void tbm_Enable(bool on) except +
         void mod_Addr(uint8_t hub) except +
         void tbm_Set(uint8_t reg, uint8_t value) except +
+        uint16_t DecodeReadback(uint8_t) except +
         void EnableColumn(int) except +
         void ArmPixel(int, int) except +
         void DisarmPixel(int, int) except +
@@ -182,6 +183,12 @@ cdef class PyDTB:
         _reg = reg
         _value = value
         self.thisptr.tbm_Set(_reg, _value)
+
+    def decode_readback(self, uint8_t reg_val):
+        cdef uint8_t _reg_val	
+        _reg_val = reg_val
+        return_value = self.thisptr.DecodeReadback(_reg_val)	
+        return return_value
 
     def tbm_enable(self, bool on):
         cdef bool _on
@@ -375,8 +382,8 @@ cdef class PyDTB:
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
-        return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, 0, dacRange1, dac2, 0, dacRange2, n_hits, ph_sum)
-        #return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, 0, dacRange1, dac2, 0, dacRange2, n_hits, ph_sum)
+        #return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, 0, dacRange1, dac2, 0, dacRange2, n_hits, ph_sum)
+        return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, 0, dacRange1, dac2, 0, dacRange2, n_hits, ph_sum)
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 

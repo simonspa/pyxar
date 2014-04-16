@@ -358,6 +358,7 @@ public:
 
     RPC_EXPORT bool tbm_GetRaw(uint8_t reg, uint32_t &value);
 
+    RPC_EXPORT uint16_t DecodeReadback(uint8_t reg_val);
 
 // --- Wafer test functions
 	RPC_EXPORT bool TestColPixel(uint8_t col, uint8_t trimbit, vectorR<uint8_t> &res);

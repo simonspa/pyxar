@@ -356,3 +356,7 @@ class Testboard(dtb.PyDTB):
             else:
                 break
         return average_dac
+
+    def readback(self, reg_val):
+        self.logger.info('Readback value on reg value %u : %u\n' %(reg_val,self.decode_readback(reg_val)))
+

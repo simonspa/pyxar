@@ -21,3 +21,6 @@ from hrmap import HRMap
 from masktest import MaskTest
 from currentscan import CurrentScan
 from dacscan import DacScan
+from readbackscan import ReadbackScan
+from cal_readbackscan import CalReadbackScan
+from calibratereadback import CalibrateReadback
