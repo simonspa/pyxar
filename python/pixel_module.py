@@ -141,7 +141,7 @@ class Roc(object):
         shape = (self._n_cols, self._n_rows)
         self._data = numpy.zeros(shape)
         n_rocs = eval(config.get('Module','rocs'))
-        self.flag = 1
+        self.flag = 0
         self._ph_array = [0]
         self._ph_cal_array = [0]
         self._ph_slope = numpy.zeros(shape)
