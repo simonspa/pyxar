@@ -223,8 +223,8 @@ class Testboard(dtb.PyDTB):
     def unmask(self, *args):
         self._mask(False, *args)
 
-    def get_data(self):
-        return self.daq_read_decoded()
+    def get_data(self,Vcal_conversion=False):
+        return self.daq_read_decoded(Vcal_conversion)
 
     def get_calibrate(self, n_triggers):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )

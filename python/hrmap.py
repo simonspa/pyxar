@@ -32,6 +32,5 @@ and clock stretch factor (ssc) are additional parameters.'''
         else:
             self.tb.pg_setcmd(0, self.tb.PG_TRG  + ttk)
             self.tb.pg_setcmd(1, self.tb.PG_TOK)
-        self.tb.pg_loop(self.period)
         
 

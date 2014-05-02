@@ -339,7 +339,7 @@ cdef class PyDTB:
         return_value = self.thisptr.CalibrateMap_Par(n_triggers, n_hits, ph_sum, adr, rocs)
         return self.decoding(n_hits, ph_sum, adr)
 
-    def decoding(self, n_hits, ph, addr):
+    def decoding(self, n_hits, ph, addr, Vcal_conversion = False):
         s = self.dut.get_roc_shape()
         hits = []
         phs = []
@@ -364,7 +364,10 @@ cdef class PyDTB:
             #appends entry ph[i]>0 to list of ROC number roc
             if ph[i]>0:
                 ph_histo[roc].append(ph[i])
-                ph_cal = self.dut.roc(roc).ADC_to_Vcal(col, row, ph[i], self.dut.roc(roc).ph_slope, self.dut.roc(roc).ph_offset)
+                if Vcal_conversion:
+                    ph_cal = self.dut.roc(roc).ADC_to_Vcal(col, row, ph[i], self.dut.roc(roc).ph_slope, self.dut.roc(roc).ph_offset)
+                else:
+                    ph_cal = 0
                 ph_cal_histo[roc].append(ph_cal)
         #DEBUG output
             #if i==5:
@@ -377,12 +380,12 @@ cdef class PyDTB:
         phs = numpy.nan_to_num(numpy.divide(phs, hits))
         return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo
 
-    def daq_read_decoded(self):
+    def daq_read_decoded(self,Vcal_conversion=False):
         cdef vector[uint16_t] _n_hits
         cdef vector[uint16_t] _ph
         cdef vector[uint32_t] _addr
         return_value = self.thisptr.Daq_Read_Decoded(_n_hits, _ph, _addr)
-        nh, av_ph, ph_histogram, ph_cal_histogram = self.decoding(_n_hits, _ph, _addr)
+        nh, av_ph, ph_histogram, ph_cal_histogram = self.decoding(_n_hits, _ph, _addr, Vcal_conversion)
         return nh, av_ph, ph_histogram, ph_cal_histogram, numpy.array(_n_hits), numpy.array(_ph), numpy.array(_addr)
 
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):

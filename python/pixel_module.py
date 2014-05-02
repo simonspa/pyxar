@@ -141,7 +141,6 @@ class Roc(object):
         shape = (self._n_cols, self._n_rows)
         self._data = numpy.zeros(shape)
         n_rocs = eval(config.get('Module','rocs'))
-        self.flag = 0
         self._ph_array = [0]
         self._ph_cal_array = [0]
         self._ph_slope = numpy.zeros(shape)
@@ -426,16 +425,13 @@ class Roc(object):
 
     #convert PH in ADC to Vcal units
     def ADC_to_Vcal(self, col, row, ph, slopes, offsets):
-        if self.flag == 0:
+        self.pixel(col,row)._ph_fit_slope = slopes[col][row]
+        self.pixel(col,row)._ph_fit_offset = offsets[col][row]
+        if self.pixel(col,row)._ph_fit_slope == None or self.pixel(col,row)._ph_fit_offset == None or self.pixel(col,row)._ph_fit_slope == 0:
             return 0
         else:
-            self.pixel(col,row)._ph_fit_slope = slopes[col][row]
-            self.pixel(col,row)._ph_fit_offset = offsets[col][row]
-            if self.pixel(col,row)._ph_fit_slope == None or self.pixel(col,row)._ph_fit_offset == None or self.pixel(col,row)._ph_fit_slope == 0:
-                return 0
-            else:
-                ph_cal = (ph - self.pixel(col,row)._ph_fit_offset)/(self.pixel(col,row)._ph_fit_slope)
-                return ph_cal
+            ph_cal = (ph - self.pixel(col,row)._ph_fit_offset)/(self.pixel(col,row)._ph_fit_slope)
+            return ph_cal
 
 class TBM(object):
     def __init__(self,config,number=0):
