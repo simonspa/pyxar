@@ -28,7 +28,7 @@ class HRTest(test.Test):
             self.tb.m_delay(1000)
             self.tb.pg_stop()
             self.take_data(config)
-            print 'measuring for %i more seconds' %(self.data_taking_time - measurement_time)
+            print 'remaining measurement time %i seconds' %(self.data_taking_time - measurement_time)
         self.tb.daq_disable()
         self.cleanup(config)
         self.dump()
