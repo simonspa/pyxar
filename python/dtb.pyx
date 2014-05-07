@@ -359,21 +359,16 @@ cdef class PyDTB:
             try:
                 hits[roc][col][row] += n_hits[i]
                 phs[roc][col][row] += ph[i]
+                #appends entry ph[i]>0 to list of ROC number roc
+                if ph[i]>0:
+                    ph_histo[roc].append(ph[i])
+                    if Vcal_conversion:
+                        ph_cal = self.dut.roc(roc).ADC_to_Vcal(col, row, ph[i], self.dut.roc(roc).ph_slope, self.dut.roc(roc).ph_offset)
+                    else:
+                        ph_cal = 0
+                    ph_cal_histo[roc].append(ph_cal)
             except:
                 self.logger.debug('address decoding problem - wrong address out of bounds')
-            #appends entry ph[i]>0 to list of ROC number roc
-            if ph[i]>0:
-                ph_histo[roc].append(ph[i])
-                if Vcal_conversion:
-                    ph_cal = self.dut.roc(roc).ADC_to_Vcal(col, row, ph[i], self.dut.roc(roc).ph_slope, self.dut.roc(roc).ph_offset)
-                else:
-                    ph_cal = 0
-                ph_cal_histo[roc].append(ph_cal)
-        #DEBUG output
-            #if i==5:
-            #    self.logger.debug('col %i, row %i, ph %f, ph_cal %f' %(col, row, ph[i], ph_cal))
-
-        #print ph_histo
         #allow division by 0
         old_err_state = numpy.seterr(divide='raise')
         ignored_states = numpy.seterr(**old_err_state)
