@@ -13,6 +13,7 @@ class HRTest(test.Test):
         self.data_taking_time = 5
         self.period = 1288
         self.average_ph = numpy.copy(self.dut.data)
+        self.n_rocs = int(config.get('Module','rocs'))
         if self.window:
             self.window.histos.extend([self._dut_histo])
 
@@ -35,7 +36,6 @@ class HRTest(test.Test):
         self.restore()
         stop_time = time.time()
         delta_t = stop_time - start_time 
-        
         self.logger.info('Test finished after %.1f seconds' %delta_t)
 
     def update_histo(self):
@@ -49,8 +49,7 @@ class HRTest(test.Test):
         time_left = self.data_taking_time - (time.time() - self.start_data)
         n_hits, average_ph, ph_histogram, ph_cal_histogram, nhits_vector, ph_vector, addr_vector = self.tb.get_data(Vcal_conversion=True)
         self.dut.data += n_hits
-        n_rocs = int(config.get('Module','rocs'))
-        for roc in range(n_rocs):
+        for roc in range(self.n_rocs):
             self.dut.ph_array[roc].extend(ph_histogram[roc])
             self.dut.ph_cal_array[roc].extend(ph_cal_histogram[roc])
         self.update_histo()
@@ -104,3 +103,8 @@ class HRTest(test.Test):
         self.tb.pg_stop()
         self.tb.init_pg(self.config)
         self.tb.init_deser()
+        for roc in self.dut.rocs():
+            roc.ph_array = [0]
+            roc.ph_cal_array = [0]
+        self.dut.data = numpy.zeros_like(self.dut.data)   
+       

@@ -38,6 +38,7 @@ class HotPixelMasker(test.Test):
         self.data_taking_time = 5
         self.period = 1288
         self.average_ph = numpy.copy(self.dut.data)
+        self.n_rocs = int(config.get('Module','rocs'))
         if self.window:
             self.window.histos.extend([self._dut_histo])
 
@@ -49,6 +50,11 @@ class HotPixelMasker(test.Test):
         self.prepare(config)
         self.start_data = time.time()
         self.length=0
+        #reset data containers
+        for roc in range(self.n_rocs):
+            self.dut.ph_array[roc] = [0]
+            self.dut.ph_cal_array[roc] = [0]
+        self.dut.data = numpy.zeros_like(self.dut.data)
         for measurement_time in range(self.data_taking_time):
             self.tb.pg_loop(self.period)
             self.tb.m_delay(1000)
@@ -105,9 +111,8 @@ class HotPixelMasker(test.Test):
         outfile.close()
         self.logger.info("Created new mask file 'MaskFile.dat' for DUT in %s" %path)
 
-        n_rocs = int(config.get('Module','rocs'))
         #print warning if more than 1 per mil of pixels in dut are noisy
-        if noisy_tot > (n_rocs*4160./1000):
+        if noisy_tot > (self.n_rocs*4160./1000):
             self.logger.warning('More than one per mil of all pixels in dut are noisy! Make sure dut is not exposed to any radiation and check setup grounding.')
 
 

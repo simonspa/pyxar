@@ -369,6 +369,7 @@ cdef class PyDTB:
                     ph_cal_histo[roc].append(ph_cal)
             except:
                 self.logger.debug('address decoding problem - wrong address out of bounds')
+                self.logger.debug('invalid pixel address: roc %i, col %i, row %i' %(roc, col, row))
         #allow division by 0
         old_err_state = numpy.seterr(divide='raise')
         ignored_states = numpy.seterr(**old_err_state)
