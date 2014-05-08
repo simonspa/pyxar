@@ -34,15 +34,6 @@ class HRTest(test.Test):
         self.dump()
         self.restore()
         stop_time = time.time()
-        #print self.dut.roc(0).ph_slope[14][15]
-        #print self.dut.roc(0).ph_offset[14][15]
-        #print self.dut.roc(0).ph_slope[39][72]
-        #print self.dut.roc(0).ph_offset[39][72]
-        #print self.dut.roc(0).ph_slope[17][21]
-        #print self.dut.roc(0).ph_offset[17][21]
-        #print self.dut.roc(0).ph_array
-        #print self.dut.roc(0).ph_cal_array
-
         delta_t = stop_time - start_time 
         
         self.logger.info('Test finished after %.1f seconds' %delta_t)
@@ -56,20 +47,12 @@ class HRTest(test.Test):
     def take_data(self, config): 
         '''Main test on DUT and TB.'''
         time_left = self.data_taking_time - (time.time() - self.start_data)
-        #TODO implement progress bar
-        if round(time_left%5.,1) < 0.1 or round(time_left%5.,1) > 4.9:
-            self.logger.info('Test is running for another %.0f seconds' %(time_left) )
         n_hits, average_ph, ph_histogram, ph_cal_histogram, nhits_vector, ph_vector, addr_vector = self.tb.get_data(Vcal_conversion=True)
-        #DEBUG output
-        #print ph_histogram
-        #print self.dut.ph_array
         self.dut.data += n_hits
         n_rocs = int(config.get('Module','rocs'))
         for roc in range(n_rocs):
             self.dut.ph_array[roc].extend(ph_histogram[roc])
             self.dut.ph_cal_array[roc].extend(ph_cal_histogram[roc])
-        #Debug output
-        #print self.dut.ph_array        
         self.update_histo()
            
     def cleanup(self, config):
