@@ -51,9 +51,6 @@ class HotPixelMasker(test.Test):
         self.start_data = time.time()
         self.length=0
         #reset data containers
-        for roc in range(self.n_rocs):
-            self.dut.ph_array[roc] = [0]
-            self.dut.ph_cal_array[roc] = [0]
         self.dut.data = numpy.zeros_like(self.dut.data)
         for measurement_time in range(self.data_taking_time):
             self.tb.pg_loop(self.period)

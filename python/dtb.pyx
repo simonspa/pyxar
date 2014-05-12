@@ -23,6 +23,7 @@ cdef extern from "pixel_dtb.h":
         void ResetOn() except +
         void ResetOff() except +
         void mDelay(uint16_t) except +
+        void uDelay(uint16_t) except +
         void _SetVA(uint16_t) except +
         void _SetVD(uint16_t) except +
         void _SetIA(uint16_t) except +
@@ -130,6 +131,11 @@ cdef class PyDTB:
         cdef uint16_t _value
         _value = value
         self.thisptr.mDelay(_value)
+
+    def u_delay(self, int value):
+        cdef uint16_t _value
+        _value = value
+        self.thisptr.uDelay(_value)
     
     def i2_c_addr(self, int identity):
         cdef uint8_t _identity

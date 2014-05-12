@@ -24,12 +24,15 @@ class HRTest(test.Test):
         self.prepare(config)
         self.start_data = time.time()
         self.length=0
-        for measurement_time in range(self.data_taking_time):
+        self.logger.info('Start data taking')
+        for measurement_time in range(1*self.data_taking_time):
             self.tb.pg_loop(self.period)
             self.tb.m_delay(1000)
             self.tb.pg_stop()
             self.take_data(config)
-            print 'remaining measurement time %i seconds' %(self.data_taking_time - measurement_time)
+        #self.logger.info('Data taking finished')
+        #self.logger.info('Reading and decoding data...')
+        #self.logger.info('Data read and decoded')
         self.tb.daq_disable()
         self.cleanup(config)
         self.dump()
