@@ -13,6 +13,7 @@ class HRTest(test.Test):
         self.data_taking_time = 5
         self.period = 1288
         self.average_ph = numpy.copy(self.dut.data)
+        self.n_rocs = int(config.get('Module','rocs'))
         if self.window:
             self.window.histos.extend([self._dut_histo])
 
@@ -22,8 +23,14 @@ class HRTest(test.Test):
         self.store(config)
         self.prepare(config)
         self.start_data = time.time()
-        while time.time() - self.start_data < self.data_taking_time:
+        self.length=0
+        for measurement_time in range(self.data_taking_time):
+            self.tb.pg_loop(self.period)
+            self.tb.m_delay(1000)
+            self.tb.pg_stop()
             self.take_data(config)
+            print 'remaining measurement time %i seconds' %(self.data_taking_time - measurement_time)
+        self.tb.daq_disable()
         self.cleanup(config)
         self.dump()
         self.restore()
@@ -40,11 +47,11 @@ class HRTest(test.Test):
     def take_data(self, config): 
         '''Main test on DUT and TB.'''
         time_left = self.data_taking_time - (time.time() - self.start_data)
-        #TODO implement progress bar
-        if round(time_left%5.,1) < 0.1 or round(time_left%5.,1) > 4.9:
-            self.logger.info('Test is running for another %.0f seconds' %(time_left) )
-        n_hits, average_ph, nhits_vector, ph_vector, addr_vector = self.tb.get_data()
+        n_hits, average_ph, ph_histogram, ph_cal_histogram, nhits_vector, ph_vector, addr_vector = self.tb.get_data(Vcal_conversion=True)
         self.dut.data += n_hits
+        for roc in range(self.n_rocs):
+            self.dut.ph_array[roc].extend(ph_histogram[roc])
+            self.dut.ph_cal_array[roc].extend(ph_cal_histogram[roc])
         self.update_histo()
            
     def cleanup(self, config):
@@ -52,8 +59,17 @@ class HRTest(test.Test):
         self.fill_histo()
         for roc in self.dut.rocs():
             plot_dict = {'title':self.test+'_ROC_%s' %roc.number, 'x_title': self.x_title, 'y_title': self.y_title, 'data': self.dut.data[roc.number]}
-        self._results.append(plot_dict)
-        plot = Plotter(self.config, self)
+            self._results.append(plot_dict)
+            plot = Plotter(self.config, self)
+        #Create PH histograms for every ROC and whole DUT
+        for roc in self.dut.rocs():
+            ph_adc = numpy.array(self.dut.ph_array[roc.number])
+            ph_vcal = numpy.array(self.dut.ph_cal_array[roc.number])
+            PH_ADC = Plotter.create_th1(ph_adc,'PH_ADC_ROC_%s' %roc.number, 'ADC units', '# entries', 0, 255)
+            PH_VCAL = Plotter.create_th1(ph_vcal,'PH_VCAL_ROC_%s' %roc.number, 'Vcal units', '# entries', 0, 255)
+            self._histos.append(PH_ADC)
+            self._histos.append(PH_VCAL)
+
         self._histos.extend(plot.histos)
         #calculating results
         for roc in self.dut.rocs():
@@ -66,7 +82,7 @@ class HRTest(test.Test):
         self.logger.debug('number of rocs %s' %self._n_rocs)
         self.logger.debug('sensor area %s' %round(sensor_area,2))
         hits = numpy.sum(self.dut.data)
-        trigger_rate = 1.0e6 / (40.0 * self.period)
+        trigger_rate = 1.0e6 / (25.0 * self.period)
         rate = hits / (self.data_taking_time * trigger_rate * 1e3 * 25e-9 * self.scc * 1.0e6 * sensor_area)    
 
         self.logger.info('data aquisition time    %i' %self.data_taking_time)
@@ -75,17 +91,10 @@ class HRTest(test.Test):
         self.logger.info('hit rate                %s MHz/cm^2' %round(rate,6))
         self.logger.info('scc                     %i ' %self.scc)
        
-        #create histogram
-        ph_spectrum = Plotter.create_th1(ph_vector, 'ADC spectrum', 'ADC channels', 'entries', 0, 255)
 
         self._histos.extend([self._dut_histo])
         if self.window:
             self.window.histos.pop()
-        #TODO call HRAnalizer
-        #analize = HRAnalizer()
-        #core_hits = analize.fiducial_volume(self.dut.data)
-        #self.logger.info('core hits               %i ' %core_hits)
-
 
     def restore(self):
         '''restore saved dac parameters'''
@@ -94,3 +103,8 @@ class HRTest(test.Test):
         self.tb.pg_stop()
         self.tb.init_pg(self.config)
         self.tb.init_deser()
+        for roc in self.dut.rocs():
+            roc.ph_array = [0]
+            roc.ph_cal_array = [0]
+        self.dut.data = numpy.zeros_like(self.dut.data)   
+       
