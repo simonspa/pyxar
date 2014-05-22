@@ -377,9 +377,9 @@ cdef class PyDTB:
             except:
                 self.logger.debug('address decoding problem - wrong address out of bounds')
                 self.logger.debug('invalid pixel address: roc %i, col %i, row %i' %(roc, col, row))
-                decoding_erros += 1
+                decoding_errors += 1
 
-        self.logger.debug('number of decoding erros %i' %decoding_erros)
+        self.logger.debug('number of decoding errors %i' %decoding_errors)
         #allow division by 0
         old_err_state = numpy.seterr(divide='raise')
         ignored_states = numpy.seterr(**old_err_state)
