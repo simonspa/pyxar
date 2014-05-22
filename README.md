@@ -24,6 +24,22 @@ Specify the input directory with:
 
     ./pyXar --dir PATH
 
+### implementing a test:
+
+All tests inherit from the base class Test in test.py
+For a test to be included in the fraework the new class must be importet in the 
+
+    python/__init__.py
+file under pyhton
+
+tests usually contains at least the method run()
+
+Two additional methods prepare() and cleanup() give the usual structure of a test.
+
+- The base class provides all necessary obejcts like tb and dut.
+- DAC parameters changed during the test will be automatically reset.
+- The docstring of the class is displayed as help message in the command line interface.
+
 
 ### pyXar also provides a way to run with the API (currently as beta version)
 Get the python version of the API and build it
