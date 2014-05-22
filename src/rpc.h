@@ -6,7 +6,7 @@
 #include <vector>
 #include <stdint.h>
 
-#include "RConfigure.h"
+//#include "RConfigure.h"
 #include "rpc_io.h"
 #include "rpc_error.h"
 

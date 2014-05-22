@@ -6,7 +6,7 @@
 #include <list>
 #include <vector>
 
-#include "RConfigure.h"
+//#include "RConfigure.h"
 #include "pixel_dtb.h"
 #include "datapipe.h"
 #include "protocol.h"
