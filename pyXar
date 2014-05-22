@@ -39,7 +39,7 @@ class Pyxar(PyCmd):
         self.dut.activate_pixel(0,5,5)
         if self.api:
             from python import api
-            self.tb = api.api(self.config.get('Testboard','id'), "WARNING")
+            self.tb = api.api(self.config.get('Testboard','id'), "DEBUGHAL")
             self.tb.startup(self.config, self.dut)
         else:
             self.tb = Testboard(self.config, self.dut)
