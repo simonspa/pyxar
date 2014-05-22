@@ -134,7 +134,7 @@ class api(PyPxarCore.PyPxarCore):
             self.init_tbm(config)
         for roc in self.dut.rocs():
             self.init_roc(roc)
-        self.initDUT(config.get('ROC','type'),self.tbm_dacs,config.get('ROC','type'),self.roc_dacs,self.roc_pixels)
+        self.initDUT(31,config.get('ROC','type'),self.tbm_dacs,config.get('ROC','type'),self.roc_dacs,self.roc_pixels)
         self.mask_dut()
         self.logger.info(self.status())
 
