@@ -24,3 +24,5 @@ from dacscan import DacScan
 from readbackscan import ReadbackScan
 from cal_readbackscan import CalReadbackScan
 from calibratereadback import CalibrateReadback
+from hotpixelmasker import HotPixelMasker
+from hrefficiency import HREfficiency

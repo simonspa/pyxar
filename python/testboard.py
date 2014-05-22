@@ -223,23 +223,23 @@ class Testboard(dtb.PyDTB):
     def unmask(self, *args):
         self._mask(False, *args)
 
-    def get_data(self):
-        return self.daq_read_decoded()
+    def get_data(self,Vcal_conversion=False):
+        return self.daq_read_decoded(Vcal_conversion)
 
     def get_calibrate(self, n_triggers):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
-        nhits, average_ph = self.calibrate_parallel(n_triggers, [roc.number for roc in self.dut.rocs()])
+        nhits, average_ph, ph_histo, ph_cal_histo = self.calibrate_parallel(n_triggers, [roc.number for roc in self.dut.rocs()])
         self.dut.data = nhits
 
     def get_ph(self, n_triggers):
         self.logger.debug('PH %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
-        nhits, average_ph = self.calibrate_parallel(n_triggers, [roc.number for roc in self.dut.rocs()])
+        nhits, average_ph, ph_histo, ph_cal_histo = self.calibrate_parallel(n_triggers, [roc.number for roc in self.dut.rocs()])
         self.dut.data = average_ph
 
     def get_ph_roc(self, n_triggers, roc):
         self.select_roc(roc)
         self.logger.debug('PH %s , n_triggers: %s' %(roc, n_triggers) )
-        nhits, average_ph = self.calibrate_parallel(n_triggers, [roc.number])
+        nhits, average_ph, ph_histo, ph_cal_histo = self.calibrate_parallel(n_triggers, [roc.number])
         roc.data = average_ph[roc.number]
         return roc.data
 
@@ -318,6 +318,15 @@ class Testboard(dtb.PyDTB):
             step = -1
         return self.pixel_threshold(n_triggers, col, row, start, step, n_triggers/2, roc.dac(dac).number, xtalk, cals)
 
+    def single_pixel_threshold(self, n_triggers, dac, reverse):
+        for roc in self.dut.rocs():
+            self.select_roc(roc)
+            dac_range = roc.dac(dac).range
+            for pixel in roc.active_pixels():
+                self.arm_pixel(pixel.col,pixel.row)
+                print 'Pixel %s %s Thr: %s'%(pixel.col,pixel.row,self.get_pixel_threshold(roc, pixel.col, pixel.row, n_triggers, dac, False, False, reverse))
+                self.disarm_pixel(pixel.col,pixel.row)
+
     def arm(self, pixel):
         if not pixel.mask:
             self.arm_pixel(pixel.col, pixel.row)
@@ -335,22 +344,27 @@ class Testboard(dtb.PyDTB):
         '''Runs a binary search on roc changing a dac until function = set_value. 
         Inverted controls if function rises with increasing dac.'''
         self.logger.info('%s Running binary search in dac %s until %s = %s, reverted = %s' %(roc, dac, set_value, function.__name__, inverted))
-        low = 1
+        #low = 1
+        low = 0
         high = roc.dac(dac).range -1
         #Binary search to find value
         while low<high:
             average_dac = (high+low)//2
             self.set_dac_roc(roc, dac, average_dac)
+            self.flush()
             value = function()
             self.logger.debug('%s = %s, value = %s'%(dac, average_dac, value))
             if value > set_value:
                 if inverted:
                     low = average_dac+1
+                    #low = average_dac
                 else:
-                    high = average_dac-1
+                    #high = average_dac-1
+                    high = average_dac
             elif value < set_value:
                 if inverted:
-                    high = average_dac-1
+                    #high = average_dac-1
+                    high = average_dac
                 else:
                     low = average_dac+1
             else:

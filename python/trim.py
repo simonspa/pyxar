@@ -63,7 +63,9 @@ class Trim(test.Test):
             for step in range(self.n_steps+1):
                 self._histos.append(plot.matrix_to_th2(self.vcal_dists[step][roc.number],'Vcal_Map_%s_ROC_%s' %(step, roc.number),'col','row'))
                 self._histos.append(plot.matrix_to_th2(self.trim_dists[step][roc.number],'Trim_Map_%s_ROC_%s' %(step, roc.number),'col','row'))
-                h_vcal = Plotter.create_th1(self.vcal_dists[step][roc.number],'%s_%s_ROC_%s' %('Vcal_Distribution', step, roc.number), self.dac, '# pixels', min_axis, max_axis) 
+                h_vcal = Plotter.create_th1(self.vcal_dists[step][roc.number],'%s_%s_ROC_%s' %('Vcal_Distribution', step, roc.number), self.dac, '# pixels', min_axis, max_axis)
+                #if step == self.n_steps:
+                #    self.logger.info('Mean and rms of final Vcal threshold distribution: %f +/- %f' %(h_vcal.GetMean(),h_vcal.GetRMS())
                 h_vcal.SetLineColor(color_dict[step])
                 vcal_stack.Add(h_vcal)
                 h_trim = Plotter.create_th1(self.trim_dists[step][roc.number],'%s_%s_ROC_%s' %('Trim_Distribution', step, roc.number), 'Trim bit', '# pixels', self._min_trim_bit, self._max_trim_bit) 
@@ -187,9 +189,17 @@ class Trim(test.Test):
             #Binary search in Vtrim until pixel_threshold = self.vcal, threshold falls for increasing Vtrim => inverted
             #trim chip 0
             trim_bits = self.dut.trim
-            trim_bits_0 = numpy.zeros_like(trim_bits)
-            self.tb.trim(trim_bits_0)
-            vtrim = self.tb.binary_search(roc, 'Vtrim', self.vcal, lambda: self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'Vcal', False, False, False),True)
+            trim_bits_15 = numpy.ones_like(trim_bits)*15
+            trim_bits_15[roc.number][col][row] = 0
+            self.tb.trim(trim_bits_15)
+            for i in range(255):
+                self.tb.set_dac_roc(roc,'Vtrim', i)
+                thr = self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'Vcal', False, False, False)
+                self.logger.debug('Vcal threshold: %f for Vtrim %i'%(thr,i))
+                if thr <= self.vcal:
+                    vtrim = i
+                    break
+            #vtrim = self.tb.binary_search(roc, 'Vtrim', self.vcal, lambda: self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'Vcal', False, False, False),True)
             self.tb.disarm_pixel(col,row)
             self.logger.info('Found Vtrim %s'%vtrim)
             self.vtrim.append(vtrim)

@@ -180,7 +180,7 @@ int8_t CTestboard::Daq_Enable2(int32_t block) {
         Daq_Select_Deser160(4);
     }
 	Daq_Open(block, 0);
-	Daq_Open(block, 1);
+    Daq_Open(block, 1);
 	Daq_Start(0);
 	Daq_Start(1);
 	return 1;
@@ -209,16 +209,17 @@ int8_t CTestboard::Daq_Read2(vector<uint16_t> &data, uint16_t daq_read_size_2, u
 int8_t CTestboard::Daq_Read_Decoded(vector<uint16_t> &nReadouts, vector<uint16_t> &PHsum, vector<uint32_t> &adress) {
     uint16_t daq_read_size = 5000;
 	int8_t ok = -1;
+	vector<uint16_t> data0;
+    data0.clear();
+	vector<uint16_t> data1;
+    data1.clear();
     uint32_t avail_size = 10000000;
-	vector<uint16_t> data;
-	Daq_Read2(data, daq_read_size, avail_size, 0);
-	//decode readouts
-	ok = Decode(data, nReadouts, PHsum, adress, 0, TBM_Present());
-    data.clear();
+	Daq_Read2(data0, daq_read_size, avail_size, 0);
     avail_size = 10000000;
-	Daq_Read2(data, daq_read_size, avail_size, 1);
+	Daq_Read2(data1, daq_read_size, avail_size, 1);
 	//decode readouts
-	ok = Decode(data, nReadouts, PHsum, adress, 1, TBM_Present());
+	ok = Decode(data0, nReadouts, PHsum, adress, 0, TBM_Present());
+	ok = Decode(data1, nReadouts, PHsum, adress, 1, TBM_Present());
     return ok;
 }
 
