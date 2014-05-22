@@ -349,6 +349,7 @@ cdef class PyDTB:
         s = self.dut.get_roc_shape()
         hits = []
         phs = []
+        decoding_errors = 0
         #a list of ph entries for each of the 16 ROCs 
         ph_histo = [[] for x in range(self.dut.n_rocs)]
         ph_cal_histo = [[] for x in range(self.dut.n_rocs)]
@@ -376,6 +377,9 @@ cdef class PyDTB:
             except:
                 self.logger.debug('address decoding problem - wrong address out of bounds')
                 self.logger.debug('invalid pixel address: roc %i, col %i, row %i' %(roc, col, row))
+                decoding_erros += 1
+
+        self.logger.debug('number of decoding erros %i' %decoding_erros)
         #allow division by 0
         old_err_state = numpy.seterr(divide='raise')
         ignored_states = numpy.seterr(**old_err_state)

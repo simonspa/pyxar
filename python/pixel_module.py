@@ -497,6 +497,11 @@ class DUT(object):
         if len(args) == 3:
             roc,col,row = args
             self.pixel(roc,col,row).active = bool(val)
+        elif len(args) == 1:
+            roc_n = args[0]
+            for pixel in self.roc(roc_n).pixels():
+                pixel.active = bool(val)
+            
 
     def activate_pixel(self, *args):
         self._activate_pixel(True, *args)

@@ -22,3 +22,4 @@ from masktest import MaskTest
 from currentscan import CurrentScan
 from dacscan import DacScan
 from hotpixelmasker import HotPixelMasker
+from hrefficiency import HREfficiency
