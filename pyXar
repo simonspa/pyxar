@@ -83,8 +83,6 @@ if __name__ == '__main__':
                   help="Folder with DUT/DTB settings.", metavar="DIR")
     parser.add_option("-n", "--nogui", dest="gui", default=True, action="store_false",
                   help="Run without gui.")
-    parser.add_option("-a", "--api", dest="api", default=False, action="store_true",
-                  help="Use api as underlying core.")
     parser.add_option("-t", "--trim", dest="trim_vcal", default='',
                   help="Load trimmed dacParameter file.")
     (options, args) = parser.parse_args()
