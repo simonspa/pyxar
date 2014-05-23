@@ -44,13 +44,13 @@ class Pretest(test.Test):
         if difference is larger than self.minimal_diff mA, ROC is programmable'''
         self.logger.info('Testing if ROCs are programmable')
         for roc in self.dut.rocs():
-            self.tb.set_dac_roc(roc,'Vana', roc.dac('Vana').range-1)
+            self.tb.set_dac_roc(roc,'Vana', roc.dac('Vana').range)
             self.tb.m_delay(200)
             ia_on = self.tb.get_ia()
             self.tb.set_dac_roc(roc,'Vana', 0)
             self.tb.m_delay(200)
             ia_off = self.tb.get_ia()
-            self.logger.debug('Vana = %s: ia = %.2f' %(roc.dac('Vana').range-1, ia_on))
+            self.logger.debug('Vana = %s: ia = %.2f' %(roc.dac('Vana').range, ia_on))
             self.logger.debug('Vana = 0: ia = %.2f' %ia_off)
             if (ia_on-ia_off) > self.minimal_diff:
                 self.logger.info('ROC %s is programmable' %roc.number)
