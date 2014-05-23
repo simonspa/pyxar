@@ -110,7 +110,7 @@ class DAC(object):
     
     @property
     def range(self):
-        return 2**self._bits
+        return 2**self._bits - 1
 
     @value.setter
     def value(self,value):
