@@ -7,6 +7,7 @@ import optparse
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from python import *
+from python import api
 from gui import PxarGui
 import inspect
 
@@ -37,12 +38,8 @@ class Pyxar(PyCmd):
             trimVcal = self.config.get('configParameters','trimParameters')
         self.dut = DUT(self.config,trimVcal)
         self.dut.activate_pixel(0,5,5)
-        if self.api:
-            from python import api
-            self.tb = api.api(self.config.get('Testboard','id'), "DEBUGHAL")
-            self.tb.startup(self.config, self.dut)
-        else:
-            self.tb = Testboard(self.config, self.dut)
+        self.tb = api.api(self.config.get('Testboard','id'), "DEBUGHAL")
+        self.tb.startup(self.config, self.dut)
         self.logger.info('Initialzed DTB.')
         self.tb.ia()
         self.tb.id()
