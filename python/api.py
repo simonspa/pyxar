@@ -213,7 +213,7 @@ class api(PyPxarCore.PyPxarCore):
             for pixel in roc.active_pixels():
                 self.logger.debug('PHScan pix(%s,%s), nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac, dac_range) )
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
-                datas = self.getPulseheightVsDAC(dac, 0, roc.dac(dac).range, 0x0, n_triggers)
+                datas = self.getPulseheightVsDAC(dac, 0, dac_range, 0x0, n_triggers)
                 self.testPixel(pixel.col, pixel.row, False, roc.number)
                 pixel.data = numpy.array(datas[roc.number][pixel.col][pixel.row])
 
@@ -224,7 +224,7 @@ class api(PyPxarCore.PyPxarCore):
             for pixel in roc.active_pixels():
                 self.logger.debug('DacScan pix(%s,%s), nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac, dac_range) )
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
-                datas = self.getEfficiencyVsDAC(dac, 0, roc.dac(dac).range, 0x0, n_triggers)
+                datas = self.getEfficiencyVsDAC(dac, 0, dac_range, 0x0, n_triggers)
                 self.testPixel(pixel.col, pixel.row, False, roc.number)
                 pixel.data = numpy.array(datas[roc.number][pixel.col][pixel.row])
 
