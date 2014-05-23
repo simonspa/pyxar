@@ -215,7 +215,17 @@ class api(PyPxarCore.PyPxarCore):
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
                 datas = self.getPulseheightVsDAC(dac, 0, roc.dac(dac).range, 0x0, n_triggers)
                 self.testPixel(pixel.col, pixel.row, False, roc.number)
-                self.set_dac_roc(roc,dac,roc.dac(dac).value)
+                pixel.data = numpy.array(datas[roc.number][pixel.col][pixel.row])
+
+    def get_dac_scan(self, n_triggers, dac):
+        self.testAllPixels(False)
+        for roc in self.dut.rocs():
+            dac_range = roc.dac(dac).range
+            for pixel in roc.active_pixels():
+                self.logger.debug('DacScan pix(%s,%s), nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac, dac_range) )
+                self.testPixel(pixel.col, pixel.row, True, roc.number)
+                datas = self.getEfficiencyVsDAC(dac, 0, roc.dac(dac).range, 0x0, n_triggers)
+                self.testPixel(pixel.col, pixel.row, False, roc.number)
                 pixel.data = numpy.array(datas[roc.number][pixel.col][pixel.row])
 
     def m_delay(self, value):
