@@ -89,7 +89,6 @@ if __name__ == '__main__':
     a_workdir = os.path.abspath(options.work_dir)
     pyxar = Pyxar(a_workdir)
     pyxar.logger.info('using working dir %s'%a_workdir)
-    pyxar.api = options.api
     if options.gui:
         pyxar.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
     #TODO remove
