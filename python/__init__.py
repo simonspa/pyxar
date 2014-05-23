@@ -1,4 +1,3 @@
-from testboard import Testboard
 from test import Test
 from hrtest import HRTest
 from dacdac import DacDac
