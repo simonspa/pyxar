@@ -287,6 +287,9 @@ class api(PyPxarCore.PyPxarCore):
         self.m_delay(100)
         return self.getTBid()*1000.
 
+    def daq_getbuffer(self):
+        return self.daqGetBuffer()
+
     def binary_search(self, roc, dac, set_value, function, inverted = False):
         '''Runs a binary search on roc changing a dac until function = set_value. 
         Inverted controls if function rises with increasing dac.'''
