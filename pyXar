@@ -28,7 +28,7 @@ class Pyxar(PyCmd):
         self.window = None
         self.api = False
     
-    def do_init(self, line, trimVcal = ''):
+    def do_init(self, line, verbosity, trimVcal = ''):
         configs = ['%s/module'%(self.directory), '%s/tb'%(self.directory), '%s/test.cfg'%(self.directory)]
         self.config = BetterConfigParser()
         self.config.read(configs)
@@ -38,7 +38,7 @@ class Pyxar(PyCmd):
             trimVcal = self.config.get('configParameters','trimParameters')
         self.dut = DUT(self.config,trimVcal)
         self.dut.activate_pixel(0,5,5)
-        self.tb = api.api(self.config.get('Testboard','id'), "DEBUGHAL")
+        self.tb = api.api(self.config.get('Testboard','id'), verbosity)
         self.tb.startup(self.config, self.dut)
         self.logger.info('Initialzed DTB.')
         self.tb.ia()
@@ -83,6 +83,8 @@ if __name__ == '__main__':
                   help="Folder with DUT/DTB settings.", metavar="DIR")
     parser.add_option("-n", "--nogui", dest="gui", default=True, action="store_false",
                   help="Run without gui.")
+    parser.add_option("-v", "--verbosity", dest="verbosity", default='INFO',
+                  help="Set verbosity for pxarCore API backend.")
     parser.add_option("-t", "--trim", dest="trim_vcal", default='',
                   help="Load trimmed dacParameter file.")
     (options, args) = parser.parse_args()
@@ -92,7 +94,7 @@ if __name__ == '__main__':
     if options.gui:
         pyxar.window = PxarGui( ROOT.gClient.GetRoot(), 800, 800 )
     #TODO remove
-    pyxar.do_init('',trimVcal = options.trim_vcal)
+    pyxar.do_init('', verbosity = options.verbosity, trimVcal = options.trim_vcal)
     try:
         __version__ = open('config/logo').read()
     except:
