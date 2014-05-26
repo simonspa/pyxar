@@ -185,10 +185,10 @@ class api(PyPxarCore.PyPxarCore):
         self.logger.warning("HR functionality not yet implemented in api version, exiting...")
         sys.exit(-1)
 
-    def get_calibrate(self, n_triggers):
+    def get_calibrate(self, n_triggers, flags = 0):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
         self.testAllPixels(True)
-        datas = self.getEfficiencyMap(0, n_triggers)
+        datas = self.getEfficiencyMap(flags, n_triggers)
         for roc in self.dut.rocs():
             roc.data = datas[roc.number]
         self.testAllPixels(False)
@@ -269,7 +269,7 @@ class api(PyPxarCore.PyPxarCore):
         
     def arm(self, pixel):
         pass
-    
+
     def disarm(self, pixel):
         pass
     
