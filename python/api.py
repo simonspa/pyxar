@@ -24,7 +24,7 @@ class api(PyPxarCore.PyPxarCore):
         self.config = config
         self.dut = dut
         self._set_max_vals(config)
-        self.set_delays(config)
+        self.load_delays(config)
         self.init_pg(config)
         if not self.initTestboard(pg_setup = self.pg_setup, 
                          power_settings = self.power_settings, 
@@ -36,15 +36,23 @@ class api(PyPxarCore.PyPxarCore):
         if eval(config.get('Testboard','hv_on')):
             self.HVon()
 
-    def set_delays(self, config):
+    def load_delays(self, config):
         self.sig_delays = {
         "clk":int(config.get('Testboard','clk')),
         "ctr":int(config.get('Testboard','ctr')),
         "sda":int(config.get('Testboard','sda')),
         "tin":int(config.get('Testboard','tin')),
-        "deser160phase":int(config.get('Testboard','deser160phase'))}
+        "deser160phase":int(config.get('Testboard','deser160phase')),
+        "triggerdelay":int(config.get('Testboard','triggerdelay'))}
         self.logger.info("Delay settings:\n %s" %self.sig_delays)
 
+    def set_delays(self, config):
+        self.load_delays(config)
+        self.setTestboardDelays(self.sig_delays)
+
+    def set_delay(self, delay, value):
+        self.sig_delays[delay] = value
+        self.setTestboardDelays(self.sig_delays)
 
     def _set_max_vals(self, config):
         max_ia = int(config.get('Testboard','max_ia'))
