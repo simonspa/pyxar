@@ -132,7 +132,6 @@ class api(PyPxarCore.PyPxarCore):
         roc.dac(reg).value = value
         self.logger.debug('Setting %s %s' %(roc, roc.dac(reg)))
         self.setDAC(roc.dac(reg).name, roc.dac(reg).value, roc.number)
-        self.m_delay(50)
 
     def init_roc(self, roc):
         self.logger.info('Initializing ROC: %s' %roc.number)
@@ -280,11 +279,9 @@ class api(PyPxarCore.PyPxarCore):
         self.logger.info('ID: %.2f mA' %self.get_id())
 
     def get_ia(self):
-        self.m_delay(100)
         return self.getTBia()*1000.
     
     def get_id(self):
-        self.m_delay(100)
         return self.getTBid()*1000.
 
     def daq_getbuffer(self):
