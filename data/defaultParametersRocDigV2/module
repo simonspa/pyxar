@@ -13,3 +13,4 @@ type = tbm08
 #Module: 16 rocs, 1 tbms
 rocs = 1
 tbms = 0
+hubid = 31
