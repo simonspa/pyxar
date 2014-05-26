@@ -97,7 +97,16 @@ class api(PyPxarCore.PyPxarCore):
             self.PG_TRG:trg_delay,    # PG_TRG
             self.PG_TOK:0}
         self.logger.info("Default PG setup:\n %s" %self.pg_setup)
+        self.set_pg(self.pg_setup)
 
+    def set_pg(self, pg_setup):
+        self.setPatternGenerator(pg_setup)
+
+    def pg_single(self):
+        self.daqStart()
+        self.daqTrigger(1)
+        self.daqStop()
+        
     def init_tbm(self, config):
         #TODO move to config
         self.tbm_dacs = [{
