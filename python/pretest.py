@@ -28,7 +28,7 @@ class Pretest(test.Test):
         self.rocs_programmable()
         self.adjust_vana()
         self.find_VthrComp_CalDel_alt()
-        self.adjust_PH_range()
+        #self.adjust_PH_range()
 
     def cleanup(self, config):
         plot = Plotter(self.config, self)
@@ -102,12 +102,14 @@ class Pretest(test.Test):
             high_delta = 0
             for val in range(0,roc.dac(self.dac1).range):
                 self.tb.set_dac_roc(roc,self.dac1,val)
+                self.tb.m_delay(10)
                 j += 1
                 for i in range(self.n_meas):
                     c_av+=self.tb.get_id()
                     self.tb.m_delay(10)
                 if j == self.n_average:
                     currents.append(c_av/(self.n_meas*self.n_average))
+                    self.logger.debug('idig: %f' %(c_av/(self.n_meas*self.n_average)))
                     c_av = 0.
                     j = 0
                     if len(currents) > 1:
@@ -118,8 +120,9 @@ class Pretest(test.Test):
                         else:
                             high_delta = 0
                         if high_delta == 3:
-                            val -= (6*self.n_average)
+                            val -= (8*self.n_average)
                             self.tb.set_dac_roc(roc,self.dac1,val)
+                            self.tb.m_delay(10)
                             break
             #calDel
             roc.pixel(5,5).active = True

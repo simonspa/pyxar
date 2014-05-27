@@ -247,6 +247,9 @@ class api(PyPxarCore.PyPxarCore):
     def m_delay(self, value):
         time.sleep(float(value/1000.))
 
+    def u_delay(self, value):
+        time.sleep(float(value/1000000.))
+
     def get_threshold(self, n_triggers, dac, xtalk, cals, reverse):
         flag = self.get_flag(xtalk, cals)
         self.testAllPixels(True)
@@ -297,7 +300,7 @@ class api(PyPxarCore.PyPxarCore):
         while low<high:
             average_dac = (high+low)//2
             self.set_dac_roc(roc, dac, average_dac)
-            self.m_delay(100)
+            self.m_delay(10)
             value = function()
             self.logger.debug('%s = %s, value = %s'%(dac, average_dac, value))
             if value > set_value:
