@@ -210,9 +210,8 @@ class api(PyPxarCore.PyPxarCore):
         self.testAllPixels(False)
         flags = 0x0
         for roc in self.dut.rocs():
-            #TODO TB function has too long vector by one unit
-            dac_range1 = roc.dac(dac1).range-1
-            dac_range2 = roc.dac(dac2).range-1
+            dac_range1 = roc.dac(dac1).range
+            dac_range2 = roc.dac(dac2).range
             for pixel in roc.active_pixels():
                 self.logger.debug('DacDac pix(%s,%s), nTrig: %s, dac1: %s, 0, %s, dac2: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac1, dac_range1, dac2, dac_range2) )
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
