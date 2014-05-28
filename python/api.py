@@ -168,7 +168,7 @@ class api(PyPxarCore.PyPxarCore):
             flag += 0x0002
         if xtalk:
             flag += 0x0004
-        if reverse:
+        if not reverse:
             flag += 0x0008
         return flag
     
