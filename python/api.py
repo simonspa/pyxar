@@ -3,6 +3,7 @@ import logging
 import numpy
 import sys
 import time
+from helpers import list_to_matrix
 
 class api(PyPxarCore.PyPxarCore):
     
@@ -217,9 +218,7 @@ class api(PyPxarCore.PyPxarCore):
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
                 datas = self.getEfficiencyVsDACDAC(roc.dac(dac1).name, 0, dac_range1, roc.dac(dac2).name, 0, dac_range2, flags, n_triggers)
                 self.testPixel(pixel.col, pixel.row, False, roc.number)
-                self.set_dac_roc(roc,dac1,roc.dac(dac1).value)
-                self.set_dac_roc(roc,dac2,roc.dac(dac2).value)
-                pixel.data = datas[roc.number][pixel.col][pixel.row]
+                pixel.data = numpy.transpose(list_to_matrix(dac_range1+1, dac_range2+1, datas))
 
     def get_ph_dac(self, n_triggers, dac):
         self.testAllPixels(False)
