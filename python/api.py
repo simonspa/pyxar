@@ -250,7 +250,7 @@ class api(PyPxarCore.PyPxarCore):
         time.sleep(float(value/1000000.))
 
     def get_threshold(self, n_triggers, dac, xtalk, cals, reverse):
-        flag = self.get_flag(xtalk, cals)
+        flag = self.get_flag(xtalk, cals, reverse)
         self.testAllPixels(True)
         datas = self.getThresholdMap(dac, flag, n_triggers)
         for roc in self.dut.rocs():
@@ -259,7 +259,7 @@ class api(PyPxarCore.PyPxarCore):
         return self.dut.data
 
     def get_pixel_threshold(self, roc, col, row, n_triggers, dac, xtalk, cals, reverse):
-        flag = self.get_flag(xtalk, cals)
+        flag = self.get_flag(xtalk, cals, reverse)
         self.testAllPixels(False)
         for roc in self.dut.rocs():
             for pixel in roc.active_pixels():
