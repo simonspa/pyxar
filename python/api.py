@@ -156,6 +156,10 @@ class api(PyPxarCore.PyPxarCore):
                     self.maskPixel(pixel.col, pixel.row, True, roc.number)
 
     def get_flag(self, xtalk, cals, reverse = False):
+        print "xtalk, cals and reverse in get_flag"
+        print xtalk
+        print cals
+        print reverse
         flag = 0x0000
         if cals:
             flag += 0x0002
@@ -163,6 +167,8 @@ class api(PyPxarCore.PyPxarCore):
             flag += 0x0004
         if not reverse:
             flag += 0x0008
+        print "flag in function get_flag"
+        print flag
         return flag
     
     def trim(self, trim_bits):
@@ -288,13 +294,21 @@ class api(PyPxarCore.PyPxarCore):
         return self.dut.data
 
     def get_pixel_threshold(self, roc, col, row, n_triggers, dac, xtalk, cals, reverse):
+        print "xtalk, cals and reverse in get_pixel_threshold"
+        print xtalk
+        print cals
+        print reverse
         flag = self.get_flag(xtalk, cals, reverse)
+        print "flag after get_flag"
+        print flag
         self.testAllPixels(False)
         for roc in self.dut.rocs():
             for pixel in roc.active_pixels():
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
                 datas = self.getThresholdMap(dac, flag, n_triggers)
                 self.testPixel(pixel.col, pixel.row, False, roc.number)
+                print datas[roc.number][col][row]
+                print flag
         return datas[roc.number][col][row]
         
     def arm_pixel(self, roc, col, row):
