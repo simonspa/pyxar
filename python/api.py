@@ -316,3 +316,25 @@ class api(PyPxarCore.PyPxarCore):
             else:
                 break
         return average_dac
+
+
+    # Some DAQ functions:
+    def pg_stop(self):
+        self.daqTriggerLoopHalt()
+
+    def pg_loop(self,period):
+        self.daqTriggerLoop(period)
+
+    def pg_setcmd(self,addr,signal,delay=0):
+        pg = [(signal,delay)]
+        self.set_pg(pg)
+
+    # Some dead functions:
+    def select_roc(self,roc):
+        pass
+
+    def enable_column(self,col):
+        pass
+
+    def init_deser(self):
+        pass
