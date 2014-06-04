@@ -82,21 +82,21 @@ class api(PyPxarCore.PyPxarCore):
         trg_delay = int(config.get('Testboard','pg_trg'))
         #Module
         if self.dut.n_tbms > 0:
-            self.pg_setup = {
-            self.PG_RESR: resr_delay,
-            self.PG_CAL: cal_delay + tct_wbc,
-            self.PG_TRG+self.PG_SYNC: 0,
-            self.PG_CAL: cal_delay + tct_wbc,
-            self.PG_TRG: trg_delay,
-            self.PG_CAL: cal_delay + tct_wbc,
-            self.PG_TRG: 0}
+            self.pg_setup = [
+                ("resetroc", resr_delay),
+                ("calibrate", cal_delay + tct_wbc),
+                ("trigger;sync", 0),
+                ("calibrate", cal_delay + tct_wbc),
+                ("trigger", trg_delay),
+                ("calibrate", cal_delay + tct_wbc),
+                ("trigger", 0)]
         #Single roc
         else:
-            self.pg_setup = {
-            self.PG_RESR:resr_delay,    # PG_RESR
-            self.PG_CAL:cal_delay + tct_wbc, # PG_CAL
-            self.PG_TRG:trg_delay,    # PG_TRG
-            self.PG_TOK:0}
+            self.pg_setup = [
+                ("resetroc",resr_delay),    # PG_RESR
+                ("calibrate",cal_delay + tct_wbc), # PG_CAL
+                ("trigger",trg_delay),    # PG_TRG
+                ("token",0)]
         self.logger.info("Default PG setup:\n %s" %self.pg_setup)
         self.set_pg(self.pg_setup)
 
