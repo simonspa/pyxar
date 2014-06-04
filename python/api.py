@@ -15,11 +15,6 @@ class api(PyPxarCore.PyPxarCore):
         self.tbm_dacs = []
         self.roc_pixels = list()
         self.roc_dacs = list()
-        self.PG_TOK = 0x0100
-        self.PG_TRG = 0x0200
-        self.PG_CAL = 0x0400
-        self.PG_RESR = 0x0800
-        self.PG_SYNC = 0x2000
 
     def startup(self, config, dut):
         self.config = config
