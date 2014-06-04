@@ -18,8 +18,9 @@ class HotPixelMasker(test.Test):
                 self.tb.enable_column(col)
         self.tb.pg_stop()
         self.tb.init_deser()
+        self.tb.arm_pixel(0,5,0)
         self.tb.daq_enable()
-        self.tb.pg_setcmd(0, self.tb.PG_RESR)
+        self.tb.set_pg([("resetroc",0)])
         self.tb.pg_single()
         if self.dut.n_tbms > 0:
             self.tb.init_pg(self.config)
@@ -28,8 +29,8 @@ class HotPixelMasker(test.Test):
             #self.tb.pg_setcmd(0, self.tb.PG_SYNC + self.tb.PG_TRG)
             #self.tb.pg_setcmd(1, self.tb.PG_TRG  + ttk)
         else:
-            self.tb.pg_setcmd(0, self.tb.PG_TRG  + ttk)
-            self.tb.pg_setcmd(1, self.tb.PG_TOK)
+            self.tb.set_pg([("calibrate",106),("trigger",ttk),
+                            ("token",0)])
 
     def __init__(self, tb, config, window):
         super(HotPixelMasker, self).__init__(tb, config)
