@@ -99,9 +99,7 @@ class api(PyPxarCore.PyPxarCore):
         self.setPatternGenerator(pg_setup)
 
     def pg_single(self):
-        self.daqStart()
         self.daqTrigger(1)
-        self.daqStop()
         
     def init_tbm(self, config):
         #TODO move to config
