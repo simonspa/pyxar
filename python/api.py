@@ -279,6 +279,14 @@ class api(PyPxarCore.PyPxarCore):
     def get_id(self):
         return self.getTBid()*1000.
 
+    def daq_enable(self):
+        self.logger.info('Starting a new DAQ session...')
+        return self.daqStart()
+
+    def daq_disable(self):
+        self.logger.info('Stopping current DAQ session...')
+        return self.daqStop()
+
     def daq_getbuffer(self):
         return self.daqGetBuffer()
 
