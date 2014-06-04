@@ -174,7 +174,8 @@ class api(PyPxarCore.PyPxarCore):
             for pixel in roc.pixels():
                 p = PyPxarCore.PixelConfig(pixel.col,pixel.row, max(0, pixel.trim))
                 trimming.append(p)
-            self.updateTrimBits(trimming, roc.number);
+            #trim_arr = numpy.array(trimming)
+            self.updateTrimBits(trimming, roc.number)
 
     def get_data(self):
         self.logger.warning("HR functionality not yet implemented in api version, exiting...")
@@ -262,8 +263,8 @@ class api(PyPxarCore.PyPxarCore):
                 self.testPixel(pixel.col, pixel.row, False, roc.number)
         return datas[roc.number][col][row]
         
-    def arm(self, pixel):
-        pass
+    def arm_pixel(self, roc, col, row):
+        self.testPixel(col, row, True, roc)
 
     def disarm(self, pixel):
         pass

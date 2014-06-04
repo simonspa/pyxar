@@ -183,8 +183,8 @@ class Trim(test.Test):
             col,row =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(dut_Vcal_map[roc.number],vcalMaxLimit)),numpy.shape(dut_Vcal_map[roc.number]))
             self.logger.info('Maximum Vcal of %s in Pixel %s, %s in %s'%(dut_Vcal_map[roc.number,col,row],col,row,roc))
             vtrim = 0
-            self.tb.select_roc(roc)
-            self.tb.arm_pixel(col,row)
+            #self.tb.select_roc(roc)
+            self.tb.arm_pixel(col, row, roc.number)
             found = False
             #Binary search in Vtrim until pixel_threshold = self.vcal, threshold falls for increasing Vtrim => inverted
             #trim chip 0
