@@ -300,8 +300,8 @@ class api(PyPxarCore.PyPxarCore):
     def arm_pixel(self, roc, col, row):
         self.testPixel(col, row, True, roc)
 
-    def disarm(self, pixel):
-        pass
+    def disarm_pixel(self, roc, col, row):
+        self.testPixel(col, row, False, roc)
     
     def ia(self):
         self.logger.info('IA: %.2f mA' %self.get_ia())
