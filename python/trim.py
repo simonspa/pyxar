@@ -200,7 +200,7 @@ class Trim(test.Test):
                     vtrim = i
                     break
             #vtrim = self.tb.binary_search(roc, 'Vtrim', self.vcal, lambda: self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'Vcal', False, False, False),True)
-            self.tb.disarm_pixel(col,row)
+            self.tb.disarm_pixel(col,row,roc.number)
             self.logger.info('Found Vtrim %s'%vtrim)
             self.vtrim.append(vtrim)
             self.logger.info('Determined Vtrim %s' %self.vtrim)

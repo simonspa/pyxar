@@ -170,9 +170,8 @@ class api(PyPxarCore.PyPxarCore):
         for roc in self.dut.rocs():
             trimming = list()
             for pixel in roc.pixels():
-                p = PyPxarCore.PixelConfig(pixel.col,pixel.row, max(0, pixel.trim))
+                p = [[pixel.col],[pixel.row],[max(0, pixel.trim)]]
                 trimming.append(p)
-            #trim_arr = numpy.array(trimming)
             self.updateTrimBits(trimming, roc.number)
 
     def get_data(self,Vcal_conversion=False):
@@ -301,8 +300,8 @@ class api(PyPxarCore.PyPxarCore):
     def arm_pixel(self, roc, col, row):
         self.testPixel(col, row, True, roc)
 
-    def disarm(self, pixel):
-        pass
+    def disarm_pixel(self, roc, col, row):
+        self.testPixel(col, row, False, roc)
     
     def ia(self):
         self.logger.info('IA: %.2f mA' %self.get_ia())
