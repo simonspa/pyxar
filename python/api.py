@@ -290,10 +290,10 @@ class api(PyPxarCore.PyPxarCore):
     def get_pixel_threshold(self, roc, col, row, n_triggers, dac, xtalk, cals, reverse):
         flag = self.get_flag(xtalk, cals, reverse)
         self.testAllPixels(False)
-        self.testPixel(col, row, True, roc)
+        self.testPixel(col, row, True, roc.number)
         datas = self.getThresholdMap(dac, flag, n_triggers)
-        self.testPixel(col, row, False, roc)
-        return datas[roc][col][row]
+        self.testPixel(col, row, False, roc.number)
+        return datas[roc.number][col][row]
        
         #for roc in self.dut.rocs():
         #    for pixel in roc.active_pixels():
