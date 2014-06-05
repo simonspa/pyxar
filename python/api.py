@@ -374,10 +374,13 @@ class api(PyPxarCore.PyPxarCore):
 
     # Some dead functions:
     def select_roc(self,roc):
+        self.logger.debug('This function is not needed when using pxarCore. Remove if you want.')
         pass
 
     def enable_column(self,col):
+        self.logger.debug('This function is not needed when using pxarCore. Remove if you want.')
         pass
 
     def init_deser(self):
+        self.logger.debug('This function is not needed when using pxarCore. Remove if you want.')
         pass
