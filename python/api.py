@@ -156,10 +156,6 @@ class api(PyPxarCore.PyPxarCore):
                     self.maskPixel(pixel.col, pixel.row, True, roc.number)
 
     def get_flag(self, xtalk, cals, reverse = False):
-        print "xtalk, cals and reverse in get_flag"
-        print xtalk
-        print cals
-        print reverse
         flag = 0x0000
         if cals:
             flag += 0x0002
@@ -167,8 +163,6 @@ class api(PyPxarCore.PyPxarCore):
             flag += 0x0004
         if not reverse:
             flag += 0x0008
-        print "flag in function get_flag"
-        print flag
         return flag
     
     def trim(self, trim_bits):
