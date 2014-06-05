@@ -199,6 +199,9 @@ class Pretest(test.Test):
             #measure Vcal map to determine minimal Vcal for which all pixels respond
             Vcal_min = numpy.amax(numpy.ma.masked_greater_equal(self.roc_Vcal_map[roc.number],256))
             self.logger.info('Minimal Vcal required for all pixels to respond is %s' %(Vcal_min))
+            #quick and dirty security feature to start with reasonable PH
+            #TODO: Check if VIref_ADC = 100 is sufficient
+            self.tb.set_dac_roc(roc, 'VIref_ADC', 100)
             #make sure that no pixel has PH outside dynamic range of the ADC
             self.logger.info('Limiting PH to dynamic range of ADC for %s' %(roc))
             #check upper edge of ADC range
