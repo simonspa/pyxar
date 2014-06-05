@@ -294,22 +294,21 @@ class api(PyPxarCore.PyPxarCore):
         return self.dut.data
 
     def get_pixel_threshold(self, roc, col, row, n_triggers, dac, xtalk, cals, reverse):
-        print "xtalk, cals and reverse in get_pixel_threshold"
-        print xtalk
-        print cals
-        print reverse
         flag = self.get_flag(xtalk, cals, reverse)
-        print "flag after get_flag"
-        print flag
         self.testAllPixels(False)
-        for roc in self.dut.rocs():
-            for pixel in roc.active_pixels():
-                self.testPixel(pixel.col, pixel.row, True, roc.number)
-                datas = self.getThresholdMap(dac, flag, n_triggers)
-                self.testPixel(pixel.col, pixel.row, False, roc.number)
-                print datas[roc.number][col][row]
-                print flag
-        return datas[roc.number][col][row]
+        self.testPixel(col, row, True, roc)
+        datas = self.getThresholdMap(dac, flag, n_triggers)
+        self.testPixel(col, row, False, roc)
+        return datas[roc][col][row]
+       
+        #for roc in self.dut.rocs():
+        #    for pixel in roc.active_pixels():
+        #        self.testPixel(pixel.col, pixel.row, True, roc.number)
+        #        datas = self.getThresholdMap(dac, flag, n_triggers)
+        #        self.testPixel(pixel.col, pixel.row, False, roc.number)
+        #        print datas[roc.number][col][row]
+        #        print flag
+        #return datas[roc.number][col][row]
         
     def arm_pixel(self, roc, col, row):
         self.testPixel(col, row, True, roc)

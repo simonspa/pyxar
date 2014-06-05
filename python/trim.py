@@ -194,7 +194,7 @@ class Trim(test.Test):
             self.tb.trim(trim_bits_15)
             for i in range(255):
                 self.tb.set_dac_roc(roc,'Vtrim', i)
-                thr = self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'Vcal', False, False, False)
+                thr = self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse)
                 self.logger.debug('Vcal threshold: %f for Vtrim %i'%(thr,i))
                 if thr <= self.vcal:
                     vtrim = i
