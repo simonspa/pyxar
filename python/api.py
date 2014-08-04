@@ -80,11 +80,7 @@ class api(PyPxarCore.PyPxarCore):
             self.pg_setup = [
                 ("resetroc", resr_delay),
                 ("calibrate", cal_delay + tct_wbc),
-                ("trigger;sync", 0),
-                ("calibrate", cal_delay + tct_wbc),
-                ("trigger", trg_delay),
-                ("calibrate", cal_delay + tct_wbc),
-                ("trigger", 0)]
+                ("trigger;sync", 0)]
         #Single roc
         else:
             self.pg_setup = [
@@ -104,14 +100,25 @@ class api(PyPxarCore.PyPxarCore):
     def init_tbm(self, config):
         #TODO move to config
         self.tbm_dacs = [{
+
+        #settings for tbm 08a
+        #"clear":0xF0,       # Init TBM, Reset ROC
+        #"counters":0x01,    # Disable PKAM Counter
+        #"mode":0xC0,        # Set Mode = Calibration
+        #"pkam_set":0x10,    # Set PKAM Counter
+        #"delays":0x00,      # Set Delays
+        #"temperature": 0x00 # Turn off Temperature Measurement
+
+        #settings for tbm 08b (suggestion by Martino Dell Osso)
         "clear":0xF0,       # Init TBM, Reset ROC
-        "counters":0x01,    # Disable PKAM Counter
+        "counters":0x81,    # Disable PKAM Counter
         "mode":0xC0,        # Set Mode = Calibration
         "pkam_set":0x10,    # Set PKAM Counter
         "delays":0x00,      # Set Delays
+        "basee":0x20,       # adjust phase of internal 160MHz clock 
         "temperature": 0x00 # Turn off Temperature Measurement
         }]
-    
+  
     def set_dacs(self, roc):
         self.logger.debug('Setting DACs of %s' %roc)
         for dac in roc.dacs():
