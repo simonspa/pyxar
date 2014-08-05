@@ -28,7 +28,7 @@ class Pretest(test.Test):
         self.rocs_programmable()
         self.adjust_vana()
         self.find_VthrComp_CalDel_alt()
-        self.adjust_PH_range()
+        #self.adjust_PH_range()
 
     def cleanup(self, config):
         plot = Plotter(self.config, self)
