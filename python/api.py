@@ -207,10 +207,10 @@ class api(PyPxarCore.PyPxarCore):
                 hits[px.roc_id][px.column][px.row] += 1
                 phs[px.roc_id][px.column][px.row] += px.getValue()
                 # Appends entry PH > 0 to list of ROC number roc
-                if px.getValue > 0:
+                if px.getValue() > 0:
                     ph_histo[px.roc_id].append(px.getValue())
                     if Vcal_conversion:
-                        ph_cal = self.dut.roc(px.roc_id).ADC_to_Vcal(px.column, px.row, px.getValue, self.dut.roc(px.roc_id).ph_slope, self.dut.roc(px.roc_id).ph_offset)
+                        ph_cal = self.dut.roc(px.roc_id).ADC_to_Vcal(px.column, px.row, px.getValue(), self.dut.roc(px.roc_id).ph_slope, self.dut.roc(px.roc_id).ph_offset)
                     else:
                         ph_cal = 0
                     ph_cal_histo[px.roc_id].append(ph_cal)
