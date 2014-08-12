@@ -280,14 +280,19 @@ class api(PyPxarCore.PyPxarCore):
 
     def get_dac_scan(self, n_triggers, dac):
         self.testAllPixels(False)
+        #activate pixels to be tested
         for roc in self.dut.rocs():
             dac_range = roc.dac(dac).range
             for ipx, pixel in enumerate(roc.active_pixels()):
-                self.logger.debug('DacScan pix(%s,%s), nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac, dac_range) )
+                self.logger.debug('DacScan pix(%s,%s) of %s, nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, roc, n_triggers, dac, dac_range) )
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
-                datas = self.getEfficiencyVsDAC(dac, 1, 0, dac_range, 0x0, n_triggers)
-                self.testPixel(pixel.col, pixel.row, False, roc.number)
-
+        #do test for all pixels
+        datas = self.getEfficiencyVsDAC(dac, 1, 0, dac_range, 0x0, n_triggers)
+        #deactivate all pixels
+        self.testAllPixels(False)
+        #extract efficiencies from returned data
+        for roc in self.dut.rocs():
+            for ipx, pixel in enumerate(roc.active_pixels()):
                 efficiency = []
                 for idac, dac in enumerate(datas):
                     found = False
@@ -298,6 +303,7 @@ class api(PyPxarCore.PyPxarCore):
                     if found == False:
                         efficiency.append(0)
                 pixel.data = numpy.array(efficiency)
+        pixel.data = numpy.array(efficiency)
 
     def m_delay(self, value):
         time.sleep(float(value/1000.))
