@@ -266,7 +266,17 @@ class api(PyPxarCore.PyPxarCore):
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
                 datas = self.getPulseheightVsDAC(dac, 1, 0, dac_range, 0x0, n_triggers)
                 self.testPixel(pixel.col, pixel.row, False, roc.number)
-                pixel.data = numpy.array(datas[roc.number][pixel.col][pixel.row])
+
+                pulseheight = []
+                for idac, dac in enumerate(datas):
+                    found = False
+                    for px in dac:
+                        if px.column == pixel.col and px.row == pixel.row and px.roc_id == roc.number:
+                            pulseheight.append(px.getValue())
+                            found = True
+                    if found == False:
+                        pulseheight.append(0)
+                pixel.data = numpy.array(pulseheight)
 
     def get_dac_scan(self, n_triggers, dac):
         self.testAllPixels(False)
