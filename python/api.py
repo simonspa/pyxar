@@ -259,24 +259,27 @@ class api(PyPxarCore.PyPxarCore):
 
     def get_ph_dac(self, n_triggers, dac):
         self.testAllPixels(False)
+        #activate pixels to be tested
         for roc in self.dut.rocs():
             dac_range = roc.dac(dac).range
             for pixel in roc.active_pixels():
-                self.logger.debug('PHScan pix(%s,%s), nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, n_triggers, dac, dac_range) )
+                self.logger.debug('PHScan pix(%s,%s) of, nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, roc, n_triggers, dac, dac_range) )
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
-                datas = self.getPulseheightVsDAC(dac, 1, 0, dac_range, 0x0, n_triggers)
-                self.testPixel(pixel.col, pixel.row, False, roc.number)
-
-                pulseheight = []
-                for idac, dac in enumerate(datas):
-                    found = False
-                    for px in dac:
-                        if px.column == pixel.col and px.row == pixel.row and px.roc_id == roc.number:
-                            pulseheight.append(px.getValue())
-                            found = True
-                    if found == False:
-                        pulseheight.append(0)
-                pixel.data = numpy.array(pulseheight)
+        #do test for all activated pixels 
+        datas = self.getPulseheightVsDAC(dac, 1, 0, dac_range, 0x0, n_triggers)
+        #deactivate all pixels
+        self.testAllPixels(False)
+        #extract pulse height from returned data 
+        pulseheight = []
+        for idac, dac in enumerate(datas):
+            found = False
+            for px in dac:
+                if px.column == pixel.col and px.row == pixel.row and px.roc_id == roc.number:
+                    pulseheight.append(px.getValue())
+                    found = True
+            if found == False:
+                pulseheight.append(0)
+        pixel.data = numpy.array(pulseheight)
 
     def get_dac_scan(self, n_triggers, dac):
         self.testAllPixels(False)
@@ -286,7 +289,7 @@ class api(PyPxarCore.PyPxarCore):
             for ipx, pixel in enumerate(roc.active_pixels()):
                 self.logger.debug('DacScan pix(%s,%s) of %s, nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, roc, n_triggers, dac, dac_range) )
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
-        #do test for all pixels
+        #do test for all activated pixels
         datas = self.getEfficiencyVsDAC(dac, 1, 0, dac_range, 0x0, n_triggers)
         #deactivate all pixels
         self.testAllPixels(False)
