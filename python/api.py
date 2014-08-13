@@ -270,16 +270,18 @@ class api(PyPxarCore.PyPxarCore):
         #deactivate all pixels
         self.testAllPixels(False)
         #extract pulse height from returned data 
-        pulseheight = []
-        for idac, dac in enumerate(datas):
-            found = False
-            for px in dac:
-                if px.column == pixel.col and px.row == pixel.row and px.roc_id == roc.number:
-                    pulseheight.append(px.getValue())
-                    found = True
-            if found == False:
-                pulseheight.append(0)
-        pixel.data = numpy.array(pulseheight)
+        for roc in self.dut.rocs():
+            for pixel in roc.active_pixels():  
+                pulseheight = []
+                for idac, dac in enumerate(datas):
+                    found = False
+                    for px in dac:
+                        if px.column == pixel.col and px.row == pixel.row and px.roc_id == roc.number:
+                            pulseheight.append(px.getValue())
+                            found = True
+                    if found == False:
+                        pulseheight.append(0)
+                pixel.data = numpy.array(pulseheight)
 
     def get_dac_scan(self, n_triggers, dac):
         self.testAllPixels(False)
@@ -306,7 +308,6 @@ class api(PyPxarCore.PyPxarCore):
                     if found == False:
                         efficiency.append(0)
                 pixel.data = numpy.array(efficiency)
-        pixel.data = numpy.array(efficiency)
 
     def m_delay(self, value):
         time.sleep(float(value/1000.))
