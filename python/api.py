@@ -263,7 +263,7 @@ class api(PyPxarCore.PyPxarCore):
         for roc in self.dut.rocs():
             dac_range = roc.dac(dac).range
             for pixel in roc.active_pixels():
-                self.logger.debug('PHScan pix(%s,%s) of, nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, roc, n_triggers, dac, dac_range) )
+                self.logger.debug('PHScan pix(%s,%s) of %s, nTrig: %s, dac: %s, 0, %s' %(pixel.col,pixel.row, roc, n_triggers, dac, dac_range) )
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
         #do test for all activated pixels 
         datas = self.getPulseheightVsDAC(dac, 1, 0, dac_range, 0x0, n_triggers)
