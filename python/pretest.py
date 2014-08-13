@@ -95,6 +95,7 @@ class Pretest(test.Test):
         self.n_average = 4
         self.tb.set_dac(self.dac1, 0) 
         thr = []
+        #Find VthrComp by scanning digital current
         for roc in self.dut.rocs():
             currents = []
             c_av = 0.
@@ -124,10 +125,16 @@ class Pretest(test.Test):
                             self.tb.set_dac_roc(roc,self.dac1,val)
                             self.tb.m_delay(10)
                             break
-            #calDel
+        self.tb.testAllPixels(False)
+
+        #determine calDel
+        #activate pixel 5 5 in every ROC
+        for roc in self.dut.rocs():
             roc.pixel(5,5).active = True
-            self.tb.get_dac_scan(10, self.dac2)
-            roc.pixel(5,5).active = False
+        #do CalDel dac scan on all 16 pixels
+        self.tb.get_dac_scan(10, self.dac2)
+        #find CalDel value in the middle of efficiecy window
+        for roc in self.dut.rocs():
             cal_array = roc.pixel(5,5).data
             sum = 0.
             n = 0
@@ -135,11 +142,14 @@ class Pretest(test.Test):
                 if cal > 5:
                     sum += idx
                     n += 1
-            cal = sum/n
-            self.logger.info('Found CalDel %s'%cal)
-            self.tb.set_dac_roc(roc,self.dac2,cal) 
-
-
+            if n > 0:
+                cal = sum/n
+                self.logger.info('Found CalDel %s'%cal)
+                self.tb.set_dac_roc(roc,self.dac2,cal) 
+            else:
+                self.logger.warning('No efficient CalDel window found for %s'%roc)
+        #deactivate all pixels
+        self.tb.testAllPixels(False)
 
     def find_VthrComp_CalDel(self):
         '''Perform a DacDac scan in VthrComp and CalDel to find a working point.
