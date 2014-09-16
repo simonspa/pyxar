@@ -110,13 +110,13 @@ class api(PyPxarCore.PyPxarCore):
         #"temperature": 0x00 # Turn off Temperature Measurement
 
         #settings for tbm 08b (suggestion by Martino Dell Osso)
-        "clear":0xF0,       # Init TBM, Reset ROC
-        "counters":0x81,    # Disable PKAM Counter
-        "mode":0xC0,        # Set Mode = Calibration
-        "pkam_set":0x10,    # Set PKAM Counter
-        "delays":0x00,      # Set Delays
-        "basee":0x20,       # adjust phase of internal 160MHz clock 
-        "temperature": 0x00 # Turn off Temperature Measurement
+        "clear": 0xF0,       # Init TBM, Reset ROC
+        "counters": 0x81,    # Disable PKAM Counter
+        "mode": 0xC0,        # Set Mode = Calibration
+        "pkam_set": 0x10,    # Set PKAM Counter
+        "delays": 0xE4,      # Set Delays
+        "basee": 0x20,       # adjust phase of internal 160MHz clock 
+        "temperature": 0x00  # Turn off Temperature Measurement
         }]
   
     def set_dacs(self, roc):
