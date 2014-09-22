@@ -9,13 +9,13 @@ class MaskTest(test.Test):
         self.n_triggers = int(config.get('MaskTest','n_triggers'))
 
     def run(self, config):
-        mask_list = [-1]*(self.dut.n_cols * self.dut.n_rows)
+        self.tb.maskAllPixels(True)
         for roc in self.dut.rocs():
             self.tb.select_roc(roc)
-            self.tb.trim_chip(mask_list)
             self.tb.m_delay(100)
         self.tb.get_calibrate(self.n_triggers)
         # restore
+        self.tb.maskAllPixels(False)
         self.tb.trim(self.dut.trim)
 
     def cleanup(self, config):
