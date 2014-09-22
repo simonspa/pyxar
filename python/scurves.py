@@ -22,8 +22,8 @@ class SCurves(test.Test):
             outfile.write("Mode 1\n")
             for pixel in roc.pixels():
                 rough_thr = self.dut_thr_map[roc.number][pixel.col][pixel.row]
-                min_range = max(self.min_thr_dac, rough_thr-self.scan_range/2)
-                max_range = min(self.max_thr_dac, rough_thr+self.scan_range/2)
+                min_range = int(max(self.min_thr_dac, rough_thr-self.scan_range/2))
+                max_range = int(min(self.max_thr_dac, rough_thr+self.scan_range/2))
                 format_list = []
                 for i in xrange(min_range, max_range):
                     format_list.append(self._scurve_data[i][roc.number][pixel.col][pixel.row])
@@ -37,8 +37,8 @@ class SCurves(test.Test):
         #Measure map to determine rough threshold
         #TODO check if 4 is enough
         self.dut_thr_map = self.tb.get_threshold(4, self.dac, self.xtalk, self.cals, self.reverse)
-        self.min_thr_dac = max(0, numpy.amin( numpy.ma.masked_less_equal(self.dut_thr_map,0) )-self.scan_range/2)
-        self.max_thr_dac = min(255, numpy.amax( numpy.ma.masked_greater_equal(self.dut_thr_map,255) )+self.scan_range/2)
+        self.min_thr_dac = int(max(0, numpy.amin( numpy.ma.masked_less_equal(self.dut_thr_map,0) )-self.scan_range/2))
+        self.max_thr_dac = int(min(255, numpy.amax( numpy.ma.masked_greater_equal(self.dut_thr_map,255) )+self.scan_range/2))
         #TODO remove and understand why threshold screws calibrate
         self.tb.init_dut(config)
         #Measure scan DAC around min and max threshold pm half the range
