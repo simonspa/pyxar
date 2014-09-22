@@ -10,7 +10,7 @@ class TrimBits(test.Test):
         self.vcal = int(config.get('TrimBits','Vcal'))
         self.cals = 0
         self.xtalk = 0
-        self.reverse = False
+        self.reverse = 0
         self.dac = 'VthrComp'
         self.n_triggers = int(config.get('TrimBits','n_triggers'))
         self.vtrim15 = int(config.get('TrimBits','Vtrim15'))
