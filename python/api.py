@@ -386,6 +386,12 @@ class api(PyPxarCore.PyPxarCore):
     def daq_getbuffer(self):
         return self.daqGetBuffer()
 
+    def set_external_clk(self, enable):
+        self.setExternalClock(enable)
+
+    def set_signal_mode(self, signal, mode):
+        self.setSignalMode(signal, mode)
+
     def binary_search(self, roc, dac, set_value, function, inverted = False):
         '''Runs a binary search on roc changing a dac until function = set_value. 
         Inverted controls if function rises with increasing dac.'''

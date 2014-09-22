@@ -43,6 +43,8 @@ class Pyxar(PyCmd):
         self.logger.info('Initialzed DTB.')
         self.tb.ia()
         self.tb.id()
+        #set probe a1 to clk
+        self.tb.SignalProbe("a1","clk")
 
     def do_gui(self, line):
         if self.window:
