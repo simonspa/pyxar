@@ -9,7 +9,7 @@ class BondMap(test.Test):
         self.xtalk = int(False)
         self.dac = 'VthrComp'
         self.n_triggers = int(config.get('BondMap','n_triggers'))
-        self.reverse = False
+        self.reverse = int(False)
 
     def run(self, config): 
         self.logger.info('Running BondMap')
