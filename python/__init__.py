@@ -25,3 +25,4 @@ from cal_readbackscan import CalReadbackScan
 from calibratereadback import CalibrateReadback
 from hotpixelmasker import HotPixelMasker
 from hrefficiency import HREfficiency
+from timewalk import Timewalk

@@ -21,6 +21,7 @@ class TrimBits(test.Test):
         self.vtrims = [self.vtrim15, self.vtrim14, self.vtrim13, self.vtrim11, self.vtrim7]
         self.trim_bit = [15,14,13,11,7]
         self.vthr_dists = []
+        self.threshold = 50
 
     def run(self, config): 
         self.logger.info('Running trim bit test')
@@ -31,7 +32,7 @@ class TrimBits(test.Test):
             numpy.clip(trim_bits, bit, bit, out=trim_bits)
             self.tb.trim(trim_bits)
             self.tb.set_dac('Vtrim', self.vtrims[step])
-            dut_thr_map = self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse) 
+            dut_thr_map = self.tb.get_threshold(self.n_triggers, self.dac, self.threshold, self.xtalk, self.cals, self.reverse) 
             self.vthr_dists.append(dut_thr_map)
 
     def cleanup(self, config):

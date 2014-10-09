@@ -20,6 +20,7 @@ class Trim(test.Test):
         self._max_trim_bit = 15
         self.vcal_dists = []
         self.trim_dists = []
+        self.threshold = 50
 
     def run(self, config): 
         '''Run the trimming algorithm.'''
@@ -39,7 +40,7 @@ class Trim(test.Test):
         self.tb.trim(trim_bits_7)
         self.trim_dists.append(trim_bits_7)
         #Measure initial DUT with trim bits 7
-        self.vcal_dists.append(self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse))
+        self.vcal_dists.append(self.tb.get_threshold(self.n_triggers, self.dac, self.threshold, self.xtalk, self.cals, self.reverse))
         #Run binary search
         for step in range(self.n_steps):
             self.trim_step(step)
@@ -120,7 +121,7 @@ class Trim(test.Test):
         #Trim DUT using new corrections
         self.tb.trim(new_trim)
         #Measure trimmed DUT
-        self.vcal_dists.append(self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse))
+        self.vcal_dists.append(self.tb.get_threshold(self.n_triggers, self.dac, self.threshold, self.xtalk, self.cals, self.reverse))
         self.logger.debug('Trim of ROC0 Pix(0,2) %s VcalThr %s' %(self.dut.pixel(0,0,2).trim, self.vcal_dists[step+1][0][0][2]))
         #If new distribution is closer to vcal, keep trim bit, else discard
         not_trim = (abs(self.vcal_dists[step+1] - self.vcal) > abs(self.vcal_dists[step] - self.vcal))
@@ -147,7 +148,7 @@ class Trim(test.Test):
             return
         #Set vcal to expected value
         self.tb.set_dac('Vcal', self.vcal)
-        self.dut_VthrComp_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, self.reverse)
+        self.dut_VthrComp_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.threshold, self.xtalk, self.cals, self.reverse)
         #TODO not used at the moment
         #self.dut_Noise_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, True)
         self.vthr = []
@@ -174,7 +175,7 @@ class Trim(test.Test):
             self.logger.info('Using min Vtrim %s from config' %self.vtrim)
             return
         #get Vcal Map
-        dut_Vcal_map = self.tb.get_threshold(self.n_triggers, self.dac, self.xtalk, self.cals, self.reverse)
+        dut_Vcal_map = self.tb.get_threshold(self.n_triggers, self.dac, self.threshold, self.xtalk, self.cals, self.reverse)
         self.vtrim = []
         for roc in self.dut.rocs():
             #determine limit 5 standard deviations away from mean or 254 

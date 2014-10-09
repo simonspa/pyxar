@@ -101,22 +101,22 @@ class api(PyPxarCore.PyPxarCore):
         #TODO move to config
         self.tbm_dacs = [{
 
-        #settings for tbm 08a
-        #"clear":0xF0,       # Init TBM, Reset ROC
-        #"counters":0x01,    # Disable PKAM Counter
-        #"mode":0xC0,        # Set Mode = Calibration
-        #"pkam_set":0x10,    # Set PKAM Counter
-        #"delays":0x00,      # Set Delays
-        #"temperature": 0x00 # Turn off Temperature Measurement
+        #settings for tbm 08
+        "clear":0xF0,       # Init TBM, Reset ROC
+        "counters":0x01,    # Disable PKAM Counter
+        "mode":0xC0,        # Set Mode = Calibration
+        "pkam_set":0x10,    # Set PKAM Counter
+        "delays":0x00,      # Set Delays
+        "temperature": 0x00 # Turn off Temperature Measurement
 
         #settings for tbm 08b (suggestion by Martino Dell Osso)
-        "clear": 0xF0,       # Init TBM, Reset ROC
-        "counters": 0x81,    # Disable PKAM Counter
-        "mode": 0xC0,        # Set Mode = Calibration
-        "pkam_set": 0x10,    # Set PKAM Counter
-        "delays": 0xE4,      # Set Delays
-        "basee": 0x20,       # adjust phase of internal 160MHz clock 
-        "temperature": 0x00  # Turn off Temperature Measurement
+        #"clear": 0xF0,       # Init TBM, Reset ROC
+        #"counters": 0x81,    # Disable PKAM Counter
+        #"mode": 0xC0,        # Set Mode = Calibration
+        #"pkam_set": 0x10,    # Set PKAM Counter
+        #"delays": 0xE4,      # Set Delays
+        #"basee": 0x20,       # adjust phase of internal 160MHz clock 
+        #"temperature": 0x00  # Turn off Temperature Measurement
         }]
   
     def set_dacs(self, roc):
@@ -204,16 +204,16 @@ class api(PyPxarCore.PyPxarCore):
             # Count the number of decoding errors:
             decoding_errors += evt.numDecoderErrors
             for ipx, px in enumerate(evt.pixels):
-                hits[px.roc_id][px.column][px.row] += 1
-                phs[px.roc_id][px.column][px.row] += px.getValue()
+                hits[px.roc][px.column][px.row] += 1
+                phs[px.roc][px.column][px.row] += px.value
                 # Appends entry PH > 0 to list of ROC number roc
-                if px.getValue() > 0:
-                    ph_histo[px.roc_id].append(px.getValue())
+                if px.value > 0:
+                    ph_histo[px.roc].append(px.value)
                     if Vcal_conversion:
-                        ph_cal = self.dut.roc(px.roc_id).ADC_to_Vcal(px.column, px.row, px.getValue(), self.dut.roc(px.roc_id).ph_slope, self.dut.roc(px.roc_id).ph_offset)
+                        ph_cal = self.dut.roc(px.roc).ADC_to_Vcal(px.column, px.row, px.value, self.dut.roc(px.roc).ph_slope, self.dut.roc(px.roc).ph_offset)
                     else:
                         ph_cal = 0
-                    ph_cal_histo[px.roc_id].append(ph_cal)
+                    ph_cal_histo[px.roc].append(ph_cal)
 
         self.logger.debug('number of decoding errors %i' %decoding_errors)
 
@@ -262,8 +262,8 @@ class api(PyPxarCore.PyPxarCore):
         for idac, dac in enumerate(datas):
             found = False
             for px in dac:
-                if px.column == pixel.col and px.row == pixel.row and px.roc_id == roc.number:
-                    efficiency.append(px.getValue())
+                if px.column == pixel.col and px.row == pixel.row and px.roc == roc.number:
+                    efficiency.append(px.value)
                     found = True
             if found == False:
                 efficiency.append(0)
@@ -288,8 +288,8 @@ class api(PyPxarCore.PyPxarCore):
                 for idac, dac in enumerate(datas):
                     found = False
                     for px in dac:
-                        if px.column == pixel.col and px.row == pixel.row and px.roc_id == roc.number:
-                            pulseheight.append(px.getValue())
+                        if px.column == pixel.col and px.row == pixel.row and px.roc == roc.number:
+                            pulseheight.append(px.value)
                             found = True
                     if found == False:
                         pulseheight.append(0)
@@ -314,8 +314,8 @@ class api(PyPxarCore.PyPxarCore):
                 for idac, dac in enumerate(datas):
                     found = False
                     for px in dac:
-                        if px.column == pixel.col and px.row == pixel.row and px.roc_id == roc.number:
-                            efficiency.append(px.getValue())
+                        if px.column == pixel.col and px.row == pixel.row and px.roc == roc.number:
+                            efficiency.append(px.value)
                             found = True
                     if found == False:
                         efficiency.append(0)
@@ -327,26 +327,35 @@ class api(PyPxarCore.PyPxarCore):
     def u_delay(self, value):
         time.sleep(float(value/1000000.))
 
-    def get_threshold(self, n_triggers, dac, xtalk, cals, reverse):
+    def get_threshold(self, n_triggers, dac, threshold, xtalk, cals, reverse):
         flag = self.get_flag(xtalk, cals, reverse)
         self.testAllPixels(True)
         # FIXME "roc" is not known here
         #dac_range = roc.dac(dac).range
         dac_range = 255
-        datas = self.getThresholdMap(dac, 1, 0, dac_range, 50, flag, n_triggers)
+        datas = self.getThresholdMap(dac, 1, 0, dac_range, threshold, flag, n_triggers)
         for roc in self.dut.rocs():
             roc.data = datas[roc.number]
         self.testAllPixels(False)
         return self.dut.data
 
-    def get_pixel_threshold(self, roc, col, row, n_triggers, dac, xtalk, cals, reverse):
+    def get_pixel_threshold(self, roc, col, row, n_triggers, dac, threshold, xtalk, cals, reverse):
         flag = self.get_flag(xtalk, cals, reverse)
         self.testAllPixels(False)
         self.testPixel(col, row, True, roc.number)
         dac_range = roc.dac(dac).range
-        datas = self.getThresholdMap(dac, 1, 0, dac_range, 50, flag, n_triggers)
+        datas = self.getThresholdMap(dac, 1, 0, dac_range, threshold, flag, n_triggers)
         self.testPixel(col, row, False, roc.number)
         return datas[roc.number][col][row]
+     
+    def get_single_pixel_threshold(self, roc, col, row, n_triggers, dac, threshold, xtalk, cals, reverse):
+        flag = self.get_flag(xtalk, cals, reverse)
+        self.testAllPixels(False)
+        self.testPixel(col, row, True, roc)
+        dac_range = 255
+        datas = self.getThresholdMap(dac, 1, 0, dac_range, threshold, flag, n_triggers)
+        self.testPixel(col, row, False, roc)
+        self.logger.info('threshold: %i' % datas[roc][col][row])
        
         #for roc in self.dut.rocs():
         #    for pixel in roc.active_pixels():

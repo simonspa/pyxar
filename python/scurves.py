@@ -15,6 +15,7 @@ class SCurves(test.Test):
         self.max_thr_dac = None
         self.dut_thr_map = None
         self.scan_range = 32
+        self.threshold = 50
 
     def dump_to_file(self):
         for roc in self.dut.rocs():
@@ -36,7 +37,7 @@ class SCurves(test.Test):
     def run(self, config):
         #Measure map to determine rough threshold
         #TODO check if 4 is enough
-        self.dut_thr_map = self.tb.get_threshold(4, self.dac, self.xtalk, self.cals, self.reverse)
+        self.dut_thr_map = self.tb.get_threshold(4, self.dac, self.threshold, self.xtalk, self.cals, self.reverse)
         self.min_thr_dac = int(max(0, numpy.amin( numpy.ma.masked_less_equal(self.dut_thr_map,0) )-self.scan_range/2))
         self.max_thr_dac = int(min(255, numpy.amax( numpy.ma.masked_greater_equal(self.dut_thr_map,255) )+self.scan_range/2))
         #TODO remove and understand why threshold screws calibrate

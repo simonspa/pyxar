@@ -20,7 +20,7 @@ class Pretest(test.Test):
         self.minimal_diff = 1.
         self.y_title = self.dac1
         self.x_title = self.dac2
-
+        self.threshold = 50
 
     
     def run(self, config):
@@ -203,7 +203,7 @@ class Pretest(test.Test):
         self.cals = 0
         self.reverse = False
 
-        self.roc_Vcal_map = self.tb.get_threshold(5, self.dac, self.xtalk, self.cals, self.reverse)
+        self.roc_Vcal_map = self.tb.get_threshold(5, self.dac, self.threshold, self.xtalk, self.cals, self.reverse)
         #loop over ROCs to adjust VIref_ADC and VoffsetRO for each ROC  
         for roc in self.dut.rocs():
             #measure Vcal map to determine minimal Vcal for which all pixels respond

@@ -10,8 +10,8 @@ class HRTest(test.Test):
         super(HRTest, self).__init__(tb, config)
         self.window = window
         self.start_data = 0
-        self.data_taking_time = 5
-        self.period = 1288
+        self.data_taking_time = int(config.get('HRMap','data_taking_time'))
+        self.period = int(config.get('HRMap','period'))
         self.average_ph = numpy.copy(self.dut.data)
         self.n_rocs = int(config.get('Module','rocs'))
         if self.window:
@@ -24,6 +24,8 @@ class HRTest(test.Test):
         self.prepare(config)
         self.start_data = time.time()
         self.length=0
+        self.sum_ia=0
+        self.sum_id=0
         self.logger.info('Start data taking')
         for measurement_time in range(1*self.data_taking_time):
             self.tb.pg_loop(self.period)
@@ -33,6 +35,35 @@ class HRTest(test.Test):
         #self.logger.info('Data taking finished')
         #self.logger.info('Reading and decoding data...')
         #self.logger.info('Data read and decoded')
+        
+        iana = self.tb.get_ia()
+        self.sum_ia += iana
+        self.logger.info('ia = %.2f' %(iana))
+        iana = self.tb.get_ia()
+        self.sum_ia += iana
+        self.logger.info('ia = %.2f' %(iana))
+        iana = self.tb.get_ia()
+        self.sum_ia += iana
+        self.logger.info('ia = %.2f' %(iana))
+        iana = self.tb.get_ia()
+        self.sum_ia += iana
+        self.logger.info('ia = %.2f' %(iana))
+        self.logger.info('ia_mean = %.2f' %(self.sum_ia/4))
+       
+        idig = self.tb.get_id()
+        self.sum_id += idig
+        self.logger.info('id = %.2f' %(idig))
+        idig = self.tb.get_id()
+        self.sum_id += idig
+        self.logger.info('id = %.2f' %(idig)) 
+        idig = self.tb.get_id()
+        self.sum_id += idig
+        self.logger.info('id = %.2f' %(idig))
+        idig = self.tb.get_id()
+        self.sum_id += idig
+        self.logger.info('id = %.2f' %(idig)) 
+        self.logger.info('id_mean = %.2f' %(self.sum_id/4))
+        
         self.tb.daq_disable()
         self.cleanup(config)
         self.dump()
@@ -75,11 +106,11 @@ class HRTest(test.Test):
 
         self._histos.extend(plot.histos)
         #calculating results
-        for roc in self.dut.rocs():
-            ia = self.tb.get_ia()
-            self.logger.info('%s: ia = %.2f' %(roc, ia))
-            id = self.tb.get_id()
-            self.logger.info('%s: id = %.2f' %(roc, id))
+        #for roc in self.dut.rocs():
+        #    iana = self.tb.get_ia()
+        #    self.logger.info('%s: ia = %.2f' %(roc, iana))
+        #    idig = self.tb.get_id()
+        #    self.logger.info('%s: id = %.2f' %(roc, idig))
         self._n_rocs = int(config.get('Module','rocs'))
         sensor_area = self._n_rocs * 52 * 80 * 0.01 * 0.015 #in cm^2
         self.logger.debug('number of rocs %s' %self._n_rocs)
