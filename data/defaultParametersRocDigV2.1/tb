@@ -3,8 +3,8 @@
 id = DTB_WRMU7H
 max_ia = 1199
 max_id = 1000
-max_va = 1699
-max_vd = 2500
+max_va = 1600
+max_vd = 2200
 hv_on = True
 pg_cal = 101
 pg_trg = 16
