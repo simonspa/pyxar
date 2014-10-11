@@ -356,6 +356,27 @@ class api(PyPxarCore.PyPxarCore):
         datas = self.getThresholdMap(dac, 1, 0, dac_range, threshold, flag, n_triggers)
         self.testPixel(col, row, False, roc)
         self.logger.info('threshold: %i' % datas[roc][col][row])
+
+    def get_single_pixel_threshold_vs_dac(self, roc, col, row, n_triggers, dac, dac2, dac2min, dac2max, threshold, xtalk, cals, reverse):
+        flag = self.get_flag(xtalk, cals, reverse)
+        self.testAllPixels(False)
+        self.testPixel(col, row, True, roc)
+        dac_range = 255
+        datas = self.getThresholdVsDAC(dac, 1, 0, dac_range, dac2, 1, dac2min, dac2max, threshold, flag, n_triggers)
+        self.testPixel(col, row, False, roc)
+        #extract thresholds from returned data
+        for roc in self.dut.rocs():
+            for ipx, pixel in enumerate(roc.active_pixels()):
+                threshold = []
+                for idac, dac in enumerate(datas):
+                    found = False
+                    for px in dac:
+                        if px.column == pixel.col and px.row == pixel.row and px.roc == roc.number:
+                            threshold.append(px.value)
+                            found = True
+                    if found == False:
+                        threshold.append(0)
+                pixel.data = numpy.array(threshold)
        
         #for roc in self.dut.rocs():
         #    for pixel in roc.active_pixels():
