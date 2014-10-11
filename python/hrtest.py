@@ -32,6 +32,7 @@ class HRTest(test.Test):
             self.tb.m_delay(1000)
             self.tb.pg_stop()
             self.take_data(config)
+            print 'remaining measurement time %i seconds' %(self.data_taking_time - measurement_time)
         #self.logger.info('Data taking finished')
         #self.logger.info('Reading and decoding data...')
         #self.logger.info('Data read and decoded')

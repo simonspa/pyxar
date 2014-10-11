@@ -33,8 +33,8 @@ class Timewalk(test.Test):
         for roc in self.dut.rocs():
             self.logger.info('Measuring %s' %roc)
             count = 0
-            for col in range(5):
-                for row in range(5):
+            for col in range(52):
+                for row in range(40):
                     #Enabling pixel under test
                     roc.pixel(col,row).active = True
                     #set Vcal 255 high range to measure efficiency window width
