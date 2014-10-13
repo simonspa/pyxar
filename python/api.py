@@ -227,7 +227,9 @@ class api(PyPxarCore.PyPxarCore):
         self.testAllPixels(True)
         datas = self.getEfficiencyMap(flags, n_triggers)
         for roc in self.dut.rocs():
-            roc.data = datas[roc.number]
+            roc.data = numpy.zeros((52,80))
+        for px in datas:
+            self.dut.roc(px.roc).data[px.column][px.row] = px.value
         self.testAllPixels(False)
 
     def get_ph(self, n_triggers):
@@ -235,13 +237,18 @@ class api(PyPxarCore.PyPxarCore):
         self.testAllPixels(True)
         datas = self.getPulseheightMap(0x0, n_triggers)
         for roc in self.dut.rocs():
-            roc.data = datas[roc.number]
+            roc.data = numpy.zeros((52,80))
+        for px in datas:
+            self.dut.roc(px.roc).data[px.column][px.row] = px.value
         self.testAllPixels(False)
 
     def get_ph_roc(self, n_triggers, roc):
         self.testAllPixels(True, roc.number)
         datas = self.getPulseheightMap(0x0, n_triggers)
         self.testAllPixels(False)
+        self.dut.roc(roc).data = numpy.zeros((52,80))
+        for px in datas:
+            self.dut.roc(roc).data[px.column][px.row] = px.value
         roc.data = datas[roc.number]
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
@@ -335,7 +342,9 @@ class api(PyPxarCore.PyPxarCore):
         dac_range = 255
         datas = self.getThresholdMap(dac, 1, 0, dac_range, threshold, flag, n_triggers)
         for roc in self.dut.rocs():
-            roc.data = datas[roc.number]
+            roc.data = numpy.zeros((52,80))
+        for px in datas:
+            self.dut.roc(px.roc).data[px.column][px.row] = px.value
         self.testAllPixels(False)
         return self.dut.data
 
@@ -346,7 +355,9 @@ class api(PyPxarCore.PyPxarCore):
         dac_range = roc.dac(dac).range
         datas = self.getThresholdMap(dac, 1, 0, dac_range, threshold, flag, n_triggers)
         self.testPixel(col, row, False, roc.number)
-        return datas[roc.number][col][row]
+        for px in datas:
+            if (px.roc == roc.number and px.column == col and px.row == row):
+                return px.value
      
     def get_single_pixel_threshold(self, roc, col, row, n_triggers, dac, threshold, xtalk, cals, reverse):
         flag = self.get_flag(xtalk, cals, reverse)
@@ -355,7 +366,30 @@ class api(PyPxarCore.PyPxarCore):
         dac_range = 255
         datas = self.getThresholdMap(dac, 1, 0, dac_range, threshold, flag, n_triggers)
         self.testPixel(col, row, False, roc)
-        self.logger.info('threshold: %i' % datas[roc][col][row])
+        for px in datas:
+            if (px.roc == roc and px.column == col and px.row == row):
+                self.logger.info('threshold: %i' % px.value)
+
+    def get_single_pixel_threshold_vs_dac(self, roc, col, row, n_triggers, dac, dac2, dac2min, dac2max, threshold, xtalk, cals, reverse):
+        flag = self.get_flag(xtalk, cals, reverse)
+        self.testAllPixels(False)
+        self.testPixel(col, row, True, roc)
+        dac_range = 255
+        datas = self.getThresholdVsDAC(dac, 1, 0, dac_range, dac2, 1, dac2min, dac2max, threshold, flag, n_triggers)
+        self.testPixel(col, row, False, roc)
+        #extract thresholds from returned data
+        for roc in self.dut.rocs():
+            for ipx, pixel in enumerate(roc.active_pixels()):
+                threshold = []
+                for idac, dac in enumerate(datas):
+                    found = False
+                    for px in dac:
+                        if px.column == pixel.col and px.row == pixel.row and px.roc == roc.number:
+                            threshold.append(px.value)
+                            found = True
+                    if found == False:
+                        threshold.append(0)
+                pixel.data = numpy.array(threshold)
        
         #for roc in self.dut.rocs():
         #    for pixel in roc.active_pixels():
