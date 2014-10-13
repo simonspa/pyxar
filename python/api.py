@@ -202,7 +202,7 @@ class api(PyPxarCore.PyPxarCore):
         # Loop over all the PxEvents we got from readout:
         for ievt, evt in enumerate(pixelevents):
             # Count the number of decoding errors:
-            decoding_errors += evt.numDecoderErrors
+            #decoding_errors += evt.numDecoderErrors
             for ipx, px in enumerate(evt.pixels):
                 hits[px.roc][px.column][px.row] += 1
                 phs[px.roc][px.column][px.row] += px.value
@@ -215,7 +215,7 @@ class api(PyPxarCore.PyPxarCore):
                         ph_cal = 0
                     ph_cal_histo[px.roc].append(ph_cal)
 
-        self.logger.debug('number of decoding errors %i' %decoding_errors)
+        #self.logger.debug('number of decoding errors %i' %decoding_errors)
 
         # Clear and return:
         dummy = list() #FIXME: needed? _n_hits _ph _addr
