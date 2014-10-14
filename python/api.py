@@ -94,8 +94,8 @@ class api(PyPxarCore.PyPxarCore):
     def set_pg(self, pg_setup):
         self.setPatternGenerator(pg_setup)
 
-    def pg_single(self):
-        self.daqTrigger(1)
+    def pg_single(self, nTrig, period):
+        self.daqTrigger(nTrig, period)
         
     def init_tbm(self, config):
         #TODO move to config
@@ -220,7 +220,7 @@ class api(PyPxarCore.PyPxarCore):
         # Clear and return:
         dummy = list() #FIXME: needed? _n_hits _ph _addr
         phs = numpy.nan_to_num(numpy.divide(phs, hits))
-        return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo, dummy, dummy, dummy
+        return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo, dummy, dummy, dummy, dummy
 
     def get_calibrate(self, n_triggers, flags = 0):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
