@@ -14,13 +14,13 @@ class HREfficiency(test.Test):
         self.cal_delay = int(config.get('Testboard','pg_cal'))
         self.tct_wbc = int(config.get('Testboard','tct_wbc'))
         self.resr_delay = int(config.get('Testboard','pg_resr'))
-        self.trg_delay = int(config.get('HREfficiency','ttk'))
+        self.trg_delay = int(config.get('Testboard','pg_trg'))
         #unmask all pixels
         self.tb.maskAllPixels(False)
         #send reset
-        self.pg_setup = [
+        self.tb.pg_setup = [
             ("resetroc",0)]    # pg_resr
-        self.tb.set_pg(self.pg_setup)
+        self.tb.set_pg(self.tb.pg_setup)
         self.tb.pg_single(1,2)
         
         # Prepare for data taking w/ possibly noisy pixels:
@@ -41,7 +41,6 @@ class HREfficiency(test.Test):
         #reset data containers
         self.dut.data = numpy.zeros_like(self.dut.data)
         #loop over all pixels and send 'n_triggers' calibrates
-        #self.tb.get_calibrate(self.n_triggers,0x0100)
         self.tb.pg_stop()
         self.tb.init_deser()
         self.tb.daq_enable() 
@@ -54,18 +53,20 @@ class HREfficiency(test.Test):
                     self.tb.testPixel(col, row, True, roc.number)
                 self.tb.u_delay(100)
                 #send reset
-                self.pg_setup = [
+                self.tb.pg_setup = [
                     ("resetroc",0)]    # pg_resr
-                self.tb.set_pg(self.pg_setup)
+                self.tb.set_pg(self.tb.pg_setup)
                 self.tb.pg_single(1,2)
                 self.tb.pg_stop()
                 self.tb.u_delay(10)
                 #send n_triggers calibrates
-                self.pg_setup = [
-                    ("calibrate",self.cal_delay + self.tct_wbc), # PG_CAL
-                    ("trigger",self.trg_delay),    # PG_TRG
+                self.tb.pg_setup = [
+                    #("calibrate",self.cal_delay + self.tct_wbc), # PG_CAL
+                    ("calibrate",106), # PG_CAL
+                    #("trigger",self.trg_delay),    # PG_TRG
+                    ("trigger",16),    # PG_TRG
                     ("token",0)]
-                self.tb.set_pg(self.pg_setup)
+                self.tb.set_pg(self.tb.pg_setup)
                 for trig in range(self.n_triggers):
                     self.tb.pg_single(1,142)
                     self.tb.u_delay(10)
@@ -74,16 +75,35 @@ class HREfficiency(test.Test):
                 for roc in self.dut.rocs():
                     self.tb.testPixel(col, row, False, roc.number)
         #send a final reset
-        self.pg_setup = [
+        self.tb.pg_setup = [
             ("resetroc",0)] 
-        self.tb.set_pg(self.pg_setup)
+        self.tb.set_pg(self.tb.pg_setup)
         self.tb.pg_single(1,2)
-        self.tb.daq_disable() 
 
 
 
         self.logger.info('--------------------------')
         self.logger.info('Finished triggering')
+        #get decoded data from testboard
+        readout = self.tb.daqGetEvent()
+        print readout
+        n_hits, average_ph, ph_histogram, ph_cal_histogram, hit_events, nhits_vector, ph_vector, addr_vector = self.tb.get_data(Vcal_conversion=True)
+        #self.dut.data = n_hits
+        print n_hits
+        print average_ph
+        print ph_histogram
+        print ph_cal_histogram
+        print hit_events
+        print nhits_vector
+        print ph_vector
+        print addr_vector
+        #for roc in range(self.n_rocs):
+        #    self.dut.ph_array[roc].extend(ph_histogram[roc])
+        #    self.dut.ph_cal_array[roc].extend(ph_cal_histogram[roc])
+        #    self.dut.hit_event_array[roc].extend(hit_events[roc])
+        self.update_histo
+        
+        self.tb.daq_disable() 
         self.cleanup(config)
         self.dump()
         self.restore()
@@ -91,16 +111,6 @@ class HREfficiency(test.Test):
         delta_t = stop_time - start_time
         self.logger.info('Test finished after %.1f seconds' %delta_t)
 
-        #get decoded data from testboard
-        #readout = self.tb.daqGetEventBuffer()
-        n_hits, average_ph, ph_histogram, ph_cal_histogram, hit_events, nhits_vector, ph_vector, addr_vector = self.tb.get_data(Vcal_conversion=False)
-        self.dut.data = n_hits
-        print self.dut.data
-        #for roc in range(self.n_rocs):
-        #    self.dut.ph_array[roc].extend(ph_histogram[roc])
-        #    self.dut.ph_cal_array[roc].extend(ph_cal_histogram[roc])
-        #    self.dut.hit_event_array[roc].extend(hit_events[roc])
-        #self.update_histo
 
 
 
