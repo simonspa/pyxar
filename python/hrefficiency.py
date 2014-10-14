@@ -16,7 +16,7 @@ class HREfficiency(test.Test):
         self.resr_delay = int(config.get('Testboard','pg_resr'))
         self.trg_delay = int(config.get('Testboard','pg_trg'))
         #unmask all pixels
-        #self.tb.maskAllPixels(False)
+        self.tb.maskAllPixels(False)
         self.tb.init_deser()
         self.tb.daq_enable()        
          #send reset
@@ -40,7 +40,6 @@ class HREfficiency(test.Test):
         self.start_data = time.time()
         #reset data containers
         #self.dut.data = numpy.zeros_like(self.dut.data)
-        self.tb.pg_stop()
 
         #loop over all pixels and send 'n_triggers' calibrates
         # Clear the DAQ buffer:
@@ -50,17 +49,17 @@ class HREfficiency(test.Test):
             #for row in range(self.dut.roc(0)._n_rows):
             for row in range(4):
                 #arm pixel to be tested on all ROCs of DUT
-                #for roc in self.dut.rocs():
-                #    #self.tb.testPixel(col, row, True, roc.number)
-                #    self.tb.arm_pixel(roc.number, col, row)
-                #self.tb.u_delay(100)
+                for roc in self.dut.rocs():
+                    #self.tb.testPixel(col, row, True, roc.number)
+                    self.tb.arm_pixel(roc.number, col, row)
+                self.tb.u_delay(100)
                 #send reset
-                self.tb.pg_setup = [
-                    ("resetroc",0)]    # pg_resr
-                self.tb.set_pg(self.tb.pg_setup)
-                self.tb.pg_single(1,2)
-                self.tb.pg_stop()
-                self.tb.u_delay(10)
+                #self.tb.pg_setup = [
+                #    ("resetroc",0)]    # pg_resr
+                #self.tb.set_pg(self.tb.pg_setup)
+                #self.tb.pg_single(1,2)
+                #self.tb.pg_stop()
+                #self.tb.u_delay(10)
                 #send n_triggers calibrates
                 self.tb.pg_setup = [
                     #("calibrate",self.cal_delay + self.tct_wbc), # PG_CAL
@@ -70,19 +69,15 @@ class HREfficiency(test.Test):
                     ("token",0)]
                 self.tb.set_pg(self.tb.pg_setup)
                 
-                self.tb.arm_pixel(0,5,5)
-                self.tb.pg_loop(1288)
-                self.tb.m_delay(1000)
+                for trig in range(self.n_triggers):
+                    self.tb.pg_single(1,142)
+                    print self.tb.daqGetEvent()
+                    self.tb.u_delay(10)
                 self.tb.pg_stop()
-
-                #for trig in range(self.n_triggers):
-                #    self.tb.pg_single(1,142)
-                #    #self.tb.u_delay(10)
-                #self.tb.pg_stop()
                 #disarm pixel
-                #for roc in self.dut.rocs():
+                for roc in self.dut.rocs():
                     #self.tb.testPixel(col, row, False, roc.number)
-                #    self.tb.disarm_pixel(roc.number, col ,row)
+                    self.tb.disarm_pixel(roc.number, col ,row)
         #send a final reset
         #self.tb.pg_setup = [
         #    ("resetroc",0)] 
