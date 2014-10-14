@@ -181,61 +181,16 @@ class api(PyPxarCore.PyPxarCore):
                 trimming.append(p)
             self.updateTrimBits(trimming, roc.number)
 
-#    def get_data(self,Vcal_conversion=False):
-#        # Initialize variables
-#        s = self.dut.get_roc_shape()
-#        hits = []
-#        phs = []
-#        # Count decoder errors:
-#        decoding_errors = 0;
-#        #a list of ph entries for each of the 16 ROCs
-#        ph_histo = [[] for x in range(self.dut.n_rocs)]
-#        ph_cal_histo = [[] for x in range(self.dut.n_rocs)]
-#
-#        # Blow up the lists to hold the data
-#        for i in range(self.dut.n_rocs):
-#            hits.append(numpy.zeros(s))
-#            phs.append(numpy.zeros(s))
-#
-#        # Read out the data:
-#        pixelevents = self.daqGetEventBuffer()
-#        # Loop over all the PxEvents we got from readout:
-#        for ievt, evt in enumerate(pixelevents):
-#            # Count the number of decoding errors:
-#            #decoding_errors += evt.numDecoderErrors
-#            for ipx, px in enumerate(evt.pixels):
-#                hits[px.roc][px.column][px.row] += 1
-#                phs[px.roc][px.column][px.row] += px.value
-#                # Appends entry PH > 0 to list of ROC number roc
-#                if px.value > 0:
-#                    ph_histo[px.roc].append(px.value)
-#                    if Vcal_conversion:
-#                        ph_cal = self.dut.roc(px.roc).ADC_to_Vcal(px.column, px.row, px.value, self.dut.roc(px.roc).ph_slope, self.dut.roc(px.roc).ph_offset)
-#                    else:
-#                        ph_cal = 0
-#                    ph_cal_histo[px.roc].append(ph_cal)
-#
-#        #self.logger.debug('number of decoding errors %i' %decoding_errors)
-#
-#        # Clear and return:
-#        dummy = list() #FIXME: needed? _n_hits _ph _addr
-#        phs = numpy.nan_to_num(numpy.divide(phs, hits))
-#        return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo, dummy, dummy, dummy, dummy
-#
-
     def get_data(self,Vcal_conversion=False):
         # Initialize variables
         s = self.dut.get_roc_shape()
         hits = []
         phs = []
         # Count decoder errors:
-        decoding_errors = 0
-        # count events
-        ev_count = 0
+        decoding_errors = 0;
         #a list of ph entries for each of the 16 ROCs
         ph_histo = [[] for x in range(self.dut.n_rocs)]
         ph_cal_histo = [[] for x in range(self.dut.n_rocs)]
-        hit_events = [[] for x in range(self.dut.n_rocs)]
 
         # Blow up the lists to hold the data
         for i in range(self.dut.n_rocs):
@@ -248,8 +203,6 @@ class api(PyPxarCore.PyPxarCore):
         for ievt, evt in enumerate(pixelevents):
             # Count the number of decoding errors:
             #decoding_errors += evt.numDecoderErrors
-            # increment event counter:
-            ev_count += 1
             for ipx, px in enumerate(evt.pixels):
                 hits[px.roc][px.column][px.row] += 1
                 phs[px.roc][px.column][px.row] += px.value
@@ -262,14 +215,12 @@ class api(PyPxarCore.PyPxarCore):
                         ph_cal = 0
                     ph_cal_histo[px.roc].append(ph_cal)
 
-        self.logger.debug('number of events %i' %ev_count)
         #self.logger.debug('number of decoding errors %i' %decoding_errors)
 
         # Clear and return:
         dummy = list() #FIXME: needed? _n_hits _ph _addr
         phs = numpy.nan_to_num(numpy.divide(phs, hits))
-        return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo, hit_events, dummy, dummy, dummy
-
+        return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo, dummy, dummy, dummy, dummy
 
     def get_calibrate(self, n_triggers, flags = 0):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )

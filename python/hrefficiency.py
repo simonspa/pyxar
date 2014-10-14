@@ -14,7 +14,10 @@ class HREfficiency(test.Test):
         self.cal_delay = int(config.get('Testboard','pg_cal'))
         self.tct_wbc = int(config.get('Testboard','tct_wbc'))
         self.ttk = int(config.get('HREfficiency','ttk'))
-
+        #containers for vcal and xray hits
+        self.shape = (self.n_rocs, 52, 80)
+        self.vcals = numpy.zeros(self.shape)
+        self.xrays = numpy.zeros(self.shape)
         #unmask all pixels
         self.tb.maskAllPixels(False)
         self.tb.init_deser()
@@ -24,26 +27,7 @@ class HREfficiency(test.Test):
         self.tb.set_pg(self.tb.pg_setup)
         self.tb.pg_single(1,2)
         self.tb.pg_stop()
- 
-#----------------------------------
-
-        #for i in range(self.n_rocs):
-        #    self.tb.arm_pixel(i,5,5)
-        #self.tb.daq_enable()
-        #self.tb.pg_setup = [
-        #        ("resetroc",0)]
-        #self.tb.set_pg(self.tb.pg_setup)
-        #self.tb.pg_single(1,2)
-        #self.tb.pg_stop()
- 
-        #self.tb.pg_setup = [
-        #                ("calibrate",106),
-        #                ("trigger",ttk),
-        #                ("token",0)]
-        #self.tb.set_pg(self.tb.pg_setup)
-
-#---------------------------------- 
-         
+        
     def __init__(self, tb, config, window):
         super(HREfficiency, self).__init__(tb, config)
         self.window = window
@@ -58,7 +42,6 @@ class HREfficiency(test.Test):
         self.start_data = time.time()
         #reset data containers
         self.dut.data = numpy.zeros_like(self.dut.data)
-
         #loop over all pixels and send 'n_triggers' calibrates
         #for col in range(self.dut.roc(0)._n_cols):
         for col in range(1):
@@ -67,7 +50,7 @@ class HREfficiency(test.Test):
                 #arm pixel to be tested on all ROCs of DUT
                 for roc in self.dut.rocs():
                     self.tb.testPixel(col, row, True, roc.number)
-                self.tb.u_delay(100)
+                #self.tb.u_delay(100)
                 self.tb.daq_enable()
                 # Clear the DAQ buffer:
                 self.tb.daq_getbuffer()
@@ -77,7 +60,7 @@ class HREfficiency(test.Test):
                 self.tb.set_pg(self.tb.pg_setup)
                 self.tb.pg_single(1,2)
                 self.tb.pg_stop()
-                self.tb.u_delay(10)
+                #self.tb.u_delay(10)
                 #set up pg for sending Vcals
                 self.tb.pg_setup = [
                     ("calibrate",self.cal_delay + self.tct_wbc), 
@@ -88,9 +71,9 @@ class HREfficiency(test.Test):
                 for trig in range(self.n_triggers):
                     self.tb.pg_single(1,142)
                     #print self.tb.daqGetEvent()
-                    self.tb.u_delay(10)
+                    #self.tb.u_delay(10)
                 self.tb.pg_stop()
-                self.readout(config)
+                self.readout(config, roc.number, col, row)
                 #disarm pixel
                 for roc in self.dut.rocs():
                     self.tb.testPixel(col, row, False, roc.number)
@@ -100,9 +83,6 @@ class HREfficiency(test.Test):
             ("resetroc",0)] 
         self.tb.set_pg(self.tb.pg_setup)
         self.tb.pg_single(1,2)
-
-
-
         self.logger.info('--------------------------')
         self.logger.info('Finished triggering')
         #get decoded data from testboard
@@ -114,39 +94,23 @@ class HREfficiency(test.Test):
         stop_time = time.time()
         delta_t = stop_time - start_time
         self.logger.info('Test finished after %.1f seconds' %delta_t)
-        print self.dut.data
-#-------------------------
-#        self.store(config)
-#        self.prepare(config)
-#        self.start_data = time.time()
-#        self.length=0
-#        self.logger.info('Start data taking')
-        
-#        self.tb.pg_loop(self.period)
-#        self.tb.m_delay(1000)
-#        self.tb.pg_stop()
-#    
-#        n_hits, average_ph, ph_histogram, ph_cal_histogram, hit_events, nhits_vector, ph_vector, addr_vector = self.tb.get_data(Vcal_conversion=True)
-#        self.dut.data += n_hits
-#        self.update_histo()
 
-#        for i in range(self.n_rocs):
-#            self.tb.disarm_pixel(i,5,5)
-#        self.tb.daq_disable()
-#        self.cleanup(config)
-#        self.dump()
-#        self.restore()
-#-------------------------
+        #debug printouts
+        print "vcals array"
+        print self.vcals
+        print "xrays array"
+        print self.xrays
 
-    def readout(self, config):        
-        n_hits, average_ph, ph_histogram, ph_cal_histogram, hit_events, nhits_vector, ph_vector, addr_vector = self.tb.get_data(Vcal_conversion=True)
+
+    def readout(self, config, roc, col, row):
+        xray_temp = numpy.zeros(self.shape)
+        n_hits, average_ph, ph_histogram, ph_cal_histogram, hit_events, nhits_vector, ph_vector, addr_vector = self.tb.get_data(Vcal_conversion=False)
         self.dut.data += n_hits
-        #for roc in range(self.n_rocs):
-        #    self.dut.ph_array[roc].extend(ph_histogram[roc])
-        #    self.dut.ph_cal_array[roc].extend(ph_cal_histogram[roc])
-        #    self.dut.hit_event_array[roc].extend(hit_events[roc])
         self.update_histo
-
+        print n_hits
+        self.vcals[roc][col][row] += n_hits[roc][col][row]
+        #xray_temp = n_hits - self.n_hits[roc][col][row]
+        #self.xrays += xray_temp
     def update_histo(self):
         if not self.window:
             return
