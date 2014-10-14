@@ -16,16 +16,16 @@ class HREfficiency(test.Test):
         self.resr_delay = int(config.get('Testboard','pg_resr'))
         self.trg_delay = int(config.get('Testboard','pg_trg'))
         #unmask all pixels
-        self.tb.maskAllPixels(False)
-        #send reset
+        #self.tb.maskAllPixels(False)
+        self.tb.init_deser()
+        self.tb.daq_enable()        
+         #send reset
         self.tb.pg_setup = [
             ("resetroc",0)]    # pg_resr
         self.tb.set_pg(self.tb.pg_setup)
         self.tb.pg_single(1,2)
-        
-        # Prepare for data taking w/ possibly noisy pixels:
-        #self.tb.set_delay("triggerdelay",205)
-    
+        self.tb.pg_stop()
+         
     def __init__(self, tb, config, window):
         super(HREfficiency, self).__init__(tb, config)
         self.window = window
@@ -39,19 +39,21 @@ class HREfficiency(test.Test):
         self.prepare(config)
         self.start_data = time.time()
         #reset data containers
-        self.dut.data = numpy.zeros_like(self.dut.data)
-        #loop over all pixels and send 'n_triggers' calibrates
+        #self.dut.data = numpy.zeros_like(self.dut.data)
         self.tb.pg_stop()
-        self.tb.init_deser()
-        self.tb.daq_enable() 
+
+        #loop over all pixels and send 'n_triggers' calibrates
         # Clear the DAQ buffer:
-        self.tb.daq_getbuffer()
-        for col in range(self.dut.roc(0)._n_cols):
-            for row in range(self.dut.roc(0)._n_rows):
+        #self.tb.daq_getbuffer()
+        #for col in range(self.dut.roc(0)._n_cols):
+        for col in range(4):
+            #for row in range(self.dut.roc(0)._n_rows):
+            for row in range(4):
                 #arm pixel to be tested on all ROCs of DUT
-                for roc in self.dut.rocs():
-                    self.tb.testPixel(col, row, True, roc.number)
-                self.tb.u_delay(100)
+                #for roc in self.dut.rocs():
+                #    #self.tb.testPixel(col, row, True, roc.number)
+                #    self.tb.arm_pixel(roc.number, col, row)
+                #self.tb.u_delay(100)
                 #send reset
                 self.tb.pg_setup = [
                     ("resetroc",0)]    # pg_resr
@@ -64,31 +66,38 @@ class HREfficiency(test.Test):
                     #("calibrate",self.cal_delay + self.tct_wbc), # PG_CAL
                     ("calibrate",106), # PG_CAL
                     #("trigger",self.trg_delay),    # PG_TRG
-                    ("trigger",16),    # PG_TRG
+                    ("trigger",32),    # PG_TRG
                     ("token",0)]
                 self.tb.set_pg(self.tb.pg_setup)
-                for trig in range(self.n_triggers):
-                    self.tb.pg_single(1,142)
-                    self.tb.u_delay(10)
+                
+                self.tb.arm_pixel(0,5,5)
+                self.tb.pg_loop(1288)
+                self.tb.m_delay(1000)
                 self.tb.pg_stop()
+
+                #for trig in range(self.n_triggers):
+                #    self.tb.pg_single(1,142)
+                #    #self.tb.u_delay(10)
+                #self.tb.pg_stop()
                 #disarm pixel
-                for roc in self.dut.rocs():
-                    self.tb.testPixel(col, row, False, roc.number)
+                #for roc in self.dut.rocs():
+                    #self.tb.testPixel(col, row, False, roc.number)
+                #    self.tb.disarm_pixel(roc.number, col ,row)
         #send a final reset
-        self.tb.pg_setup = [
-            ("resetroc",0)] 
-        self.tb.set_pg(self.tb.pg_setup)
-        self.tb.pg_single(1,2)
+        #self.tb.pg_setup = [
+        #    ("resetroc",0)] 
+        #self.tb.set_pg(self.tb.pg_setup)
+        #self.tb.pg_single(1,2)
 
 
 
         self.logger.info('--------------------------')
         self.logger.info('Finished triggering')
         #get decoded data from testboard
-        readout = self.tb.daqGetEvent()
-        print readout
+        #readout = self.tb.daqGetEvent()
+        #print readout
         n_hits, average_ph, ph_histogram, ph_cal_histogram, hit_events, nhits_vector, ph_vector, addr_vector = self.tb.get_data(Vcal_conversion=True)
-        #self.dut.data = n_hits
+        self.dut.data += n_hits
         print n_hits
         print average_ph
         print ph_histogram
