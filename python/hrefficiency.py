@@ -43,6 +43,7 @@ class HREfficiency(test.Test):
         self.dut.data = numpy.zeros_like(self.dut.data)
         #loop over all pixels and send 'n_triggers' calibrates
         #self.tb.get_calibrate(self.n_triggers,0x0100)
+        self.tb.daq_enable() 
         for col in range(self.dut.roc(0)._n_cols):
             for row in range(self.dut.roc(0)._n_rows):
                 #arm pixel to be tested on all ROCs of DUT
@@ -71,6 +72,9 @@ class HREfficiency(test.Test):
             ("resetroc",0)] 
         self.tb.set_pg(self.pg_setup)
         self.tb.pg_single()
+        self.tb.daq_disable() 
+
+
 
         self.logger.info('--------------------------')
         self.logger.info('Finished triggering')
