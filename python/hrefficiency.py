@@ -14,7 +14,7 @@ class HREfficiency(test.Test):
         self.cal_delay = int(config.get('Testboard','pg_cal'))
         self.tct_wbc = int(config.get('Testboard','tct_wbc'))
         self.resr_delay = int(config.get('Testboard','pg_resr'))
-        self.trg_delay = int(config.get('Testboard','pg_trg'))
+        self.trg_delay = int(config.get('HREfficiency','ttk'))
         #unmask all pixels
         self.tb.maskAllPixels(False)
         #send reset
@@ -43,6 +43,8 @@ class HREfficiency(test.Test):
         self.dut.data = numpy.zeros_like(self.dut.data)
         #loop over all pixels and send 'n_triggers' calibrates
         #self.tb.get_calibrate(self.n_triggers,0x0100)
+        self.tb.pg_stop()
+        self.tb.init_deser()
         self.tb.daq_enable() 
         for col in range(self.dut.roc(0)._n_cols):
             for row in range(self.dut.roc(0)._n_rows):
@@ -51,19 +53,20 @@ class HREfficiency(test.Test):
                     self.tb.testPixel(col, row, True, roc.number)
                 self.tb.u_delay(100)
                 #send reset
-                self.pg_setup = [
-                    ("resetroc",0)] 
-                self.tb.set_pg(self.pg_setup)
+                self.set_pg = [("resetroc",0)] 
                 self.tb.pg_single()
+                self.tb.pg_stop()
                 self.tb.u_delay(10)
                 #send n_triggers calibrates
                 self.pg_setup = [
                     ("calibrate",self.cal_delay + self.tct_wbc), # PG_CAL
                     ("trigger",self.trg_delay),    # PG_TRG
                     ("token",0)]
+                self.tb.set_pg(self.pg_setup)
                 for trig in range(self.n_triggers):
                     self.tb.pg_single()
                     self.tb.u_delay(10)
+                self.tb.pg_stop()
                 #disarm pixel
                 for roc in self.dut.rocs():
                     self.tb.testPixel(col, row, False, roc.number)
@@ -87,9 +90,6 @@ class HREfficiency(test.Test):
 
         #get decoded data from testboard
         readout = self.tb.daqGetEventBuffer()
-        print 'xxxxxxxxxxxxxxxxx'
-        print readout
-        print 'xxxxxxxxxxxxxxxxx'
 
     def update_histo(self):
         if not self.window:
