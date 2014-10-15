@@ -222,6 +222,7 @@ class api(PyPxarCore.PyPxarCore):
         phs = numpy.nan_to_num(numpy.divide(phs, hits))
         return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo, dummy, dummy, dummy, dummy
 
+
     def get_calibrate(self, n_triggers, flags = 0):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
         self.testAllPixels(True)
