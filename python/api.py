@@ -94,8 +94,8 @@ class api(PyPxarCore.PyPxarCore):
     def set_pg(self, pg_setup):
         self.setPatternGenerator(pg_setup)
 
-    def pg_single(self):
-        self.daqTrigger(1)
+    def pg_single(self, nTrig, period):
+        self.daqTrigger(nTrig, period)
         
     def init_tbm(self, config):
         #TODO move to config
@@ -202,7 +202,7 @@ class api(PyPxarCore.PyPxarCore):
         # Loop over all the PxEvents we got from readout:
         for ievt, evt in enumerate(pixelevents):
             # Count the number of decoding errors:
-            decoding_errors += evt.numDecoderErrors
+            #decoding_errors += evt.numDecoderErrors
             for ipx, px in enumerate(evt.pixels):
                 hits[px.roc][px.column][px.row] += 1
                 phs[px.roc][px.column][px.row] += px.value
@@ -215,12 +215,12 @@ class api(PyPxarCore.PyPxarCore):
                         ph_cal = 0
                     ph_cal_histo[px.roc].append(ph_cal)
 
-        self.logger.debug('number of decoding errors %i' %decoding_errors)
+        #self.logger.debug('number of decoding errors %i' %decoding_errors)
 
         # Clear and return:
         dummy = list() #FIXME: needed? _n_hits _ph _addr
         phs = numpy.nan_to_num(numpy.divide(phs, hits))
-        return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo, dummy, dummy, dummy
+        return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo, dummy, dummy, dummy, dummy
 
     def get_calibrate(self, n_triggers, flags = 0):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
