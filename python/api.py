@@ -165,11 +165,11 @@ class api(PyPxarCore.PyPxarCore):
     def get_flag(self, xtalk, cals, reverse = False):
         flag = 0x0000
         if cals:
-            flag += 0x0002
+            flag += FLAG_CALS
         if xtalk:
-            flag += 0x0004
+            flag += FLAG_XTALK
         if not reverse:
-            flag += 0x0008
+            flag += FLAG_RISING_EDGE
         return flag
     
     def trim(self, trim_bits):
