@@ -24,13 +24,20 @@ class HREfficiency(test.Test):
         self.tb.pg_setup = [
                ("resetroc",0)]    # pg_resr
         self.tb.set_pg(self.tb.pg_setup)
+        self.tb.daq_enable()
         self.tb.pg_single(1,2)
-        self.tb.pg_stop()
+        self.tb.daq_disable()
         #configure pg for efficiency test
-        self.tb.pg_setup = [
-                ("resetroc", self.resr_delay),
-                ("calibrate",self.cal_delay + self.tct_wbc),
-                ("trigger",self.ttk),
+        if self.dut.n_tbms > 0:
+            self.tb.pg_setup = [
+                #("resetroc", resr_delay),
+                ("calibrate", self.cal_delay + self.tct_wbc),
+                ("trigger;sync", 0)]
+        #Single roc
+        else:
+            self.tb.pg_setup = [
+                ("calibrate",self.cal_delay + self.tct_wbc), # PG_CAL
+                ("trigger",self.ttk),    # PG_TRG
                 ("token",0)]
         self.tb.set_pg(self.tb.pg_setup)
 
@@ -59,8 +66,6 @@ class HREfficiency(test.Test):
                 self.vcals[px.roc][px.column][px.row] += px.value
             else:
                 self.xrays[px.roc][px.column][px.row] += -1*px.value
-        print self.vcals
-        print self.xrays
         self.dut.data = self.vcals
         #abuse dut.ph_array container for xray hits
         self.dut.ph_array = self.xrays
@@ -69,8 +74,9 @@ class HREfficiency(test.Test):
         self.tb.pg_setup = [
                 ("resetroc",0)]    # pg_resr
         self.tb.set_pg(self.tb.pg_setup)
+        self.tb.daq_enable()
         self.tb.pg_single(1,2)
-        self.tb.pg_stop()
+        self.tb.daq_disable()
                                                     
         self.cleanup(config)
         self.dump()
@@ -91,16 +97,49 @@ class HREfficiency(test.Test):
         for roc in self.dut.rocs():
             plot_dict = {'title':self.test+'_ROC_%s_Vcal_hits' %roc.number, 'x_title': self.x_title, 'y_title': self.y_title, 'data': self.dut.data[roc.number]}
             self._results.append(plot_dict)
-            #plot = Plotter(self.config, self)
             plot_dict = {'title':self.test+'_ROC_%s_Xray_hits' %roc.number, 'x_title': self.x_title, 'y_title': self.y_title, 'data': self.dut.ph_array[roc.number]}
             self._results.append(plot_dict)
             plot = Plotter(self.config, self)
-            #additional histograms
-
-
         self._histos.extend(plot.histos)
         self._histos.extend([self._dut_histo])
         self._histos.extend([self._dut_histo2])
+
+        #extracting efficiency
+        eff_mean = []
+        eff_rms = []
+        for roc in self.dut.rocs():
+            eff_list = []
+            eff_list_fiducial = []
+            for col in range(roc.n_cols):
+                for row in range(roc.n_rows):
+                    eff_list.append((self._histos[roc.number].GetBinContent(col+1, row+1)*100)/self.n_triggers)
+                    if not (col == 0 or col == 1 or col == 50 or col == 51 or row== 78 or row == 79 or (col == 22 and row == 38)):
+                        eff_list_fiducial.append((self._histos[roc.number].GetBinContent(col+1, row+1)*100)/self.n_triggers)
+            eff_arr = numpy.asarray(eff_list)
+            eff_arr_fiducial = numpy.asarray(eff_list_fiducial)
+            eff = Plotter.create_th1(eff_arr, 'efficiency_ROC_%s' %roc.number, 'efficiency (%)', '# entries', 0, 101)
+            eff_fiducial = Plotter.create_th1(eff_arr_fiducial, 'fiducial_efficiency_ROC_%s' %roc.number, 'efficiency (%)', '# entries', 0, 101)
+            self._histos.append(eff)
+            self._histos.append(eff_fiducial)
+            eff_mean.append(eff_fiducial.GetMean())
+            eff_rms.append(eff_fiducial.GetRMS())
+
+
+        #rate calculation
+        sensor_area = self.n_rocs * 52 * 80 * 0.01 * 0.015 #in cm^2
+        self.logger.info('number of rocs            %s' %self.n_rocs)
+        self.logger.info('sensor area               %s cm2' %round(sensor_area,2))
+        xray_hits = numpy.sum(self.dut.ph_array)
+        triggers = self.n_rocs * 4160 * self.n_triggers
+        rate = xray_hits / (triggers * 25e-9 * 1.0e6 * sensor_area)
+        self.logger.info('number of xray hits       %i' %xray_hits)
+        self.logger.info('total number of triggers  %i' %triggers)
+        self.logger.info('xray hit rate             %s MHz/cm^2' %round(rate,6))
+        self.logger.info('-----------------------------------')
+        self.logger.info('ROC efficiencies in fuducial volume:')
+        for roc in range(self.n_rocs):
+            self.logger.info('ROC %i:   %s +/- %s' %(roc, round(eff_mean[roc],2), round(eff_rms[roc],2)))
+        self.logger.info('-----------------------------------')
 
     def restore(self):
         '''restore saved dac parameters'''
