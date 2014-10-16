@@ -11,19 +11,33 @@ class HREfficiency(test.Test):
         #read in test parameters
         self.n_triggers = int(config.get('HREfficiency','n_triggers'))
         self.n_rocs = int(config.get('Module','rocs'))
+        self.cal_delay = int(config.get('Testboard','pg_cal'))
+        self.resr_delay = int(config.get('Testboard','pg_resr'))
+        self.tct_wbc = int(config.get('Testboard','tct_wbc'))
+        self.ttk = int(config.get('HREfficiency','ttk'))
+        
         #containers to hold vcal and xray hits
         self.vcals = []
         self.xrays = []
         self.shape = (52,80)
+        #send a reset to the chip
+        self.tb.pg_setup = [
+               ("resetroc",0)]    # pg_resr
+        self.tb.set_pg(self.tb.pg_setup)
+        self.tb.pg_single(1,2)
+        self.tb.pg_stop()
+        #configure pg for efficiency test
+        self.tb.pg_setup = [
+                ("resetroc", self.resr_delay),
+                ("calibrate",self.cal_delay + self.tct_wbc),
+                ("trigger",self.ttk),
+                ("token",0)]
+        self.tb.set_pg(self.tb.pg_setup)
 
     def __init__(self, tb, config, window):
         super(HREfficiency, self).__init__(tb, config)
         self.window = window
         self._dut_histo2 = self._dut_histo.Clone("test")
-        #if self.window:
-        #    self.window.histos.extend([self._dut_histo])
-        #    self.window.histos.extend([self._dut_histo2])
-            
 
     def go(self, config):
         '''Called for every test, does prepare, run and cleanup.'''
@@ -50,7 +64,14 @@ class HREfficiency(test.Test):
         self.dut.data = self.vcals
         #abuse dut.ph_array container for xray hits
         self.dut.ph_array = self.xrays
-
+      
+        #send a reset to the chip
+        self.tb.pg_setup = [
+                ("resetroc",0)]    # pg_resr
+        self.tb.set_pg(self.tb.pg_setup)
+        self.tb.pg_single(1,2)
+        self.tb.pg_stop()
+                                                    
         self.cleanup(config)
         self.dump()
         self.restore()
@@ -80,8 +101,6 @@ class HREfficiency(test.Test):
         self._histos.extend(plot.histos)
         self._histos.extend([self._dut_histo])
         self._histos.extend([self._dut_histo2])
-        #if self.window:
-        #    self.window.histos.pop()
 
     def restore(self):
         '''restore saved dac parameters'''
