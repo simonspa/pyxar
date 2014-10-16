@@ -128,7 +128,7 @@ class HREfficiency(test.Test):
         #rate calculation
         sensor_area = self.n_rocs * 52 * 80 * 0.01 * 0.015 #in cm^2
         self.logger.info('number of rocs            %s' %self.n_rocs)
-        self.logger.info('sensor area               %s cm2' %round(sensor_area,2))
+        self.logger.info('sensor area               %s cm^2' %round(sensor_area,2))
         xray_hits = numpy.sum(self.dut.ph_array)
         triggers = self.n_rocs * 4160 * self.n_triggers
         rate = xray_hits / (triggers * 25e-9 * 1.0e6 * sensor_area)
@@ -144,4 +144,8 @@ class HREfficiency(test.Test):
     def restore(self):
         '''restore saved dac parameters'''
         super(HREfficiency, self).restore()
+        for roc in self.dut.rocs():
+            roc.ph_array = [0]
+            roc.ph_cal_array = [0]
+        self.dut.data = numpy.zeros_like(self.dut.data)
 
