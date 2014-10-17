@@ -1,11 +1,12 @@
 import PyPxarCore
+from PyPxarCore import *
 import logging
 import numpy
 import sys
 import time
 from helpers import list_to_matrix
 
-class api(PyPxarCore.PyPxarCore):
+class api(PyPxarCore):
     
     def __init__(self, config, dut):
         super(api, self).__init__()
@@ -138,7 +139,7 @@ class api(PyPxarCore.PyPxarCore):
         self.logger.info('Initializing ROC: %s' %roc.number)
         pixels = list()
         for pixel in roc.pixels():
-            p = PyPxarCore.PixelConfig(pixel.col,pixel.row, max(0,pixel.trim))
+            p = PixelConfig(pixel.col,pixel.row, max(0,pixel.trim))
             pixels.append(p)
         self.roc_pixels.append(pixels)
         dacs = {}
