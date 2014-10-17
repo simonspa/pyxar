@@ -107,14 +107,18 @@ class HREfficiency(test.Test):
         #extracting efficiency
         eff_mean = []
         eff_rms = []
+        pixel_zero_eff = 0
         for roc in self.dut.rocs():
             eff_list = []
             eff_list_fiducial = []
             for col in range(roc.n_cols):
                 for row in range(roc.n_rows):
                     eff_list.append((self._histos[roc.number].GetBinContent(col+1, row+1)*100)/self.n_triggers)
-                    if not (col == 0 or col == 1 or col == 50 or col == 51 or row== 78 or row == 79 or (col == 22 and row == 38)):
-                        eff_list_fiducial.append((self._histos[roc.number].GetBinContent(col+1, row+1)*100)/self.n_triggers)
+                    if not (col == 0 or col == 1 or col == 50 or col == 51 or row== 78 or row == 79):
+                        if not self._histos[roc.number].GetBinContent(col+1,row+1) == 0:
+                            eff_list_fiducial.append((self._histos[roc.number].GetBinContent(col+1, row+1)*100)/self.n_triggers)
+                        else:
+                            pixel_zero_eff += 1
             eff_arr = numpy.asarray(eff_list)
             eff_arr_fiducial = numpy.asarray(eff_list_fiducial)
             eff = Plotter.create_th1(eff_arr, 'efficiency_ROC_%s' %roc.number, 'efficiency (%)', '# entries', 0, 101)
@@ -140,6 +144,7 @@ class HREfficiency(test.Test):
         for roc in range(self.n_rocs):
             self.logger.info('ROC %i:   %s +/- %s' %(roc, round(eff_mean[roc],2), round(eff_rms[roc],2)))
         self.logger.info('-----------------------------------')
+        self.logger.warning('%i pixels in whole DUT with 0 efficiency!' %pixel_zero_eff)
 
     def restore(self):
         '''restore saved dac parameters'''
