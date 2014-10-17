@@ -28,7 +28,7 @@ class Pretest(test.Test):
         self.rocs_programmable()
         self.adjust_vana()
         self.find_VthrComp_CalDel_alt()
-        #self.adjust_PH_range()
+        self.adjust_PH_range()
 
     def cleanup(self, config):
         plot = Plotter(self.config, self)
@@ -121,7 +121,7 @@ class Pretest(test.Test):
                         else:
                             high_delta = 0
                         if high_delta == 3:
-                            val -= (8*self.n_average)
+                            val -= (15*self.n_average)
                             self.tb.set_dac_roc(roc,self.dac1,val)
                             self.tb.m_delay(10)
                             break

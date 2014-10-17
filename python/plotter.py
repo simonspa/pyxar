@@ -48,6 +48,26 @@ class Plotter(object):
         return gr
 
     @staticmethod
+    def create_tgraph2(data, name, x_title, y_title, minimum = None, maximum = None, step = 1, start = 0):
+        xdata = range(start, start + step*len(data),step)
+        print xdata
+        x = array.array('d', xdata)
+        y = array.array('d', data)
+        gr = ROOT.TGraph(len(x),x,y)
+        #gr.SetDirectory(0)
+        gr.SetTitle(name)
+        gr.SetLineColor(4)
+        gr.SetMarkerColor(4)
+        gr.SetMarkerSize(0.5)
+        gr.SetMarkerStyle(21)
+        gr.GetXaxis().SetTitle(x_title)
+        gr.GetYaxis().SetTitle(y_title)
+        gr.SetDrawOption('Acp')
+        gr.SetLineWidth(2)
+        return gr
+
+
+    @staticmethod
     def create_th2(data, len_x, len_y, name, x_title, y_title):
         th2 = ROOT.TH2F(name, name, len_x, 0, len_x , len_y, 0, len_y)
         th2.SetDirectory(0)

@@ -114,7 +114,7 @@ class HREfficiency(test.Test):
             for col in range(roc.n_cols):
                 for row in range(roc.n_rows):
                     eff_list.append((self._histos[roc.number].GetBinContent(col+1, row+1)*100)/self.n_triggers)
-                    if not (col == 0 or col == 1 or col == 50 or col == 51 or row== 78 or row == 79):
+                    if not (col == 0 or col == 1 or col == 50 or col == 51 or row == 79):
                         if not self._histos[roc.number].GetBinContent(col+1,row+1) == 0:
                             eff_list_fiducial.append((self._histos[roc.number].GetBinContent(col+1, row+1)*100)/self.n_triggers)
                         else:
