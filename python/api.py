@@ -221,7 +221,8 @@ class api(PyPxarCore):
         # Clear and return:
         dummy = list() #FIXME: needed? _n_hits _ph _addr
         phs = numpy.nan_to_num(numpy.divide(phs, hits))
-        return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo, dummy, dummy, dummy, dummy
+        return numpy.array(hits), numpy.array(phs), ph_histo, ph_cal_histo, dummy, dummy, dummy
+
 
     def get_calibrate(self, n_triggers, flags = 0):
         self.logger.debug('Calibrate %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
