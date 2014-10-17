@@ -245,8 +245,12 @@ class Pretest(test.Test):
             col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_min)),numpy.shape(roc.data))
             self.logger.debug('Pixel with lowest PH for low Vcal: %s,%s' %(col_min, row_min))
             if ph_min < safety_margin:
-                viref_adc = self.tb.binary_search(roc, 'VIref_ADC', safety_margin, 
-                    lambda: numpy.amin(numpy.ma.masked_less_equal(self.tb.get_ph_roc(self.n_triggers, roc), 0)), False)
+                #viref_adc = self.tb.binary_search(roc, 'VIref_ADC', safety_margin, 
+                #    lambda: numpy.amin(numpy.ma.masked_less_equal(self.tb.get_ph_roc(self.n_triggers, roc), 0)), False)
+                while numpy.amin(numpy.ma.masked_less_equal(self.tb.get_ph_roc(self.n_triggers, roc), 0)) < safety_margin:
+                    viref_adc += 1
+                    self.tb.set_dac_roc(roc, 'VIref_ADC', viref_adc)
+                    
             col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_min)),numpy.shape(roc.data))
             self.logger.debug('Pixel with lowest PH for small Vcal: %s,%s' %(col_min, row_min))
             self.logger.info('VIref_ADC after compressing PH: %s' %(viref_adc))

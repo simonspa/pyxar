@@ -50,7 +50,6 @@ class Plotter(object):
     @staticmethod
     def create_tgraph2(data, name, x_title, y_title, minimum = None, maximum = None, step = 1, start = 0):
         xdata = range(start, start + step*len(data),step)
-        print xdata
         x = array.array('d', xdata)
         y = array.array('d', data)
         gr = ROOT.TGraph(len(x),x,y)

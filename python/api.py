@@ -248,10 +248,12 @@ class api(PyPxarCore):
         self.testAllPixels(True, roc.number)
         datas = self.getPulseheightMap(0x0, n_triggers)
         self.testAllPixels(False)
-        self.dut.roc(roc).data = numpy.zeros((52,80))
+        self.dut.roc(roc.number).data = numpy.zeros((52,80))
         for px in datas:
-            self.dut.roc(roc).data[px.column][px.row] = px.value
-        roc.data = datas[roc.number]
+            self.dut.roc(roc.number).data[px.column][px.row] = px.value
+        #roc.data = datas[roc.number]
+        roc.data = self.dut.roc(roc.number).data
+        return roc.data
 
     def get_dac_dac(self, n_triggers, dac1, dac2):
         self.testAllPixels(False)
