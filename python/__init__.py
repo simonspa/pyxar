@@ -1,4 +1,3 @@
-from testboard import Testboard
 from test import Test
 from hrtest import HRTest
 from dacdac import DacDac
@@ -21,5 +20,10 @@ from hrmap import HRMap
 from masktest import MaskTest
 from currentscan import CurrentScan
 from dacscan import DacScan
+from readbackscan import ReadbackScan
+from cal_readbackscan import CalReadbackScan
+from calibratereadback import CalibrateReadback
 from hotpixelmasker import HotPixelMasker
 from hrefficiency import HREfficiency
+from timewalk import Timewalk
+from hrefficiencyscan import HREfficiencyScan

@@ -13,6 +13,9 @@ class CurrentScan(test.Test):
     def run(self, config):
         for roc in self.dut.rocs():
             current = []
+            # Let settle current at DCA_low:
+            self.tb.set_dac_roc(roc,self.dac,0)
+            self.tb.m_delay(100)
             for val in range(0,roc.dac(self.dac).range):
                 self.tb.set_dac_roc(roc,self.dac,val)
                 if 'ana' in self.current:

@@ -20,7 +20,7 @@ class Pretest(test.Test):
         self.minimal_diff = 1.
         self.y_title = self.dac1
         self.x_title = self.dac2
-
+        self.threshold = 50
 
     
     def run(self, config):
@@ -28,7 +28,7 @@ class Pretest(test.Test):
         self.rocs_programmable()
         self.adjust_vana()
         self.find_VthrComp_CalDel_alt()
-        self.adjust_PH_range()
+        #self.adjust_PH_range()
 
     def cleanup(self, config):
         plot = Plotter(self.config, self)
@@ -44,13 +44,13 @@ class Pretest(test.Test):
         if difference is larger than self.minimal_diff mA, ROC is programmable'''
         self.logger.info('Testing if ROCs are programmable')
         for roc in self.dut.rocs():
-            self.tb.set_dac_roc(roc,'Vana', roc.dac('Vana').range-1)
+            self.tb.set_dac_roc(roc,'Vana', roc.dac('Vana').range)
             self.tb.m_delay(200)
             ia_on = self.tb.get_ia()
             self.tb.set_dac_roc(roc,'Vana', 0)
             self.tb.m_delay(200)
             ia_off = self.tb.get_ia()
-            self.logger.debug('Vana = %s: ia = %.2f' %(roc.dac('Vana').range-1, ia_on))
+            self.logger.debug('Vana = %s: ia = %.2f' %(roc.dac('Vana').range, ia_on))
             self.logger.debug('Vana = 0: ia = %.2f' %ia_off)
             if (ia_on-ia_off) > self.minimal_diff:
                 self.logger.info('ROC %s is programmable' %roc.number)
@@ -95,6 +95,7 @@ class Pretest(test.Test):
         self.n_average = 4
         self.tb.set_dac(self.dac1, 0) 
         thr = []
+        #Find VthrComp by scanning digital current
         for roc in self.dut.rocs():
             currents = []
             c_av = 0.
@@ -102,12 +103,14 @@ class Pretest(test.Test):
             high_delta = 0
             for val in range(0,roc.dac(self.dac1).range):
                 self.tb.set_dac_roc(roc,self.dac1,val)
+                self.tb.m_delay(10)
                 j += 1
                 for i in range(self.n_meas):
                     c_av+=self.tb.get_id()
                     self.tb.m_delay(10)
                 if j == self.n_average:
                     currents.append(c_av/(self.n_meas*self.n_average))
+                    self.logger.debug('idig: %f' %(c_av/(self.n_meas*self.n_average)))
                     c_av = 0.
                     j = 0
                     if len(currents) > 1:
@@ -118,13 +121,20 @@ class Pretest(test.Test):
                         else:
                             high_delta = 0
                         if high_delta == 3:
-                            val -= (6*self.n_average)
+                            val -= (15*self.n_average)
                             self.tb.set_dac_roc(roc,self.dac1,val)
+                            self.tb.m_delay(10)
                             break
-            #calDel
+        self.tb.testAllPixels(False)
+
+        #determine calDel
+        #activate pixel 5 5 in every ROC
+        for roc in self.dut.rocs():
             roc.pixel(5,5).active = True
-            self.tb.get_dac_scan(10, self.dac2)
-            roc.pixel(5,5).active = False
+        #do CalDel dac scan on all 16 pixels
+        self.tb.get_dac_scan(10, self.dac2)
+        #find CalDel value in the middle of efficiecy window
+        for roc in self.dut.rocs():
             cal_array = roc.pixel(5,5).data
             sum = 0.
             n = 0
@@ -132,11 +142,14 @@ class Pretest(test.Test):
                 if cal > 5:
                     sum += idx
                     n += 1
-            cal = sum/n
-            self.logger.info('Found CalDel %s'%cal)
-            self.tb.set_dac_roc(roc,self.dac2,cal) 
-
-
+            if n > 0:
+                cal = sum/n
+                self.logger.info('Found CalDel %s'%cal)
+                self.tb.set_dac_roc(roc,self.dac2,cal) 
+            else:
+                self.logger.warning('No efficient CalDel window found for %s'%roc)
+        #deactivate all pixels
+        self.tb.testAllPixels(False)
 
     def find_VthrComp_CalDel(self):
         '''Perform a DacDac scan in VthrComp and CalDel to find a working point.
@@ -190,12 +203,15 @@ class Pretest(test.Test):
         self.cals = 0
         self.reverse = False
 
-        self.roc_Vcal_map = self.tb.get_threshold(5, self.dac, self.xtalk, self.cals, self.reverse)
+        self.roc_Vcal_map = self.tb.get_threshold(5, self.dac, self.threshold, self.xtalk, self.cals, self.reverse)
         #loop over ROCs to adjust VIref_ADC and VoffsetRO for each ROC  
         for roc in self.dut.rocs():
             #measure Vcal map to determine minimal Vcal for which all pixels respond
             Vcal_min = numpy.amax(numpy.ma.masked_greater_equal(self.roc_Vcal_map[roc.number],256))
             self.logger.info('Minimal Vcal required for all pixels to respond is %s' %(Vcal_min))
+            #quick and dirty security feature to start with reasonable PH
+            #TODO: Check if VIref_ADC = 100 is sufficient
+            self.tb.set_dac_roc(roc, 'VIref_ADC', 100)
             #make sure that no pixel has PH outside dynamic range of the ADC
             self.logger.info('Limiting PH to dynamic range of ADC for %s' %(roc))
             #check upper edge of ADC range
@@ -229,8 +245,12 @@ class Pretest(test.Test):
             col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_min)),numpy.shape(roc.data))
             self.logger.debug('Pixel with lowest PH for low Vcal: %s,%s' %(col_min, row_min))
             if ph_min < safety_margin:
-                viref_adc = self.tb.binary_search(roc, 'VIref_ADC', safety_margin, 
-                    lambda: numpy.amin(numpy.ma.masked_less_equal(self.tb.get_ph_roc(self.n_triggers, roc), 0)), False)
+                #viref_adc = self.tb.binary_search(roc, 'VIref_ADC', safety_margin, 
+                #    lambda: numpy.amin(numpy.ma.masked_less_equal(self.tb.get_ph_roc(self.n_triggers, roc), 0)), False)
+                while numpy.amin(numpy.ma.masked_less_equal(self.tb.get_ph_roc(self.n_triggers, roc), 0)) < safety_margin:
+                    viref_adc += 1
+                    self.tb.set_dac_roc(roc, 'VIref_ADC', viref_adc)
+                    
             col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_min)),numpy.shape(roc.data))
             self.logger.debug('Pixel with lowest PH for small Vcal: %s,%s' %(col_min, row_min))
             self.logger.info('VIref_ADC after compressing PH: %s' %(viref_adc))

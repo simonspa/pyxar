@@ -18,8 +18,8 @@ and clock stretch factor (ssc) are additional parameters.'''
         self.tb.pg_stop()
         self.tb.init_deser()
         self.tb.daq_enable() 
-        self.tb.pg_setcmd(0, self.tb.PG_RESR)
-        self.tb.pg_single()
+        self.tb.set_pg([("resetroc",0)])
+        self.tb.pg_single(1,2)
         
         #fit PhCalibration data
         self.logger.info('Fitting PHCalibration data...')
@@ -32,7 +32,6 @@ and clock stretch factor (ssc) are additional parameters.'''
             #self.tb.pg_setcmd(0, self.tb.PG_SYNC + self.tb.PG_TRG)
             #self.tb.pg_setcmd(1, self.tb.PG_TRG  + ttk)
         else:
-            self.tb.pg_setcmd(0, self.tb.PG_TRG  + ttk)
-            self.tb.pg_setcmd(1, self.tb.PG_TOK)
-        
+            self.tb.set_pg([("trigger",ttk),
+                            ("token",0)])
 

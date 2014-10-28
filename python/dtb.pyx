@@ -378,7 +378,6 @@ cdef class PyDTB:
                 self.logger.debug('address decoding problem - wrong address out of bounds')
                 self.logger.debug('invalid pixel address: roc %i, col %i, row %i' %(roc, col, row))
                 decoding_errors += 1
-
         self.logger.debug('number of decoding errors %i' %decoding_errors)
         #allow division by 0
         old_err_state = numpy.seterr(divide='raise')
@@ -397,8 +396,8 @@ cdef class PyDTB:
     def dac_dac(self, n_triggers, col, row, dac1, dacRange1, dac2, dacRange2, num_hits, ph):
         cdef vector[int16_t] n_hits
         cdef vector[int32_t] ph_sum
-        return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, 0, dacRange1, dac2, 0, dacRange2, n_hits, ph_sum)
-        #return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, 0, dacRange1, dac2, 0, dacRange2, n_hits, ph_sum)
+        #return_value = self.thisptr.CalibrateDacDacScan_Sof(n_triggers, col, row, dac1, 0, dacRange1, dac2, 0, dacRange2, n_hits, ph_sum)
+        return_value = self.thisptr.CalibrateDacDacScan(n_triggers, col, row, dac1, 0, dacRange1, dac2, 0, dacRange2, n_hits, ph_sum)
         for i in xrange(len(n_hits)):
             num_hits.append(n_hits[i]) 
             ph.append(ph_sum[i]) 
