@@ -134,9 +134,11 @@ class HREfficiency(test.Test):
         self.logger.info('number of rocs            %s' %self.n_rocs)
         self.logger.info('sensor area               %s cm^2' %round(sensor_area,2))
         xray_hits = numpy.sum(self.dut.ph_array)
+        vcal_hits = numpy.sum(self.dut.data)
         triggers = self.n_rocs * 4160 * self.n_triggers
         rate = xray_hits / (triggers * 25e-9 * 1.0e6 * sensor_area)
         self.logger.info('number of xray hits       %i' %xray_hits)
+        self.logger.info('number of vcal hits       %i' %vcal_hits)
         self.logger.info('total number of triggers  %i' %triggers)
         self.logger.info('xray hit rate             %s MHz/cm^2' %round(rate,6))
         self.logger.info('-----------------------------------')

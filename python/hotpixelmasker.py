@@ -21,7 +21,9 @@ class HotPixelMasker(test.Test):
         self.tb.arm_pixel(0,5,0)
         self.tb.daq_enable()
         self.tb.set_pg([("resetroc",0)])
-        self.tb.pg_single()
+        self.tb.daq_enable()
+        self.tb.pg_single(1,2)
+        self.tb.daq_disable()
         if self.dut.n_tbms > 0:
             self.tb.init_pg(self.config)
             #self.tb.pg_setcmd(0, self.tb.PG_RESR + 15)

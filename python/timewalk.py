@@ -49,9 +49,9 @@ class Timewalk(test.Test):
                     #reset CtrlReg
                     self.tb.set_dac_roc(roc, 'CtrlReg', 0)
                     #find the smalles CalDel value for which 50% of the triggers                     #can be seen at any Vcal value
-                    for i in range(50):
-                        if thr1-50 > 0:
-                            caldel = thr1 - 50 + i
+                    for i in range(70):
+                        if thr1-70 > 0:
+                            caldel = thr1 - 70 + i
                         else:
                             caldel = i
                         self.tb.set_dac_roc(roc, 'CalDel', caldel)
