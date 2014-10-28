@@ -7,16 +7,11 @@ Python wrapper to run single ROC and module tests using a DTB.
 - cython (http://cython.org/)
 - numpy (http://www.numpy.org)
 - pyROOT (http://root.cern.ch/drupal/content/pyroot)
-- usb driver libftdi2xx (http://www.ftdichip.com/Drivers/D2XX.htm)
-- libusb (http://www.libusb.org/)
+- pxarCore (compile pxar using `cmake -DBUILD_python=ON .. && make install`)
 
 ### usage:
 
-To compile the library run:
-
-    python setup.py build_ext
-
-To start pyxar, run:
+To start pyxar, make sure to set the library paths, and run:
 
     ./pyXar
     
@@ -41,19 +36,26 @@ Two additional methods prepare() and cleanup() give the usual structure of a tes
 - The docstring of the class is displayed as help message in the command line interface.
 
 
-### pyXar also provides a way to run with the API (currently as beta version)
-Get the python version of the API and build it
+### Prepare the pxarCore library:
+Get pxar from its github repositoryand build it
 
-    mkdir build
-    cmake -DBUILD_python=ON ..
-    make install
+```
+mkdir build
+cmake -DBUILD_python=ON ..
+make install
+```
 
 Export the path to the library:
 
-    export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:PATH/TO/API/lib
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:PATH/TO/API/lib
-    export PYTHONPATH=$PYTHONPATH:PATH/TO/API/lib
+```
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:PATH/TO/API/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:PATH/TO/API/lib
+export PYTHONPATH=$PYTHONPATH:PATH/TO/API/lib
+```
+or use the `pyXar.sh` script which assumes pxar is installed along the pyxar directory.
     
 To start pyxar using the API, run:
 
-    ./pyXar --api
+```
+./pyXar --api
+```
