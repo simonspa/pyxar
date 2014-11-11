@@ -29,8 +29,10 @@ class Timewalk(test.Test):
         self.tb.testAllPixels(False)
         for roc in self.dut.rocs():
             self.logger.info('Measuring %s' %roc)
-            for col in range(7):
-                for row in range(7):
+            for icol in range(10):
+                for irow in range(10):
+                    col = 2+5*icol
+                    row = 4+8*irow
                     #Enabling pixel under test
                     roc.pixel(col,row).active = True
                     #set Vcal 255 high range to measure efficiency window width
@@ -49,14 +51,14 @@ class Timewalk(test.Test):
                     #reset CtrlReg
                     self.tb.set_dac_roc(roc, 'CtrlReg', 0)
                     #find the smalles CalDel value for which 50% of the triggers                     #can be seen at any Vcal value
-                    for i in range(70):
-                        if thr1-70 > 0:
-                            caldel = thr1 - 70 + i
+                    for i in range(50):
+                        if thr1-50 > 0:
+                            caldel = thr1 - 50 + i
                         else:
                             caldel = i
                         self.tb.set_dac_roc(roc, 'CalDel', caldel)
                         thr3 = self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'Vcal', 50, False, False, False)
-                        if (thr3 != 255 and thr3 != 0): 
+                        if not(thr3 == 255 or thr3 == 0 or thr3 == None): 
                             break
                     #append found caldel value
                     self.caldel4[roc.number].append(caldel)
