@@ -297,7 +297,8 @@ class api(PyPxarCore):
         for roc in self.dut.rocs():
             for pixel in roc.active_pixels():  
                 pulseheight = []
-                datas = datas.tolist()
+                if type(datas) == numpy.ndarray:
+                    datas = datas.tolist()
                 for idac, dac in enumerate(datas):
                     found = False
                     for px in dac:
