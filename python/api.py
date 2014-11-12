@@ -270,6 +270,7 @@ class api(PyPxarCore):
             self.testPixel(pixel.col, pixel.row, False, roc.number)
 
         efficiency = []
+        datas = datas.tolist()
         for idac, dac in enumerate(datas):
             found = False
             for px in dac:
@@ -296,6 +297,7 @@ class api(PyPxarCore):
         for roc in self.dut.rocs():
             for pixel in roc.active_pixels():  
                 pulseheight = []
+                datas = datas.tolist()
                 for idac, dac in enumerate(datas):
                     found = False
                     for px in dac:
@@ -322,6 +324,7 @@ class api(PyPxarCore):
         for roc in self.dut.rocs():
             for ipx, pixel in enumerate(roc.active_pixels()):
                 efficiency = []
+                datas = datas.tolist()
                 for idac, dac in enumerate(datas):
                     found = False
                     for px in dac:
