@@ -11,6 +11,7 @@ class CurrentScan(test.Test):
         self.delay = int(config.get('CurrentScan','delay'))
     
     def run(self, config):
+        self.tb.m_delay(7000)
         for roc in self.dut.rocs():
             current = []
             # Let settle current at DCA_low:

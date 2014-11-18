@@ -23,6 +23,7 @@ class Trim(test.Test):
         self.threshold = 50
 
     def run(self, config): 
+        self.tb.m_delay(7000)
         '''Run the trimming algorithm.'''
         self.logger.info('Running trimming to Vcal %s' %self.vcal)
         #Determine min vthr

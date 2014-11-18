@@ -9,6 +9,7 @@ class MaskTest(test.Test):
         self.n_triggers = int(config.get('MaskTest','n_triggers'))
 
     def run(self, config):
+        self.tb.m_delay(7000)
         self.tb.maskAllPixels(True)
         for roc in self.dut.rocs():
             self.tb.select_roc(roc)

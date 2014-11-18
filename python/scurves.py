@@ -7,9 +7,9 @@ class SCurves(test.Test):
     def prepare(self, config):
         self.n_triggers = int(config.get('SCurves','n_triggers'))
         self.dac = config.get('SCurves','dac')
-        self.xtalk = 0
+        self.xtalk = False
         self.reverse = False
-        self.cals = 0
+        self.cals = False
         self._scurve_data = [0]*256
         self.min_thr_dac = None
         self.max_thr_dac = None
@@ -35,9 +35,11 @@ class SCurves(test.Test):
             outfile.close()    
 
     def run(self, config):
+        self.tb.m_delay(7000)
         #Measure map to determine rough threshold
         #TODO check if 4 is enough
         self.dut_thr_map = self.tb.get_threshold(4, self.dac, self.threshold, self.xtalk, self.cals, self.reverse)
+        print self.dut_thr_map
         self.min_thr_dac = int(max(0, numpy.amin( numpy.ma.masked_less_equal(self.dut_thr_map,0) )-self.scan_range/2))
         self.max_thr_dac = int(min(255, numpy.amax( numpy.ma.masked_greater_equal(self.dut_thr_map,255) )+self.scan_range/2))
         #TODO remove and understand why threshold screws calibrate

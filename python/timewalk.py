@@ -15,6 +15,7 @@ class Timewalk(test.Test):
         self.caldel_width = []
         self.delta_caldel = []
         self.timewalk = []
+        self.scanrange = 90
         for roc in self.dut.rocs():
             self.caldel1.append([])
             self.caldel2.append([])
@@ -22,15 +23,22 @@ class Timewalk(test.Test):
             self.delta_caldel.append([])
             self.timewalk.append([])
             self.caldel_width.append([])
+            self.count = 0
+            self.range_col = 10
+            self.range_row = 10
 
     def run(self, config):
+        self.tb.m_delay(7000)
         self.logger.info('Running timewalk measurement. Please execute test with trimmed sample')
         #Disabling all pixels
         self.tb.testAllPixels(False)
         for roc in self.dut.rocs():
             self.logger.info('Measuring %s' %roc)
-            for icol in range(10):
-                for irow in range(10):
+            sum = self.range_col * self.range_row
+            for icol in range(self.range_col):
+                for irow in range(self.range_row):
+                    self.count += 1
+                    print 'testing pixel number %i of %i' %(self.count,sum)
                     col = 2+5*icol
                     row = 4+8*irow
                     #Enabling pixel under test
@@ -51,9 +59,9 @@ class Timewalk(test.Test):
                     #reset CtrlReg
                     self.tb.set_dac_roc(roc, 'CtrlReg', 0)
                     #find the smalles CalDel value for which 50% of the triggers                     #can be seen at any Vcal value
-                    for i in range(50):
-                        if thr1-50 > 0:
-                            caldel = thr1 - 50 + i
+                    for i in range(self.scanrange):
+                        if thr1-self.scanrange > 0:
+                            caldel = thr1 - self.scanrange + i
                         else:
                             caldel = i
                         self.tb.set_dac_roc(roc, 'CalDel', caldel)

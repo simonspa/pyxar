@@ -24,11 +24,12 @@ class Pretest(test.Test):
 
     
     def run(self, config):
+        self.tb.m_delay(7000)
         self.logger.info('Running pretest')
         self.rocs_programmable()
         self.adjust_vana()
         self.find_VthrComp_CalDel_alt()
-        #self.adjust_PH_range()
+        self.adjust_PH_range()
 
     def cleanup(self, config):
         plot = Plotter(self.config, self)
@@ -251,13 +252,15 @@ class Pretest(test.Test):
                     viref_adc += 1
                     self.tb.set_dac_roc(roc, 'VIref_ADC', viref_adc)
                     
-            col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_min)),numpy.shape(roc.data))
+            #col_min,row_min =  numpy.unravel_index(numpy.argmax(numpy.ma.masked_greater(roc.data,ph_min)),numpy.shape(roc.data))
+            ph_min = numpy.amin(numpy.ma.masked_less_equal(roc.data,0))
             self.logger.debug('Pixel with lowest PH for small Vcal: %s,%s' %(col_min, row_min))
             self.logger.info('VIref_ADC after compressing PH: %s' %(viref_adc))
 
             #Center PH in ADC range
             self.logger.info('Centering PH in ADC range for %s' %(roc))
             #Calculate margin between highest PH and upper edge of ADC range            
+            self.tb.set_dac_roc(roc, 'Vcal', 255)
             self.tb.set_dac_roc(roc, 'CtrlReg', 4)
             pixel_high = roc.pixel(col, row)
             pixel_low = roc.pixel(col_min, row_min)
@@ -271,6 +274,7 @@ class Pretest(test.Test):
             #Calculate margin between lowest PH and lower edge of ADC range            
             pixel_low.active = True
             self.tb.set_dac_roc(roc, 'CtrlReg', 0)
+            self.tb.set_dac_roc(roc, 'Vcal', Vcal_min)
             self.tb.get_ph_dac(self.n_triggers, 'Vcal')
             ph_min = numpy.amin(numpy.ma.masked_less_equal(pixel_low.data,0))
             self.logger.debug('ph_min for pixel_low = %s' %(ph_min))  
@@ -279,6 +283,7 @@ class Pretest(test.Test):
             pixel_low.active = False
             pixel_high.active= True
             self.tb.set_dac_roc(roc, 'CtrlReg', 4)
+            self.tb.set_dac_roc(roc, 'Vcal', 255)
             #Determine target margin for centered PH
             z = 0.5 * (upper_margin + lower_margin)
             self.logger.debug('z = %s' %(z))
@@ -297,6 +302,7 @@ class Pretest(test.Test):
             #Measure minimal PH after centering (maximal PH already measured)
             pixel_low.active= True
             self.tb.set_dac_roc(roc, 'CtrlReg', 0)
+            self.tb.set_dac_roc(roc, 'Vcal', Vcal_min)
             self.tb.get_ph_dac(self.n_triggers, 'Vcal')
             ph_min = numpy.amin(numpy.ma.masked_less_equal(pixel_low.data,0))
             self.logger.debug('ph_min for pixel_low = %s' %(ph_min))
@@ -306,6 +312,7 @@ class Pretest(test.Test):
             #Stretch PH over full ADC range by decreasing VIref_ADC (using pixel with highest PH)
             pixel_high.active = True
             self.tb.set_dac_roc(roc, 'CtrlReg', 4)
+            self.tb.set_dac_roc(roc, 'Vcal', 255)
             self.logger.info('Stretching PH over full ADC range for ROC %s' %(roc))
             viref_adc = self.tb.binary_search(roc, 'VIref_ADC', (ADC_max - safety_margin), lambda: find_max_PH(self.n_triggers, pixel_high), True)  
             self.logger.debug('Decreased VIref_ADC to %s, to stretch PH over full ADC range' %(viref_adc))

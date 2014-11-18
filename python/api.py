@@ -349,11 +349,11 @@ class api(PyPxarCore):
         #dac_range = roc.dac(dac).range
         dac_range = 255
         datas = self.getThresholdMap(dac, 1, 0, dac_range, threshold, flag, n_triggers)
+        self.testAllPixels(False)
         for roc in self.dut.rocs():
             roc.data = numpy.zeros((52,80))
         for px in datas:
             self.dut.roc(px.roc).data[px.column][px.row] = px.value
-        self.testAllPixels(False)
         return self.dut.data
 
     def get_pixel_threshold(self, roc, col, row, n_triggers, dac, threshold, xtalk, cals, reverse):
