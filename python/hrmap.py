@@ -24,7 +24,7 @@ and clock stretch factor (ssc) are additional parameters.'''
         #fit PhCalibration data
         self.logger.info('Fitting PHCalibration data...')
         for roc in range(int(config.get('Module','rocs'))):
-            self.dut.roc(roc).ph_slope, self.dut.roc(roc).ph_offset = self.dut.roc(roc).PHcal_fit()
+            self.dut.roc(roc).ph_slope, self.dut.roc(roc).ph_offset, self.dut.roc(roc).ph_par2 = self.dut.roc(roc).PHcal_fit()
         if self.dut.n_tbms > 0:
             self.tb.init_pg(self.config)
             #self.tb.pg_setcmd(0, self.tb.PG_RESR + 15)

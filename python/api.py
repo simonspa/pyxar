@@ -211,7 +211,7 @@ class api(PyPxarCore):
                 if px.value > 0:
                     ph_histo[px.roc].append(px.value)
                     if Vcal_conversion:
-                        ph_cal = self.dut.roc(px.roc).ADC_to_Vcal(px.column, px.row, px.value, self.dut.roc(px.roc).ph_slope, self.dut.roc(px.roc).ph_offset)
+                        ph_cal = self.dut.roc(px.roc).ADC_to_Vcal(px.column, px.row, px.value, self.dut.roc(px.roc).ph_slope, self.dut.roc(px.roc).ph_offset, self.dut.roc(px.roc).ph_par2)
                     else:
                         ph_cal = 0
                     ph_cal_histo[px.roc].append(ph_cal)
