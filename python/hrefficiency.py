@@ -48,6 +48,7 @@ class HREfficiency(test.Test):
 
     def go(self, config):
         '''Called for every test, does prepare, run and cleanup.'''
+        self.tb.m_delay(2000)
         start_time = time.time()
         self.store(config)
         self.prepare(config)

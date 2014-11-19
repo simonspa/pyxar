@@ -3,6 +3,7 @@ import copy
 import logging 
 import numpy
 import ROOT
+import random
 
 class Pixel(object):
 
@@ -443,6 +444,7 @@ class Roc(object):
 
     #convert PH in ADC to Vcal units
     def ADC_to_Vcal(self, col, row, ph, slopes, offsets, par2s):
+        ph += random.random()-0.5 
         self.pixel(col,row)._ph_fit_par2 = par2s[col][row]
         self.pixel(col,row)._ph_fit_slope = slopes[col][row]
         self.pixel(col,row)._ph_fit_offset = offsets[col][row]
