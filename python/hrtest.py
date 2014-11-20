@@ -137,7 +137,6 @@ class HRTest(test.Test):
         self.tb.daq_disable()
         self.tb.pg_stop()
         self.tb.init_pg(self.config)
-        self.tb.init_deser()
         for roc in self.dut.rocs():
             roc.ph_array = [0]
             roc.ph_cal_array = [0]

@@ -12,18 +12,14 @@ class HotPixelMasker(test.Test):
         ttk = int(config.get('HotPixelMasker','ttk'))
         self.noise = int(config.get('HotPixelMasker','noise'))
         self.period = int(config.get('HotPixelMasker','period'))
-        for roc in self.dut.rocs():
-            self.tb.select_roc(roc)
-            for col in range(roc.n_cols):
-                self.tb.enable_column(col)
         self.tb.pg_stop()
-        self.tb.init_deser()
         self.tb.arm_pixel(0,5,0)
         self.tb.daq_enable()
         self.tb.set_pg([("resetroc",0)])
         self.tb.daq_enable()
         self.tb.pg_single(1,2)
         self.tb.daq_disable()
+        self.tb.testAllPixels(True)
         if self.dut.n_tbms > 0:
             self.tb.init_pg(self.config)
             #self.tb.pg_setcmd(0, self.tb.PG_RESR + 15)
@@ -126,5 +122,4 @@ class HotPixelMasker(test.Test):
         self.tb.daq_disable()
         self.tb.pg_stop()
         self.tb.init_pg(self.config)
-        self.tb.init_deser()
 

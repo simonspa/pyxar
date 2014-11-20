@@ -11,15 +11,11 @@ and clock stretch factor (ssc) are additional parameters.'''
         ttk = int(config.get('HRMap','ttk'))
         self.period = int(config.get('HRMap','period'))
         self.scc = int(config.get('HRMap','scc'))
-        for roc in self.dut.rocs():
-            self.tb.select_roc(roc)
-            for col in range(roc.n_cols):
-                self.tb.enable_column(col)
         self.tb.pg_stop()
-        self.tb.init_deser()
         self.tb.daq_enable() 
         self.tb.set_pg([("resetroc",0)])
         self.tb.pg_single(1,2)
+        self.tb.testAllPixels(True)
         
         #fit PhCalibration data
         self.logger.info('Fitting PHCalibration data...')

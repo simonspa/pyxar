@@ -11,9 +11,6 @@ class MaskTest(test.Test):
     def run(self, config):
         self.tb.m_delay(7000)
         self.tb.maskAllPixels(True)
-        for roc in self.dut.rocs():
-            self.tb.select_roc(roc)
-            self.tb.m_delay(100)
         self.tb.get_calibrate(self.n_triggers)
         # restore
         self.tb.maskAllPixels(False)
