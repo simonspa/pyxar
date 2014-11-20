@@ -18,7 +18,7 @@ class Plotter(object):
         if not maximum:
             maximum = int(numpy.amax(data))
         if not minimum:
-            minimum = int(numpy.amin(data))
+            minimum = int(numpy.nanmin(data))
         th1 = ROOT.TH1F(name, name, int(maximum-minimum), minimum, maximum)
         th1.SetDirectory(0)
         th1.GetXaxis().SetTitle(x_title)
