@@ -4,7 +4,7 @@ import ROOT
 from plotter import Plotter
 
 class Timewalk(test.Test):
-    ''' measuring the timewalk, i.e. the timing difference between the smallest and the largest Vcal signals visible. The conversion from CalDel units to nano seconds is based on the width of the efficiency window which corresponds to 25 ns '''
+    ''' measuring the timewalk, i.e. the timing difference between a small and a large Vcal signal. The conversion from CalDel units to nano seconds is based on the width of the efficiency window which corresponds to 25 ns '''
     def prepare(self, config):
         self.n_triggers = int(config.get('Timewalk','n_triggers'))
         self.caldel_margin = 10

@@ -6,12 +6,17 @@ from plotter import Plotter
 class Timewalk(test.Test):
     ''' measuring the timewalk, i.e. the timing difference between the smallest and the largest Vcal signals visible. The conversion from CalDel units to nano seconds is based on the width of the efficiency window which corresponds to 25 ns '''
     def prepare(self, config):
+        self.vcalhigh = 234
+        self.vcallow = 46
+        #self.vcalhigh = 255
+        #self.vcallow = 50
+        
         self.n_triggers = int(config.get('Timewalk','n_triggers'))
         self.caldel_margin = 10
         self.vcal_margin = 5
         self.caldel1 = []
         self.caldel2 = []
-        self.caldel4 = []
+        self.caldel3 = []
         self.caldel_width = []
         self.delta_caldel = []
         self.timewalk = []
@@ -19,7 +24,7 @@ class Timewalk(test.Test):
         for roc in self.dut.rocs():
             self.caldel1.append([])
             self.caldel2.append([])
-            self.caldel4.append([])
+            self.caldel3.append([])
             self.delta_caldel.append([])
             self.timewalk.append([])
             self.caldel_width.append([])
@@ -44,7 +49,7 @@ class Timewalk(test.Test):
                     #Enabling pixel under test
                     roc.pixel(col,row).active = True
                     #set Vcal 255 high range to measure efficiency window width
-                    self.tb.set_dac_roc(roc, 'Vcal', 255)
+                    self.tb.set_dac_roc(roc, 'Vcal', self.vcalhigh)
                     self.tb.set_dac_roc(roc, 'CtrlReg', 4)
                     #search for begin of efficiency window
                     thr1 = self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'CalDel', 50, False, False, False)
@@ -58,36 +63,25 @@ class Timewalk(test.Test):
                     conversion = delta_thr / 25
                     #reset CtrlReg
                     self.tb.set_dac_roc(roc, 'CtrlReg', 0)
-                    #find the smalles CalDel value for which 50% of the triggers                     #can be seen at any Vcal value
-                    for i in range(self.scanrange):
-                        if thr1-self.scanrange > 0:
-                            caldel = thr1 - self.scanrange + i
-                        else:
-                            caldel = i
-                        self.tb.set_dac_roc(roc, 'CalDel', caldel)
-                        thr3 = self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'Vcal', 50, False, False, False)
-                        if not(thr3 == 255 or thr3 == 0 or thr3 == None): 
-                            break
-                    #append found caldel value
-                    self.caldel4[roc.number].append(caldel)
+                    #measure caldel threshold for small Vcal signal
+                    self.tb.set_dac_roc(roc, 'Vcal', self.vcallow)
+                    thr3 = self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'CalDel', 50, False, False, False)
+                    self.caldel3[roc.number].append(thr3)
                     #calculate timewalk
-                    timewalk_caldel = thr1 - caldel
-                    self.delta_caldel[roc.number].append(timewalk_caldel)
-                    timewalk_time = timewalk_caldel / conversion
+                    if thr3 == None: 
+                        continue
+                    else:
+                        timewalkCaldel = thr1 - thr3
+                    self.delta_caldel[roc.number].append(timewalkCaldel)
+                    timewalk_time = timewalkCaldel / conversion
                     self.timewalk[roc.number].append(timewalk_time)
+                   
                     #disable pixel under test
                     roc.pixel(col,row).active = False
-                    if col==0 and row ==0:
-                        self.logger.debug('caldel1      = %i' %thr1)
-                        self.logger.debug('caldel2      = %i' %thr2)
-                        self.logger.debug('caldel width = %i' %delta_thr)
-                        self.logger.debug('caldel4      = %i' %caldel)
-                        self.logger.debug('timewalk dac = %i' %timewalk_caldel)
-                        self.logger.debug('timewalk ns  = %i' %timewalk_time)
         #convert to numpy arrays
         self.array1=numpy.array(self.caldel1)
         self.array2=numpy.array(self.caldel2)
-        self.array4=numpy.array(self.caldel4)
+        self.array3=numpy.array(self.caldel3)
         self.array5=numpy.array(self.delta_caldel)
         self.array7=numpy.array(self.timewalk)
         self.array8=numpy.array(self.caldel_width)
@@ -105,11 +99,11 @@ class Timewalk(test.Test):
             self._histos.append(caldel2_histo)
             caldel_width_histo = Plotter.create_th1(self.array8[roc.number],'CalDel_width_distribution_%s' %roc, 'CalDel', '# pixels',1,255)
             self._histos.append(caldel_width_histo)
-            caldel4_histo = Plotter.create_th1(self.array4[roc.number],'CalDel4_distribution_%s' %roc, 'CalDel', '# pixels',1,255)
-            self._histos.append(caldel4_histo)
+            caldel3_histo = Plotter.create_th1(self.array3[roc.number],'CalDel3_distribution_%s' %roc, 'CalDel', '# pixels',1,255)
+            self._histos.append(caldel3_histo)
             timewalk_caldel_histo = Plotter.create_th1(self.array5[roc.number],'Timewalk_CalDel_units_distribution_%s' %roc, 'CalDel', '# pixels',1,255)
             self._histos.append(timewalk_caldel_histo)
-            timewalk_histo = Plotter.create_th1(self.array7[roc.number],'Timewalk_distribution_%s' %roc, 'Timewalk (ns)', '# pixels',1,40)
+            timewalk_histo = Plotter.create_th1(self.array7[roc.number],'Timewalk_distribution_%s' %roc, 'Timewalk (ns)', '# pixels',0,100)
             self._histos.append(timewalk_histo)
             
 

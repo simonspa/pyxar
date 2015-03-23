@@ -28,7 +28,8 @@ class Pretest(test.Test):
         self.logger.info('Running pretest')
         self.rocs_programmable()
         self.adjust_vana()
-        self.find_VthrComp_CalDel_alt()
+        #self.find_VthrComp_CalDel_alt()
+        self.find_VthrComp_CalDel()
         self.adjust_PH_range()
 
     def cleanup(self, config):

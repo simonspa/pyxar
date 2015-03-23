@@ -13,12 +13,9 @@ class HotPixelMasker(test.Test):
         self.noise = int(config.get('HotPixelMasker','noise'))
         self.period = int(config.get('HotPixelMasker','period'))
         self.tb.pg_stop()
-        self.tb.arm_pixel(0,5,0)
         self.tb.daq_enable()
         self.tb.set_pg([("resetroc",0)])
-        self.tb.daq_enable()
         self.tb.pg_single(1,2)
-        self.tb.daq_disable()
         self.tb.testAllPixels(True)
         if self.dut.n_tbms > 0:
             self.tb.init_pg(self.config)
@@ -27,15 +24,13 @@ class HotPixelMasker(test.Test):
             #self.tb.pg_setcmd(0, self.tb.PG_SYNC + self.tb.PG_TRG)
             #self.tb.pg_setcmd(1, self.tb.PG_TRG  + ttk)
         else:
-            self.tb.set_pg([("calibrate",106),("trigger",ttk),
+            self.tb.set_pg([("trigger",ttk),
                             ("token",0)])
 
     def __init__(self, tb, config, window):
         super(HotPixelMasker, self).__init__(tb, config)
         self.window = window
         self.start_data = 0
-        self.data_taking_time = 5
-        self.period = 1288
         self.average_ph = numpy.copy(self.dut.data)
         self.n_rocs = int(config.get('Module','rocs'))
         if self.window:

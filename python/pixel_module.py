@@ -503,7 +503,7 @@ class DUT(object):
         if self.MaskFile:
             for line in self.MaskFile.readlines():
                 if not line.startswith('#'):
-                    line = line.split()
+                    line = line.split(' ')
                     if line[0] == 'pix':
                         self.pixel(int(line[1]),int(line[2]),int(line[3])).mask = True
                     if line[0] == 'col':
