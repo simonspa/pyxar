@@ -8,6 +8,7 @@ class Calibrate(test.Test):
         self.n_triggers = int(config.get('Calibrate','n_triggers'))
 
     def run(self, config):
+        self.tb.m_delay(15000)
         self.tb.get_calibrate(self.n_triggers)
 
     def cleanup(self, config):

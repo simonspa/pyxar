@@ -24,7 +24,7 @@ class Pretest(test.Test):
 
     
     def run(self, config):
-        self.tb.m_delay(7000)
+        self.tb.m_delay(15000)
         self.logger.info('Running pretest')
         self.rocs_programmable()
         self.adjust_vana()

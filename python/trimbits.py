@@ -24,6 +24,7 @@ class TrimBits(test.Test):
         self.threshold = 50
 
     def run(self, config): 
+        self.tb.m_delay(15000)
         self.logger.info('Running trim bit test')
         self.tb.set_dac('Vcal', self.vcal)
         for step, bit in enumerate(self.trim_bit):

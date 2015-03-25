@@ -11,6 +11,6 @@ class Threshold(test.Test):
         self.threshold = 50
 
     def run(self, config): 
-        self.tb.m_delay(7000)
+        self.tb.m_delay(15000)
         self.logger.info('Running threshold test')
         dut_thr_map = self.tb.get_threshold(self.n_triggers, self.dac, self.threshold, self.xtalk, self.cals, self.reverse) 

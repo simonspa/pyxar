@@ -13,6 +13,7 @@ class BondMap(test.Test):
         self.threshold = 50
 
     def run(self, config): 
+        self.tb.m_delay(15000)
         self.logger.info('Running BondMap')
         self.tb.set_dac('CtrlReg', 4)
         dut_thr_map = self.tb.get_threshold(self.n_triggers, self.dac, self.threshold, self.xtalk, self.cals, self.reverse) 

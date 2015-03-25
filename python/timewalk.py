@@ -6,6 +6,8 @@ from plotter import Plotter
 class Timewalk(test.Test):
     ''' measuring the timewalk, i.e. the timing difference between the smallest and the largest Vcal signals visible. The conversion from CalDel units to nano seconds is based on the width of the efficiency window which corresponds to 25 ns '''
     def prepare(self, config):
+        #self.vcalhigh = 229
+        #self.vcallow = 45
         self.vcalhigh = 234
         self.vcallow = 46
         #self.vcalhigh = 255
@@ -33,7 +35,7 @@ class Timewalk(test.Test):
             self.range_row = 10
 
     def run(self, config):
-        self.tb.m_delay(7000)
+        self.tb.m_delay(15000)
         self.logger.info('Running timewalk measurement. Please execute test with trimmed sample')
         #Disabling all pixels
         self.tb.testAllPixels(False)
@@ -53,12 +55,17 @@ class Timewalk(test.Test):
                     self.tb.set_dac_roc(roc, 'CtrlReg', 4)
                     #search for begin of efficiency window
                     thr1 = self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'CalDel', 50, False, False, False)
-                    self.caldel1[roc.number].append(thr1)
+                    if not thr1 == None:
+                        self.caldel1[roc.number].append(float(thr1))
                     #search for end of efficiency window
                     thr2 = self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'CalDel', 50, False, False, True)
-                    self.caldel2[roc.number].append(thr2)
+                    if not thr2 == None:
+                        self.caldel2[roc.number].append(float(thr2))
                     #calculate width of efficiency window
-                    delta_thr = thr2 - thr1
+                    if thr2 == None or thr1 == None:
+                        delta_thr = 0
+                    else:
+                        delta_thr = thr2 - thr1
                     self.caldel_width[roc.number].append(delta_thr)
                     conversion = delta_thr / 25
                     #reset CtrlReg
@@ -66,7 +73,8 @@ class Timewalk(test.Test):
                     #measure caldel threshold for small Vcal signal
                     self.tb.set_dac_roc(roc, 'Vcal', self.vcallow)
                     thr3 = self.tb.get_pixel_threshold(roc, col, row, self.n_triggers, 'CalDel', 50, False, False, False)
-                    self.caldel3[roc.number].append(thr3)
+                    if not thr3 == None:
+                        self.caldel3[roc.number].append(float(thr3))
                     #calculate timewalk
                     if thr3 == None: 
                         continue

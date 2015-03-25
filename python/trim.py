@@ -23,7 +23,7 @@ class Trim(test.Test):
         self.threshold = 50
 
     def run(self, config): 
-        self.tb.m_delay(7000)
+        self.tb.m_delay(15000)
         '''Run the trimming algorithm.'''
         self.logger.info('Running trimming to Vcal %s' %self.vcal)
         #Determine min vthr
@@ -154,8 +154,8 @@ class Trim(test.Test):
         #self.dut_Noise_map = self.tb.get_threshold(self.n_triggers, 'VthrComp', self.xtalk, self.cals, True)
         self.vthr = []
         for i, roc in enumerate(self.dut.rocs()):
-            mean = numpy.mean(self.dut_VthrComp_map[roc.number])
-            std_dev = numpy.std(self.dut_VthrComp_map[roc.number])/2.
+            mean = numpy.mean(numpy.ma.masked_values(self.dut_VthrComp_map[roc.number],255))
+            std_dev = numpy.std(numpy.ma.masked_values(self.dut_VthrComp_map[roc.number],255))/2.
             minimum = numpy.amin(numpy.ma.masked_less_equal(self.dut_VthrComp_map[roc.number],0)) 
             #noise_min = numpy.amin(numpy.ma.masked_less_equal(self.dut_Noise_map[roc.number],0)) 
             noise_min = -1

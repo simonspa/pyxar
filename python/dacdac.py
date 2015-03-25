@@ -11,7 +11,7 @@ class DacDac(test.Test):
         self.x_title = self.dac2
 
     def run(self, config):
-        self.tb.m_delay(7000)
+        self.tb.m_delay(15000)
         self.logger.info('Running DacDac test')
         self.tb.get_dac_dac(self.n_triggers, self.dac1, self.dac2)
 

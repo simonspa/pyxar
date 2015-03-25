@@ -35,7 +35,7 @@ class SCurves(test.Test):
             outfile.close()    
 
     def run(self, config):
-        self.tb.m_delay(7000)
+        self.tb.m_delay(15000)
         #Measure map to determine rough threshold
         #TODO check if 4 is enough
         self.dut_thr_map = self.tb.get_threshold(4, self.dac, self.threshold, self.xtalk, self.cals, self.reverse)
