@@ -26,4 +26,5 @@ from calibratereadback import CalibrateReadback
 from hotpixelmasker import HotPixelMasker
 from hrefficiency import HREfficiency
 from timewalk import Timewalk
+from deltaph import DeltaPH
 from hrefficiencyscan import HREfficiencyScan

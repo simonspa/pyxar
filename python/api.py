@@ -309,6 +309,33 @@ class api(PyPxarCore):
                         pulseheight.append(0)
                 pixel.data = numpy.array(pulseheight)
 
+    def get_ph_dacdac(self, n_triggers, dac1, dac2):
+        self.testAllPixels(False)
+        #activate pixels to be tested
+        for roc in self.dut.rocs():
+            dac1_range = roc.dac(dac1).range
+            dac2_range = roc.dac(dac2).range
+            for pixel in roc.active_pixels():
+                self.logger.debug('PHDacDac pix(%s,%s) of %s, nTrig: %s, dac1: %s, 0, %s, dac2: %s, 0, %s' %(pixel.col,pixel.row, roc, n_triggers, dac1, dac1_range, dac2, dac2_range) )
+                self.testPixel(pixel.col, pixel.row, True, roc.number)
+                self.maskPixel(pixel.col, pixel.row, False, roc.number)
+                #do test for all activated pixels 
+                datas = self.getPulseheightVsDACDAC(dac1, 1, 0, dac1_range, dac2, 1, 0, dac2_range, 0x0, n_triggers)
+                #deactivate all pixels
+                for pixel in roc.active_pixels():
+                    self.testPixel(pixel.col, pixel.row, False, roc.number)
+                #extract pulse height from returned data 
+                pulseheight = []
+                if type(datas) == numpy.ndarray:
+                    datas = datas.tolist()
+                for idac, dac in enumerate(datas):
+                    found = False
+                    for px in dac:
+                        pulseheight.append(px.value)
+                pixel.data = numpy.transpose(list_to_matrix(dac1_range+1, dac2_range+1, pulseheight))
+
+       
+
     def get_dac_scan(self, n_triggers, dac):
         self.testAllPixels(False)
         #activate pixels to be tested

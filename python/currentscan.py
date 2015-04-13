@@ -11,6 +11,8 @@ class CurrentScan(test.Test):
         self.delay = int(config.get('CurrentScan','delay'))
     
     def run(self, config):
+        self.logger.debug('ia = %s'%self.tb.getTBia())
+
         self.tb.m_delay(15000)
         for roc in self.dut.rocs():
             current = []
@@ -19,12 +21,13 @@ class CurrentScan(test.Test):
             self.tb.m_delay(100)
             for val in range(0,roc.dac(self.dac).range):
                 self.tb.set_dac_roc(roc,self.dac,val)
-                if 'ana' in self.current:
-                    current.append(self.tb.get_ia())
-                elif 'dig' in self.current:
-                    current.append(self.tb.get_id())
                 self.tb.m_delay(self.delay)
+                if 'ana' in self.current:
+                    current.append(self.tb.getTBia()*1000)
+                elif 'dig' in self.current:
+                    current.append(self.tb.getTBid()*1000)
             roc.data = numpy.array(current)
+            self.tb.m_delay(self.delay)
             self.restore()
             self.logger.debug('currents = %s'%current)
 
