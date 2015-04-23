@@ -11,8 +11,8 @@ class Timewalk(test.Test):
 #        self.vcalhigh = 255
 #        self.vcallow = 50
         #dose 60
-        self.vcalhigh = 229
-        self.vcallow = 45
+#        self.vcalhigh = 229
+#        self.vcallow = 45
         #dose 120
 #        self.vcalhigh = 227
 #        self.vcallow = 45
@@ -23,8 +23,8 @@ class Timewalk(test.Test):
 #        self.vcalhigh = 225
 #        self.vcallow = 44
         #dose 480
-#        self.vcalhigh = 224
-#        self.vcallow = 44
+        self.vcalhigh = 224
+        self.vcallow = 44
         
 
         

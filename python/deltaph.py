@@ -10,7 +10,7 @@ class DeltaPH(test.Test):
 
     def prepare(self, config):
         self.vcalhigh = 255
-        self.vcallow = 50
+        self.vcallow = 60
         
         self.n_triggers = int(config.get('DeltaPH','n_triggers'))
         self.n_pixels = int(config.get('DeltaPH','n_pixels'))

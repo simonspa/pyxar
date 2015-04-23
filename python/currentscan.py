@@ -9,6 +9,7 @@ class CurrentScan(test.Test):
         self.dac = config.get('CurrentScan','dac')
         self.current = config.get('CurrentScan','current')
         self.delay = int(config.get('CurrentScan','delay'))
+        self.mode = int(config.get('CurrentScan','mode'))
     
     def run(self, config):
         self.logger.debug('ia = %s'%self.tb.getTBia())
@@ -23,9 +24,15 @@ class CurrentScan(test.Test):
                 self.tb.set_dac_roc(roc,self.dac,val)
                 self.tb.m_delay(self.delay)
                 if 'ana' in self.current:
+                    self.tb.set_signal_mode('clk',self.mode)
+                    self.tb.m_delay(100)
                     current.append(self.tb.getTBia()*1000)
+                    self.tb.set_signal_mode('clk',0)
                 elif 'dig' in self.current:
+                    self.tb.set_signal_mode('clk',self.mode)
+                    self.tb.m_delay(100)
                     current.append(self.tb.getTBid()*1000)
+                    self.tb.set_signal_mode('clk',0)
             roc.data = numpy.array(current)
             self.tb.m_delay(self.delay)
             self.restore()
