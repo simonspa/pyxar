@@ -24,13 +24,13 @@ class Pretest(test.Test):
 
     
     def run(self, config):
-        self.tb.m_delay(15000)
+        #self.tb.m_delay(15000)
         self.logger.info('Running pretest')
         self.rocs_programmable()
         self.adjust_vana()
-        #self.find_VthrComp_CalDel_alt()
-        self.find_VthrComp_CalDel()
-        self.adjust_PH_range()
+        self.find_VthrComp_CalDel_alt()
+        #self.find_VthrComp_CalDel()
+        #self.adjust_PH_range()
 
     def cleanup(self, config):
         plot = Plotter(self.config, self)

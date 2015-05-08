@@ -15,7 +15,7 @@ class HREfficiency(test.Test):
         self.resr_delay = int(config.get('Testboard','pg_resr'))
         self.tct_wbc = int(config.get('Testboard','tct_wbc'))
         self.ttk = int(config.get('HREfficiency','ttk'))
-        
+
         #containers to hold vcal and xray hits
         self.vcals = []
         self.xrays = []
@@ -70,7 +70,8 @@ class HREfficiency(test.Test):
         self.dut.data = self.vcals
         #abuse dut.ph_array container for xray hits
         self.dut.ph_array = self.xrays
-      
+       
+
         #send a reset to the chip
         self.tb.pg_setup = [
                 ("resetroc",0)]    # pg_resr
@@ -84,6 +85,8 @@ class HREfficiency(test.Test):
         self.restore()
         stop_time = time.time()
         delta_t = stop_time - start_time
+        
+        
         self.logger.info('Test finished after %.1f seconds' %delta_t)
 
     def update_histo(self):
