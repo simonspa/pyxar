@@ -29,3 +29,4 @@ from timewalk import Timewalk
 from deltaph import DeltaPH
 from hrefficiencyscan import HREfficiencyScan
 from testpulse import TestPulse
+from hlddelay import HldDelay

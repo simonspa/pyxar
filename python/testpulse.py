@@ -10,7 +10,7 @@ class TestPulse(test.Test):
 
     def prepare(self, config):
         #read in test parameters
-        self.n_triggers = 100
+        self.n_triggers = 1
         self.n_rocs = int(config.get('Module','rocs'))
         self.cal_delay = int(config.get('Testboard','pg_cal'))
         self.tct_wbc = int(config.get('Testboard','tct_wbc'))
