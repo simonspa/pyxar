@@ -77,6 +77,18 @@ class Plotter(object):
             for y in range(len_y):
                 th2.SetBinContent(x + 1, y + 1, data[x][y])
         return th2
+ 
+    @staticmethod
+    def create_th2_binned(data, len_x, xbins, len_y, ybins, name, x_title, y_title):
+        th2 = ROOT.TH2F(name, name, xbins, 0, len_x , ybins, 0, len_y)
+        th2.SetDirectory(0)
+        th2.GetXaxis().SetTitle(x_title)
+        th2.GetYaxis().SetTitle(y_title)
+        th2.SetDrawOption('COLZ')
+        for x in range(xbins):
+            for y in range(ybins):
+                th2.SetBinContent(x + 1, y + 1, data[x][y])
+        return th2
     
     def matrix_to_th2(self, matrix, name, x_title, y_title):
         dim = matrix.shape

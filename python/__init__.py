@@ -30,3 +30,5 @@ from deltaph import DeltaPH
 from hrefficiencyscan import HREfficiencyScan
 from testpulse import TestPulse
 from hlddelay import HldDelay
+from colorwave import ColOrWave
+from feedback import Feedback

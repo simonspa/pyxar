@@ -44,7 +44,8 @@ class HldDelay(test.Test):
         self.dut.data = numpy.zeros_like(self.dut.data)
         for roc in self.dut.rocs():
             #pick a random double column
-            self.dcol = int(random.random()*26)
+            #self.dcol = int(random.random()*26)
+            self.dcol = 22
             #loop over all pixels of the dcol and make a phscan using the VhldDel DAC
             for irow in range(160):
                 if irow < 80:
@@ -83,12 +84,13 @@ class HldDelay(test.Test):
         if len(self.jumps)==2:
             delta1 = self.jumps[1]-self.jumps[0]
             self.logger.info('jump in VhldDel at pixels %s and %s' %(self.jumps[0], self.jumps[1]))
-            self.logger.info('number of pixel between jumps: %i' %delta1)
+            self.logger.info('speed of ColOr wave is %i pixels per 25 ns' %delta1)
         elif len(self.jumps)==3:
             delta1 = self.jumps[1]-self.jumps[0]
             delta2 = self.jumps[2]-self.jumps[1]
             self.logger.info('jump in VhldDel at pixels %s, %s and %s' %(self.jumps[0], self.jumps[1], self.jumps[2]))
-            self.logger.info('number of pixel between jumps: %i and %i' %(delta1, delta2))
+            self.logger.info('speed of ColOr wave is %i pixels per 25 ns' %delta1)
+            self.logger.info('speed of ColOr wave is %i pixels per 25 ns' %delta2)
         elif len(self.jumps)==1:
             self.logger.info('only one jump in VhldDel registered')
         elif len(self.jumps)==0:
