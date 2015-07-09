@@ -16,19 +16,19 @@ class Feedback(test.Test):
         #read in test parameters
         self.n_triggers = 1
         self.n_rocs = int(config.get('Module','rocs'))
-        self.cal_delay = int(config.get('Testboard','pg_cal'))
-        self.tct_wbc = int(config.get('Testboard','tct_wbc'))
+        self.cal_delay = 101
+        self.tct_wbc = 5
         self.ttk = 16
         self.pulsed_pixels = []
         
-        self.fbinning = 10
+        self.fbinning = 50
         self.tbinning = 1
         self.feedback_max = 250
-        self.deltaT_max = 20
+        self.deltaT_max = 10
         
         self.shape = ( int(self.feedback_max / self.fbinning), int(self.deltaT_max / self.tbinning) )
         self.result = numpy.zeros(self.shape)
-
+        
         #unmask all pixels
         self.tb.maskAllPixels(False)
         self.tb.init_deser()
@@ -53,6 +53,8 @@ class Feedback(test.Test):
         self.start_data = time.time()
         #reset data containers
         self.dut.data = numpy.zeros_like(self.dut.data)
+        self.tb.set_dac('Vcal', 255)
+        self.tb.set_dac('CtrlReg', 4)
         #loop over shaper feedback setting
         for fbin in range(int(self.feedback_max / self.fbinning)):
             self.feedback = fbin * self.fbinning
@@ -60,18 +62,19 @@ class Feedback(test.Test):
             #loop over all delta t settings (in number of clk cycles)
             for tbin in range(int(self.deltaT_max / self.tbinning)):
                 self.deltaT = tbin * self.tbinning
+                print self.deltaT
                 #protection not to stop the pg
                 if self.deltaT == 0:
                     self.deltaT =1
-                #self.deltaT = 0
                 #arm pixel to be tested
                 col = 5
                 row = 5
                 for roc in self.dut.rocs():
                     self.tb.testPixel(col, row, True, roc.number)
+                self.tb.u_delay(100)
                 self.tb.daq_enable()
                 # Clear the DAQ buffer:
-                #self.tb.daq_getbuffer()
+                self.tb.daq_getbuffer()
                 #send reset
                 #self.tb.pg_setup = [
                 #    ("resetroc",0)]    # pg_resr
@@ -81,16 +84,12 @@ class Feedback(test.Test):
                 #self.tb.u_delay(10)
                 #set up pg for sending Vcals
                 self.tb.pg_setup = [
-                    ("calibrate",self.deltaT),
+                    ("resetroc",self.deltaT),
                     ("calibrate",self.cal_delay + self.tct_wbc), 
                     ("trigger",self.ttk),    
                     ("token",0)]
                 self.tb.set_pg(self.tb.pg_setup)
-                #send n_triggers Vcal pulses to pixel under test
-                for trig in range(self.n_triggers):
-                    self.tb.pg_single(1,500)
-                    #print self.tb.daqGetEvent()
-                    self.tb.u_delay(10)
+                self.tb.pg_single(1,500)
                 self.tb.pg_stop()
                 self.readout(config)
                 #disarm pixel

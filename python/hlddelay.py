@@ -76,7 +76,7 @@ class HldDelay(test.Test):
         vhlddel = self.dip[0]
         for pix in range(len(self.dip)):
             vhlddel_tmp = self.dip[pix]
-            if vhlddel > vhlddel_tmp+5:
+            if vhlddel > vhlddel_tmp+4:
                 self.jumps.append(pix)
             vhlddel = self.dip[pix]
 
