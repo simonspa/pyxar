@@ -58,7 +58,7 @@ class TestPulse(test.Test):
                 self.tb.u_delay(100)
                 self.tb.daq_enable()
                 # Clear the DAQ buffer:
-                self.tb.daq_getbuffer()
+                #self.tb.daq_getbuffer()
                 #send reset
                 self.tb.pg_setup = [
                     ("resetroc",0)]    # pg_resr

@@ -14,7 +14,7 @@ class HldDelay(test.Test):
 
     def prepare(self, config):
         #read in test parameters
-        self.n_triggers = 100
+        self.n_triggers = 10
         self.dac = 'VhldDel'
         self.n_rocs = int(config.get('Module','rocs'))
         self.cal_delay = int(config.get('Testboard','pg_cal'))
@@ -24,6 +24,10 @@ class HldDelay(test.Test):
         self.ph = []
         self.dip = []
         self.jumps = []
+        self.shape = (26,160)
+        self.result = numpy.zeros(self.shape)
+
+
 
         for roc in self.dut.rocs():
             roc.pixel(5,5).active = False
@@ -43,28 +47,28 @@ class HldDelay(test.Test):
         #reset data containers
         self.dut.data = numpy.zeros_like(self.dut.data)
         for roc in self.dut.rocs():
-            #pick a random double column
-            #self.dcol = int(random.random()*26)
-            self.dcol = 22
-            #loop over all pixels of the dcol and make a phscan using the VhldDel DAC
-            for irow in range(160):
-                if irow < 80:
-                    row = irow
-                    col = self.dcol*2
-                else:
-                    row = -irow+159
-                    col = self.dcol*2+1
-                #arm pixel to be tested
-                if self.n_rocs>1:
-                    self.logger.warning('Test not compatible with DUT with more than 1 ROC - aborting')
-                    break
-                roc.pixel(col,row).active = True
-                self.tb.get_ph_dac(self.n_triggers, self.dac)
-                for roc in self.dut.rocs():
-                    for pixel in roc.active_pixels():
-                        self.ph = pixel.data
-                        self.dip.append(numpy.argmin(numpy.array(pixel.data)))
-                roc.pixel(col,row).active = False
+            #loop over double columns
+            for icol in range(26):
+                #icol = 5
+                #loop over all pixels of the dcol and make a phscan using the VhldDel DAC
+                for irow in range(160):
+                    if irow < 80:
+                        row = irow
+                        col = icol*2
+                    else:
+                        row = -irow+159
+                        col = icol*2+1
+                    #arm pixel to be tested
+                    if self.n_rocs>1:
+                        self.logger.warning('Test not compatible with DUT with more than 1 ROC - aborting')
+                        break
+                    roc.pixel(col,row).active = True
+                    self.tb.get_ph_dac(self.n_triggers, self.dac)
+                    for roc in self.dut.rocs():
+                        for pixel in roc.active_pixels():
+                            self.ph = pixel.data
+                            self.result[icol][irow] = numpy.argmin(numpy.array(pixel.data))
+                    roc.pixel(col,row).active = False
         
         self.cleanup(config)
         self.dump()
@@ -72,7 +76,9 @@ class HldDelay(test.Test):
         stop_time = time.time()
         delta_t = stop_time - start_time
         self.logger.info('Test finished after %.1f seconds' %delta_t)
-        
+       
+       
+        ''' 
         vhlddel = self.dip[0]
         for pix in range(len(self.dip)):
             vhlddel_tmp = self.dip[pix]
@@ -98,13 +104,18 @@ class HldDelay(test.Test):
         else:
             self.logger.info('more than two jumps in VhldDel registered')
         self.logger.info('----------------------------------------')
-        
+        '''
+
+
     def cleanup(self, config):
-        plot2 = Plotter.create_tgraph(self.ph, 'title', self.dac, 'Pulseheight', 0, 255)
-        self._histos.append(plot2)
-        plot = Plotter.create_tgraph(self.dip, 'double colum number %i' %self.dcol, 'pixel', self.dac, 0, len(self.dip))
-        self._histos.append(plot)
+        #plot2 = Plotter.create_tgraph(self.ph, 'title', self.dac, 'Pulseheight', 0, 255)
+        #self._histos.append(plot2)
+        #plot = Plotter.create_tgraph(self.dip, 'double colum number %i' %self.dcol, 'pixel', self.dac, 0, len(self.dip))
+        #self._histos.append(plot)
+        res = Plotter.create_th2(self.result,26, 160, "VhldDel dip", "dcol", "pixel")
+        self._histos.append(res)
    
+    
     def restore(self):
         '''restore saved dac parameters'''
         super(HldDelay, self).restore()
