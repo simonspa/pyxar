@@ -45,7 +45,9 @@ class Pyxar(PyCmd):
         self.tb.id()
         #set probe a1 to clk
         self.tb.SignalProbe("d1","ctr")
-        self.tb.SignalProbe("a2","sda")
+        self.tb.SignalProbe("d2","sda")
+        self.tb.SignalProbe("a1","tin")
+        self.tb.SignalProbe("a2","tout")
 
     def do_gui(self, line):
         if self.window:

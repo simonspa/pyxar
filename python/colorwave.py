@@ -124,6 +124,8 @@ class ColOrWave(test.Test):
 
                     self.tb.testAllPixels(False)
                     deltaPH = ph_with - ph_without
+                    print ph_with
+                    print ph_without
                     print '-----'
                     print deltaPH
                     print '-----'

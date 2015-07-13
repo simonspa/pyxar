@@ -21,10 +21,10 @@ class Feedback(test.Test):
         self.ttk = 16
         self.pulsed_pixels = []
         
-        self.fbinning = 50
-        self.tbinning = 1
+        self.fbinning = 25
+        self.tbinning = 20
         self.feedback_max = 250
-        self.deltaT_max = 10
+        self.deltaT_max = 200
         
         self.shape = ( int(self.feedback_max / self.fbinning), int(self.deltaT_max / self.tbinning) )
         self.result = numpy.zeros(self.shape)
@@ -74,7 +74,7 @@ class Feedback(test.Test):
                 self.tb.u_delay(100)
                 self.tb.daq_enable()
                 # Clear the DAQ buffer:
-                self.tb.daq_getbuffer()
+                #self.tb.daq_getbuffer()
                 #send reset
                 #self.tb.pg_setup = [
                 #    ("resetroc",0)]    # pg_resr
@@ -83,11 +83,22 @@ class Feedback(test.Test):
                 #self.tb.pg_stop()
                 #self.tb.u_delay(10)
                 #set up pg for sending Vcals
+              
+                #reproduced DacDac problem
                 self.tb.pg_setup = [
-                    ("resetroc",self.deltaT),
+                    ("resetroc",25),
+                    ("calibrate",self.cal_delay + self.tct_wbc),
+                    ("trigger",self.ttk),
+                    #("token",self.deltaT),
+                    ("resetroc",26),
                     ("calibrate",self.cal_delay + self.tct_wbc), 
                     ("trigger",self.ttk),    
                     ("token",0)]
+               
+
+                
+                
+                
                 self.tb.set_pg(self.tb.pg_setup)
                 self.tb.pg_single(1,500)
                 self.tb.pg_stop()

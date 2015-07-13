@@ -48,8 +48,8 @@ class HldDelay(test.Test):
         self.dut.data = numpy.zeros_like(self.dut.data)
         for roc in self.dut.rocs():
             #loop over double columns
-            for icol in range(26):
-                #icol = 5
+            for icol in range(2):
+                icol +=7
                 #loop over all pixels of the dcol and make a phscan using the VhldDel DAC
                 for irow in range(160):
                     if irow < 80:
