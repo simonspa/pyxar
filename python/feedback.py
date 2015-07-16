@@ -22,9 +22,11 @@ class Feedback(test.Test):
         self.pulsed_pixels = []
         
         self.fbinning = 25
+        #self.tbinning = 2
         self.tbinning = 20
         self.feedback_max = 250
-        self.deltaT_max = 200
+        #self.deltaT_max = 50
+        self.deltaT_max = 1000
         
         self.shape = ( int(self.feedback_max / self.fbinning), int(self.deltaT_max / self.tbinning) )
         self.result = numpy.zeros(self.shape)
@@ -61,7 +63,7 @@ class Feedback(test.Test):
             self.tb.set_dac('VwllSh', self.feedback)
             #loop over all delta t settings (in number of clk cycles)
             for tbin in range(int(self.deltaT_max / self.tbinning)):
-                self.deltaT = tbin * self.tbinning
+                self.deltaT = tbin * self.tbinning / 4
                 print self.deltaT
                 #protection not to stop the pg
                 if self.deltaT == 0:
@@ -84,15 +86,14 @@ class Feedback(test.Test):
                 #self.tb.u_delay(10)
                 #set up pg for sending Vcals
               
-                #reproduced DacDac problem
                 self.tb.pg_setup = [
                     ("resetroc",25),
-                    ("calibrate",self.cal_delay + self.tct_wbc),
-                    ("trigger",self.ttk),
-                    #("token",self.deltaT),
-                    ("resetroc",26),
-                    ("calibrate",self.cal_delay + self.tct_wbc), 
-                    ("trigger",self.ttk),    
+                    ("calibrate",self.deltaT),
+                    ("empty",self.deltaT),
+                    ("empty",self.deltaT),
+                    ("empty",self.deltaT),
+                    ("calibrate",106),
+                    ("trigger",16),
                     ("token",0)]
                
 
@@ -100,7 +101,7 @@ class Feedback(test.Test):
                 
                 
                 self.tb.set_pg(self.tb.pg_setup)
-                self.tb.pg_single(1,500)
+                self.tb.pg_single(1,2000)
                 self.tb.pg_stop()
                 self.readout(config)
                 #disarm pixel
