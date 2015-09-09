@@ -202,7 +202,7 @@ class Roc(object):
             dac_number = int(num)
             self._dac_number_to_name[dac_number] = dac_name
             #Python 2.2
-            self._dac_name_to_number = dict([(v, k) for k, v in self._dac_number_to_name.iteritems()]) 
+            self._dac_name_to_number = dict([(v, k) for k, v in self._dac_number_to_name.iteritems()])
             #Python 2.7
             #self._dac_name_to_number = {v:k for k, v in self._dac_number_to_name.items()}
             dac_bits = eval(config.get('ROC','dac_bits'))
