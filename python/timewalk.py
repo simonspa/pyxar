@@ -8,8 +8,8 @@ class Timewalk(test.Test):
     ''' measuring the timewalk, i.e. the timing difference between the smallest and the largest Vcal signals visible. The conversion from CalDel units to nano seconds is based on the width of the efficiency window which corresponds to 25 ns '''
     def prepare(self, config):
         #dose 0
-#        self.vcalhigh = 255
-#        self.vcallow = 50
+        self.vcalhigh = 255
+        self.vcallow = 43
         #dose 60
 #        self.vcalhigh = 229
 #        self.vcallow = 45
@@ -23,8 +23,8 @@ class Timewalk(test.Test):
 #        self.vcalhigh = 225
 #        self.vcallow = 44
         #dose 480
-        self.vcalhigh = 224
-        self.vcallow = 44
+#        self.vcalhigh = 224
+#        self.vcallow = 44
         
 
         
@@ -49,7 +49,7 @@ class Timewalk(test.Test):
             self.count = 0
 
     def run(self, config):
-        self.tb.m_delay(15000)
+        self.tb.m_delay(2000)
         self.logger.info('Running timewalk measurement. Please execute test with trimmed sample')
         #Disabling all pixels
         self.tb.testAllPixels(False)

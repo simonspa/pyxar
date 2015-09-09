@@ -21,9 +21,9 @@ class Feedback(test.Test):
         self.ttk = 16
         self.pulsed_pixels = []
         
-        self.fbinning = 25
+        self.fbinning = 10
         #self.tbinning = 2
-        self.tbinning = 20
+        self.tbinning = 5
         self.feedback_max = 250
         #self.deltaT_max = 50
         self.deltaT_max = 1000

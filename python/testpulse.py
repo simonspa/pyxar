@@ -10,7 +10,7 @@ class TestPulse(test.Test):
 
     def prepare(self, config):
         #read in test parameters
-        self.n_triggers = 100
+        self.n_triggers = 10
         self.n_rocs = int(config.get('Module','rocs'))
         self.cal_delay = int(config.get('Testboard','pg_cal'))
         self.tct_wbc = int(config.get('Testboard','tct_wbc'))
@@ -19,7 +19,6 @@ class TestPulse(test.Test):
         self.shape = (52,80)
 
         #unmask all pixels
-        self.tb.maskAllPixels(False)
         self.tb.init_deser()
         #send reset
         self.tb.pg_setup = [
@@ -47,10 +46,12 @@ class TestPulse(test.Test):
         for col in range(1):
             #for row in range(self.dut.roc(0)._n_rows):
             for row in range(1):
+                self.tb.maskAllPixels(False)
                 #pixel under test
                 col = col*2+int(random.random()+.5)
-                #col =4
+                col = 5
                 row = int(random.random()*80)
+                row = 5
                 self.pulsed_pixels.append([col,row])
                 #arm pixel to be tested on all ROCs of DUT
                 for roc in self.dut.rocs():
@@ -76,7 +77,7 @@ class TestPulse(test.Test):
                 for trig in range(self.n_triggers):
                     self.tb.pg_single(1,127)
                     #print self.tb.daqGetEvent()
-                    self.tb.u_delay(10)
+                    #self.tb.m_delay(1)
                 self.tb.pg_stop()
                 self.readout(config)
                 #disarm pixel
@@ -105,7 +106,6 @@ class TestPulse(test.Test):
             
             self.dut.ph_cal_array[0][pcol][prow] = - (self.dut.data[0][pcol][prow] - self.n_triggers)
 
-
         self.cleanup(config)
         self.dump()
         self.restore()
@@ -118,6 +118,9 @@ class TestPulse(test.Test):
     def readout(self, config):       
         n_hits, average_ph, ph_histogram, ph_cal_histogram, nhits_vector, ph_vector, addr_vector = self.tb.get_data(Vcal_conversion=True)
         self.dut.data += n_hits
+        print '*******'
+        print average_ph[0][5][5]
+        print '*******'
         #for roc in range(self.n_rocs):
         #    self.dut.ph_array[roc].extend(ph_histogram[roc])
         #    self.dut.ph_cal_array[roc].extend(ph_cal_histogram[roc])

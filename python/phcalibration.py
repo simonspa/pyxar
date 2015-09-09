@@ -28,7 +28,7 @@ class PHCalibration(test.Test):
             outfile.close()
 
     def run(self, config):
-        self.tb.m_delay(15000)
+        self.tb.m_delay(1000)
         #Measure scan DAC around min and max threshold pm half the range
         self.tb.set_dac('CtrlReg',0)
         for point in self.points_lowrange:

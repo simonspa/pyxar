@@ -40,7 +40,8 @@ class api(PyPxarCore):
         "sda":int(config.get('Testboard','sda')),
         "tin":int(config.get('Testboard','tin')),
         "deser160phase":int(config.get('Testboard','deser160phase')),
-        "triggerdelay":int(config.get('Testboard','triggerdelay'))}
+        "triggerdelay":int(config.get('Testboard','triggerdelay')),
+        "trimdelay":int(config.get('Testboard','trimdelay'))}
         self.logger.info("Delay settings:\n %s" %self.sig_delays)
 
     def set_delays(self, config):
@@ -89,12 +90,16 @@ class api(PyPxarCore):
                 ("calibrate",cal_delay + tct_wbc), # PG_CAL
                 ("trigger",trg_delay),    # PG_TRG
                 ("token",0)]
+
+
+            
+            
         self.logger.info("Default PG setup:\n %s" %self.pg_setup)
         self.set_pg(self.pg_setup)
 
     def set_pg(self, pg_setup):
         self.setPatternGenerator(pg_setup)
-
+        
     def pg_single(self, nTrig, period):
         self.daqTrigger(nTrig, period)
         
@@ -207,8 +212,9 @@ class api(PyPxarCore):
             for ipx, px in enumerate(evt.pixels):
                 hits[px.roc][px.column][px.row] += 1
                 phs[px.roc][px.column][px.row] += px.value
+                print px.value
                 # Appends entry PH > 0 to list of ROC number roc
-                if px.value > 0:
+                if px.value >= 0:
                     ph_histo[px.roc].append(px.value)
                     if Vcal_conversion:
                         ph_cal = self.dut.roc(px.roc).ADC_to_Vcal(px.column, px.row, px.value, self.dut.roc(px.roc).ph_slope, self.dut.roc(px.roc).ph_offset, self.dut.roc(px.roc).ph_par2)
@@ -237,11 +243,15 @@ class api(PyPxarCore):
     def get_ph(self, n_triggers):
         self.logger.debug('PH %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
         self.testAllPixels(True)
-        datas = self.getPulseheightMap(0x0, n_triggers)
+        #self.testPixel(5,5,1)
+        flag = self.get_flag(False,False,False)
+        datas = self.getPulseheightMap(flag, n_triggers)
         for roc in self.dut.rocs():
             roc.data = numpy.zeros((52,80))
         for px in datas:
             self.dut.roc(px.roc).data[px.column][px.row] = px.value
+            #print '------'
+            #print px.value
         self.testAllPixels(False)
 
     def get_ph_roc(self, n_triggers, roc):
@@ -455,7 +465,7 @@ class api(PyPxarCore):
 
     def daq_enable(self):
         self.logger.info('Starting a new DAQ session...')
-        return self.daqStart()
+        return self.daqStart(0)
 
     def daq_disable(self):
         self.logger.info('Stopping current DAQ session...')
