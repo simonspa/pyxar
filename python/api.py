@@ -243,7 +243,6 @@ class api(PyPxarCore):
     def get_ph(self, n_triggers):
         self.logger.debug('PH %s , n_triggers: %s' %(self.dut.n_rocs, n_triggers) )
         self.testAllPixels(True)
-        #self.testPixel(5,5,1)
         flag = self.get_flag(False,False,False)
         datas = self.getPulseheightMap(flag, n_triggers)
         for roc in self.dut.rocs():

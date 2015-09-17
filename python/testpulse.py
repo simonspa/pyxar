@@ -55,7 +55,11 @@ class TestPulse(test.Test):
                 self.pulsed_pixels.append([col,row])
                 #arm pixel to be tested on all ROCs of DUT
                 for roc in self.dut.rocs():
-                    self.tb.testPixel(col, row, True, roc.number)
+                    #self.tb.testPixel(5, 17, True, roc.number)
+                    #self.tb.testPixel(5, 14, True, roc.number)
+                    #self.tb.testPixel(5, 11, True, roc.number)
+                    #self.tb.testPixel(5, 8, True, roc.number)
+                    self.tb.testPixel(5, 5, True, roc.number)
                 self.tb.u_delay(100)
                 self.tb.daq_enable()
                 # Clear the DAQ buffer:
@@ -68,14 +72,96 @@ class TestPulse(test.Test):
                 self.tb.pg_stop()
                 self.tb.u_delay(10)
                 #set up pg for sending Vcals
+                delay = 10
                 self.tb.pg_setup = [
                     ("calibrate",self.cal_delay + self.tct_wbc), 
                     ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
+                    ("token",delay),
+                    ("delay",delay),
+                    ("calibrate",self.cal_delay + self.tct_wbc), 
+                    ("trigger",self.ttk),    
                     ("token",0)]
+                
+                
+                
                 self.tb.set_pg(self.tb.pg_setup)
                 #send n_triggers Vcal pulses to pixel under test
-                for trig in range(self.n_triggers):
-                    self.tb.pg_single(1,127)
+                #for trig in range(self.n_triggers):
+                for trig in range(1):
+                    self.tb.pg_single(1,2890)
+                    #self.tb.set_dac('CtrlReg',0)
+                    #self.tb.pg_single(1,2890)
                     #print self.tb.daqGetEvent()
                     #self.tb.m_delay(1)
                 self.tb.pg_stop()
