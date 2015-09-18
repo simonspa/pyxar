@@ -28,8 +28,8 @@ class Pretest(test.Test):
         self.logger.info('Running pretest')
         self.rocs_programmable()
         self.adjust_vana()
-        self.find_VthrComp_CalDel_alt()
-        #self.find_VthrComp_CalDel()
+        #self.find_VthrComp_CalDel_alt()
+        self.find_VthrComp_CalDel()
         #self.adjust_PH_range()
 
     def cleanup(self, config):
@@ -97,6 +97,7 @@ class Pretest(test.Test):
         self.n_average = 4
         self.tb.set_dac(self.dac1, 0) 
         thr = []
+        
         #Find VthrComp by scanning digital current
         for roc in self.dut.rocs():
             currents = []
@@ -128,7 +129,7 @@ class Pretest(test.Test):
                             self.tb.m_delay(10)
                             break
         self.tb.testAllPixels(False)
-
+        
         #determine calDel
         #activate pixel 5 5 in every ROC
         for roc in self.dut.rocs():

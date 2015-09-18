@@ -270,25 +270,28 @@ class api(PyPxarCore):
         for roc in self.dut.rocs():
             dac_range1 = roc.dac(dac1).range
             dac_range2 = roc.dac(dac2).range
-            for pixel in roc.active_pixels():
+            for ipx, pixel in enumerate(roc.active_pixels()):
                 self.logger.debug('DacDac pix(%s,%s) of %s, nTrig: %s, dac1: %s, 0, %s, dac2: %s, 0, %s' %(pixel.col,pixel.row, roc, n_triggers, dac1, dac_range1, dac2, dac_range2) )
                 self.testPixel(pixel.col, pixel.row, True, roc.number)
 
         datas = self.getEfficiencyVsDACDAC(roc.dac(dac1).name, 1, 0, dac_range1, roc.dac(dac2).name, 1, 0, dac_range2, flags, n_triggers)
-        for pixel in roc.active_pixels():
-            self.testPixel(pixel.col, pixel.row, False, roc.number)
-
-        efficiency = []
-        datas = datas.tolist()
-        for idac, dac in enumerate(datas):
-            found = False
-            for px in dac:
-                if px.column == pixel.col and px.row == pixel.row and px.roc == roc.number:
-                    efficiency.append(px.value)
-                    found = True
-            if found == False:
-                efficiency.append(0)
-        pixel.data = numpy.transpose(list_to_matrix(dac_range1+1, dac_range2+1, efficiency))
+        #deactivate all pixels
+        self.testAllPixels(False)
+        #extract efficiencies from returned data
+        for roc in self.dut.rocs():
+            for ipx, pixel in enumerate(roc.active_pixels()):
+                efficiency = []
+                datas = numpy.array(datas)
+                datas = datas.tolist()
+                for idac, dac in enumerate(datas):
+                    found = False
+                    for px in dac:
+                        if px.column == pixel.col and px.row == pixel.row and px.roc == roc.number:
+                            efficiency.append(px.value)
+                            found = True
+                    if found == False:
+                        efficiency.append(0)
+                pixel.data = numpy.transpose(list_to_matrix(dac_range1+1, dac_range2+1, efficiency))
 
     def get_ph_dac(self, n_triggers, dac):
         self.testAllPixels(False)
@@ -361,6 +364,7 @@ class api(PyPxarCore):
         for roc in self.dut.rocs():
             for ipx, pixel in enumerate(roc.active_pixels()):
                 efficiency = []
+                datas = numpy.array(datas)
                 datas = datas.tolist()
                 for idac, dac in enumerate(datas):
                     found = False

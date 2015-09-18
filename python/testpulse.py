@@ -6,11 +6,11 @@ from plotter import Plotter
 import random
 
 class TestPulse(test.Test):
-    ''' send n calibrates to a specific pixels'''
+    ''' send customized sequence of calibrates to (a) specific pixel(s)'''
 
     def prepare(self, config):
         #read in test parameters
-        self.n_triggers = 10
+        self.n_triggers = 20
         self.n_rocs = int(config.get('Module','rocs'))
         self.cal_delay = int(config.get('Testboard','pg_cal'))
         self.tct_wbc = int(config.get('Testboard','tct_wbc'))
@@ -47,6 +47,7 @@ class TestPulse(test.Test):
             #for row in range(self.dut.roc(0)._n_rows):
             for row in range(1):
                 self.tb.maskAllPixels(False)
+                self.tb.testAllPixels(False)
                 #pixel under test
                 col = col*2+int(random.random()+.5)
                 col = 5
@@ -54,12 +55,12 @@ class TestPulse(test.Test):
                 row = 5
                 self.pulsed_pixels.append([col,row])
                 #arm pixel to be tested on all ROCs of DUT
-                for roc in self.dut.rocs():
+                #for roc in self.dut.rocs():
                     #self.tb.testPixel(5, 17, True, roc.number)
                     #self.tb.testPixel(5, 14, True, roc.number)
                     #self.tb.testPixel(5, 11, True, roc.number)
                     #self.tb.testPixel(5, 8, True, roc.number)
-                    self.tb.testPixel(5, 5, True, roc.number)
+                self.tb.testPixel(5, 5, True, 4)
                 self.tb.u_delay(100)
                 self.tb.daq_enable()
                 # Clear the DAQ buffer:
@@ -175,6 +176,7 @@ class TestPulse(test.Test):
             ("resetroc",0)] 
         self.tb.set_pg(self.tb.pg_setup)
         self.tb.pg_single(1,2)
+        self.tb.testAllPixels(False)
 
 
 
